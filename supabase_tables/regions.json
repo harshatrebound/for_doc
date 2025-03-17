@@ -1,0 +1,17 @@
+{
+  "table_name": "regions",
+  "definition": null,
+  "sample_row": {
+    "id": 1,
+    "name": "Central India",
+    "slug": "central-india",
+    "collection_id": "665d637dbc07a265e7fe16ad",
+    "meta_title": "Team Building Destinations in Central India",
+    "meta_description": "Explore leading teambuilding destinations in Central India. Enjoy the heart of India with its mix of historical sites and modern amenities for effective team-building activities.",
+    "region": "Central India",
+    "destinations_list": "bhopal; jabalpur; raipur",
+    "created_at": "2024-06-03T06:38:07+00:00",
+    "updated_at": "2024-06-03T12:22:33+00:00",
+    "published_at": "2025-01-08T10:08:59+00:00"
+  }
+}

@@ -1,0 +1,10 @@
+---
+description: Solve lint and build errors
+globs: 
+alwaysApply: false
+---
+use [typeerrors.md](mdc:typeerrors.md), understand them thorughy and fix those errors. My website works ifne in dev mode, FYI.
+
+Act like an expert developer who understands ins and outs of developing a website in Vite and deploying to git. 
+
+Run "npm run build" and keep checking untill we have a production build ready without any errors. 

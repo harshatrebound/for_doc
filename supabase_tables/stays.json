@@ -1,0 +1,35 @@
+{
+  "table_name": "stays",
+  "definition": null,
+  "sample_row": {
+    "id": 489,
+    "name": "Team Outing at Sterling",
+    "slug": "sterling-yelagiri",
+    "collection_id": "65e5c41dd735623094642847",
+    "meta_title": "Sterling Team Outing: Unwind and Reconnect",
+    "meta_description": "Elevate your senses at Sterling in Yelagiri, ideal for team building, offsites, and outings. Nestled in a serene location with a pleasant climate, this resort provides an inviting environment for teams to relax and bond. Well-designed accommodations and a peaceful ambiance ensure a comfortable stay, offering your team an opportunity to rejuvenate amidst the natural beauty of Yelagiri.",
+    "alt_text": "Team Outing at Sterling",
+    "tagline": "Elevate Your Senses",
+    "stay_description": "<p id=\"\">Sterling in Yelagiri invites you to elevate your senses, perfect for team building, team offsite, and team outings. Set in a serene location with a pleasant climate, this resort provides an inviting environment for teams to relax and bond. The well-designed accommodations and peaceful ambiance ensure a comfortable stay and an opportunity for your team to rejuvenate amidst the natural beauty of Yelagiri.</p>",
+    "location": "<p id=\"\">Sterling, Salem - Yercaud Main Road, Yelagiri Hills, Tamil Nadu - 635853</p>",
+    "special_activities": "<ul id=\"\">  <li id=\"\">Nature Walks</li>  <li id=\"\">Live Music Evenings</li>  <li id=\"\">Adventure Sports</li>  <li id=\"\">Campfire Nights</li>  <li id=\"\">Local Sightseeing Tours</li></ul>",
+    "facilities": "<ul id=\"\">  <li id=\"\">Modern Rooms and Suites</li>  <li id=\"\">Multi-Cuisine Restaurant</li>  <li id=\"\">Swimming Pool</li>  <li id=\"\">Indoor and Outdoor Games</li>  <li id=\"\">Spa and Wellness Center</li>  <li id=\"\">Conference and Event Spaces</li></ul>",
+    "stay_image": "https://uploads-ssl.webflow.com/65e2e78d061034866949e5e6/65e5c6bd874d945f062a9800_659103b5945adeb6ffbeb553_6523aaa9aeeb16df64a08952_56699532-p-500.webp",
+    "check_in_value": "<li id=\"\">Check-In Time: 12:00 PM</li>",
+    "check_out_value": "<li id=\"\">Check-Out Time: 10:00 AM</li>",
+    "total_room_value": "<li id=\"\">Total Rooms: 62</li>",
+    "destination": "Yelagiri",
+    "location_plain_text": "Sterling, Salem - Yercaud Main Road, Yelagiri Hills, Tamil Nadu - 635853",
+    "destination_cms_multi_reference": "hotel-landmark-yelagiri; hotel-landmark-yelagiri-e8f38; peters-park-yelagiri; peters-park-yelagiri-1dd83; zeenath-taj-gardens-yelagiri",
+    "images": [
+      "https://uploads-ssl.webflow.com/65e2e78d061034866949e5e6/667af00f39350b79eea03362_IMG_2262_pofrsj.jpeg",
+      "https://uploads-ssl.webflow.com/65e2e78d061034866949e5e6/667af00f39350b79eea03375_SWIMMING_POOL_1_2_fj41km.jpeg",
+      "https://uploads-ssl.webflow.com/65e2e78d061034866949e5e6/667af00f92b91e4395362b50_IMG_7176_i7utmm.jpeg"
+    ],
+    "price": "",
+    "created_on": "2024-03-04T13:03:57",
+    "updated_on": "2024-06-26T06:10:10",
+    "published_on": "2025-01-08T10:08:59",
+    "destination_id": 63
+  }
+}

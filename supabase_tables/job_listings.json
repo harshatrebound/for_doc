@@ -1,0 +1,20 @@
+{
+  "table_name": "job_listings",
+  "definition": null,
+  "sample_row": {
+    "id": 1,
+    "name": "Digital Marketing Specialist",
+    "slug": "digital-marketing-specialist",
+    "collection_id": "65eecf6ce4d500d0c2d1af33",
+    "locale_id": "65e2e78d061034866949e5e5",
+    "item_id": "65eecff06c8d380ba33544ee",
+    "created_on": "2024-03-11T09:33:36",
+    "updated_on": "2024-03-11T09:33:36",
+    "published_on": "2025-01-08T10:08:59",
+    "job_location": "Remote",
+    "employment_basis": "Full-Time",
+    "job_listing_body": "<p id=\"\">We are looking for a qualified Digital media specialist to join our team. You will lead our marketing efforts using new media and digital tools.</p><p id=\"\">If you know how to creatively handle various online marketing tools, like websites, podcasts and blogs, this position is for you. You will work with different teams to coordinate our marketing, advertising and promotional activities.</p><p id=\"\">Ultimately, you should be able to promote our company and increase client engagement.</p><h2 id=\"\">Responsibilities</h2><ul id=\"\"><li id=\"\">Design digital media campaigns aligned with business goals</li><li id=\"\">Coordinate the creation of digital content (e.g. website, blogs, press releases and podcasts)</li><li id=\"\">Manage end-to-end digital projects</li><li id=\"\">Establish our web presence to boost brand awareness</li><li id=\"\">Maintain a strong online company voice through social media</li><li id=\"\">Liaise with Marketing, Sales and Product development teams to ensure brand consistency</li><li id=\"\">Suggest and implement direct marketing methods to increase profitability</li><li id=\"\">Monitor ROI and KPIs</li><li id=\"\">Stay up-to-date with digital media developments</li></ul><h2 id=\"\">Requirements</h2><ul id=\"\"><li id=\"\">Proven work experience as a Digital media specialist or Digital marketing manager</li><li id=\"\">Solid knowledge of Photoshop, Final Cut Pro, Premiere Pro, Audacity or other media editing software</li><li id=\"\">Experience with visual communication principles</li><li id=\"\">Familiarity with web design and content management systems</li><li id=\"\">Excellent analytical and project management skills</li><li id=\"\">An ability to multitask and perform under tight deadlines</li><li id=\"\">Strong verbal and written communication skills</li><li id=\"\">BSc degree in Marketing, Digital media or relevant field</li><li id=\"\">Additional qualification in web design or animation is a plus</li></ul><p id=\"\">‍</p>",
+    "created_at": "2025-02-09T19:25:37.1796",
+    "updated_at": "2025-02-09T19:25:37.1796"
+  }
+}

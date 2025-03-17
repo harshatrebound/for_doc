@@ -1,0 +1,24 @@
+{
+  "table_name": "destinations",
+  "definition": null,
+  "sample_row": {
+    "id": 2,
+    "name": "Ahmedabad",
+    "slug": "ahmedabad",
+    "collection_id": "65e5c542b9df8e8ce0a50abe",
+    "meta_title": "Corporate Team Outing Places in Ahmedabad | Trebound",
+    "meta_description": "Discover unique corporate team outing places in Ahmedabad with Trebound. Experience team-building activities and memorable adventures in this vibrant city.",
+    "destination_description": "Where Team Unity Meets Urban Excitement",
+    "destination_body": "<h3 id=\"\">Ahmedabad - Ideal for Corporate Team Outings</h3><p id=\"\">When it comes to planning a corporate team outing, Ahmedabad offers the perfect blend of culture, relaxation, and team-building opportunities. Explore this vibrant city, the largest in Gujarat, and discover how it can provide an excellent backdrop for your corporate team-building activities.</p><h3 id=\"\">Team Building Activities</h3><p id=\"\">Ahmedabad offers a wide range of team-building activities set in serene and inspiring environments. Engage in activities and challenges that promote teamwork, leadership, and effective communication among your colleagues. These experiences will help your team bond and work together more cohesively.</p><h3 id=\"\">Luxurious Resorts</h3><p id=\"\">Choose from a selection of luxurious resorts in Ahmedabad, such as Boulevard9, Club Kensville Golf Resort, and Palm Green Club. These resorts provide the perfect setting for corporate team outings, offering modern amenities, spacious meeting spaces, and team-building facilities. Take advantage of the tranquil atmosphere to host seminars, workshops, and training sessions tailored to your team's needs.</p><h3 id=\"\">Local Cuisine</h3><p id=\"\">Ahmedabad is known for its rich and diverse culinary heritage. Treat your team to the flavors of Gujarati cuisine, from the famous dhokla and fafda to a traditional Gujarati thali. Dining together is an excellent way to strengthen the bond within your team.</p><h3 id=\"\">Historical Landmarks</h3><p id=\"\">In your free time, explore the city's historical landmarks, including Sabarmati Ashram, Adalaj Stepwell, and Sidi Saiyyed Mosque. These sites offer cultural enrichment and a deeper understanding of the city's heritage.</p><p id=\"\">Plan your next corporate team outing in Ahmedabad to combine professional development, team bonding, and relaxation in a dynamic and culturally rich environment.</p>",
+    "destination_image": "https://uploads-ssl.webflow.com/65e2e78d061034866949e5e6/65e5c5b5cd790a69916266f7_658fee868e32982b52eaeccc_6536299cb6791881debb4c56_65359cd9c3ba19b43f1d7d90_Ahmedabad.webp",
+    "destination_main_image": "https://uploads-ssl.webflow.com/65e2e78d061034866949e5e6/65e5c5b5cd790a69916266f3_6536371dfbedbc07cc8b6271_Ahmedabad.png",
+    "page_title": "Corporate Team Outing Places in Ahmedabad",
+    "region": "West",
+    "resorts": "",
+    "select_resorts": "palm-green-club-ahmedabad; club-kensville-golf-resort-ahmedabad; shankus-water-world-resort-ahmedabad; boulevard9-luxury-resorts-and-spa-ahmedabad; gulmohar-greens-golf-and-country-club-ltd-ahmedabad",
+    "created_at": "2024-03-04T12:59:34+00:00",
+    "updated_at": "2024-06-03T06:18:12+00:00",
+    "published_at": "2025-01-08T10:08:59+00:00",
+    "region_id": 5
+  }
+}
