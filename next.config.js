@@ -23,7 +23,6 @@ const nextConfig = {
     memoryBasedWorkersCount: true,
     workerThreads: true,
     optimizeCss: true,
-    serverActions: true,
   },
 
   // Set higher memory limit for builds
