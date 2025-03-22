@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Base colors */
+  --background: #ffffff;
+  --foreground: #1d1d1f;
+  --primary: #8B5C9E;
+  --primary-light: #9d6db5;
+  
+  /* UI colors */
+  --card: #ffffff;
+  --card-hover: #f5f5f7;
+  --border: #e5e5e7;
+  --border-dark: #d2d2d7;
+  
+  /* Text colors */
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #86868b;
+  
+  /* Input colors */
+  --input-bg: #ffffff;
+  --input-border: #d2d2d7;
+  --input-focus: #8B5C9E;
+  
+  /* States */
+  --hover: #f5f5f7;
+  --active: #f5f5f7;
+  --disabled: #f5f5f7;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1a1a1a;
+    --foreground: #ffffff;
+    --primary: #9d6db5;
+    --primary-foreground: #ffffff;
+    --secondary: #27272a;
+    --secondary-foreground: #ffffff;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+    --accent: #27272a;
+    --accent-foreground: #ffffff;
+    --card: #27272a;
+    --card-foreground: #ffffff;
+    --border: #27272a;
+    --input: #27272a;
+  }
+}
+
+/* Base styles */
+body {
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+
+/* Typography */
+h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+h2, h3, h4 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+/* Form elements */
+.apple-input {
+  @apply h-11 px-3.5 rounded-xl border border-[--input-border] bg-white text-[--text-primary];
+  @apply focus:outline-none focus:border-[--input-focus] focus:ring-2 focus:ring-[--input-focus] focus:ring-opacity-20;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  transition: all 0.2s ease;
+}
+
+.apple-select {
+  @apply h-11 pl-3.5 pr-10 rounded-xl border border-[--input-border] bg-white text-[--text-primary];
+  @apply focus:outline-none focus:border-[--input-focus] focus:ring-2 focus:ring-[--input-focus] focus:ring-opacity-20;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  transition: all 0.2s ease;
+}
+
+.apple-button {
+  @apply inline-flex items-center justify-center px-5 h-11 rounded-full bg-[--primary] text-white font-medium;
+  @apply hover:bg-[--primary-light] active:scale-[0.98];
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+}
+
+.apple-card {
+  @apply bg-white rounded-2xl border border-[--border];
+  @apply hover:border-[--border-dark] transition-colors;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Toggle switch */
+.apple-toggle {
+  @apply w-11 h-6 bg-[--border] rounded-full transition-colors;
+  @apply peer-checked:bg-[--primary];
+  @apply after:content-[''] after:absolute after:top-[2px] after:left-[2px];
+  @apply after:bg-white after:rounded-full after:h-5 after:w-5;
+  @apply after:shadow-sm after:transition-all;
+  @apply peer-checked:after:translate-x-full;
+  @apply peer-focus:ring-4 peer-focus:ring-[--primary] peer-focus:ring-opacity-20;
+}
+
+/* Card styles */
+.card {
+  background-color: var(--card);
+  border-color: var(--border);
+  color: var(--card-foreground);
+}
