@@ -212,8 +212,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               </button>
               
               {/* Stepped Progress Bar */}
-              <div className="bg-gradient-to-r from-purple-100 to-purple-50 pt-6 pb-4 px-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              <div className="bg-gradient-to-r from-purple-100 to-purple-50 pt-6 pb-4 px-4 sm:px-6">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                   {currentStep < steps.length ? steps[currentStep].title : ''}
                 </h2>
                 
@@ -222,8 +222,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     <div key={step.id} className="flex items-center">
                       <div 
                         className={`
-                          relative flex items-center justify-center w-8 h-8 rounded-full 
-                          text-sm font-medium border-2 transition-colors
+                          relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full 
+                          text-xs sm:text-sm font-medium border-2 transition-colors
                           ${index < currentStep 
                             ? 'bg-[#8B5C9E] text-white border-[#8B5C9E]' 
                             : index === currentStep 
@@ -233,7 +233,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                         `}
                       >
                         {index < currentStep ? (
-                          <Check className="h-4 w-4" />
+                          <Check className="h-3 w-3 sm:h-4 sm:w-4" />
                         ) : (
                           <span>{index + 1}</span>
                         )}
@@ -241,10 +241,10 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       
                       {index < steps.length - 2 && (
                         <div 
-                          className={`w-full h-1 mx-2 ${
+                          className={`w-full h-1 mx-1 sm:mx-2 ${
                             index < currentStep ? 'bg-[#8B5C9E]' : 'bg-gray-200'
                           }`}
-                          style={{ width: '100%', maxWidth: '60px' }}
+                          style={{ width: '100%', maxWidth: '40px' }}
                         />
                       )}
                     </div>
@@ -255,7 +255,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
             
             {/* Content */}
             <ErrorBoundary>
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-100px)]">
+              <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-100px)]">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentStep}
@@ -330,11 +330,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
                 {/* Error display */}
                 {errors.length > 0 && (
-                  <div className="mt-6 bg-red-50 border border-red-100 rounded-lg p-4">
-                    <h3 className="text-sm font-medium text-red-800 mb-2">
+                  <div className="mt-4 sm:mt-6 bg-red-50 border border-red-100 rounded-lg p-3 sm:p-4">
+                    <h3 className="text-sm font-medium text-red-800 mb-1 sm:mb-2">
                       Please fix the following errors:
                     </h3>
-                    <ul className="list-disc pl-5 space-y-1 text-sm text-red-700">
+                    <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm text-red-700">
                       {errors.map((error, index) => (
                         <li key={index}>{error}</li>
                       ))}
@@ -345,13 +345,13 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               
               {/* Footer with navigation buttons (except for success step) */}
               {currentStep < 4 && (
-                <div className="flex justify-between items-center p-4 bg-gray-50 border-t border-gray-100">
+                <div className="flex justify-between items-center p-3 sm:p-4 bg-gray-50 border-t border-gray-100">
                   <button
                     type="button"
                     onClick={handleBack}
                     disabled={currentStep === 0}
                     className={`
-                      px-4 py-2 rounded-lg flex items-center gap-1
+                      px-3 sm:px-4 py-2 rounded-lg flex items-center gap-1 text-sm
                       ${currentStep === 0 
                         ? 'text-gray-400 cursor-not-allowed' 
                         : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
@@ -366,7 +366,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     <button
                       type="button"
                       onClick={handleNext}
-                      className="px-5 py-2 rounded-lg bg-[#8B5C9E] text-white font-medium hover:bg-[#7B4C8E] flex items-center gap-1"
+                      className="px-4 sm:px-5 py-2 rounded-lg bg-[#8B5C9E] text-white text-sm font-medium hover:bg-[#7B4C8E] flex items-center gap-1"
                     >
                       Next
                       <ChevronRight className="h-4 w-4" />
@@ -376,7 +376,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       type="button"
                       onClick={handleSubmit}
                       disabled={isSubmitting}
-                      className="px-5 py-2 rounded-lg bg-[#8B5C9E] text-white font-medium hover:bg-[#7B4C8E] disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="px-4 sm:px-5 py-2 rounded-lg bg-[#8B5C9E] text-white text-sm font-medium hover:bg-[#7B4C8E] disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {isSubmitting ? 'Booking...' : 'Confirm Booking'}
                     </button>
