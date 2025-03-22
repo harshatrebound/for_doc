@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import DoctorSelection from './DoctorSelectionNew';
+import DoctorSelection from './DoctorSelection';
 import DateTimeSelection from './DateTimeSelection';
 import PatientDetails from './PatientDetails';
 import Summary from './Summary';
 import ThankYou from './ThankYou';
+import { ErrorBoundary } from '../ErrorBoundary';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -108,6 +109,26 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     setErrors([]);
   };
 
+  const handleDoctorSelect = (doctorId: string) => {
+    updateBookingData({ doctor: doctorId });
+    // Move to next step after state update
+    setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
+  };
+
+  const handleDateTimeSelect = (dateTime: { date: Date | null; time: string }) => {
+    updateBookingData(dateTime);
+    if (dateTime.date && dateTime.time) {
+      setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
+    }
+  };
+
+  const handlePatientDetailsSubmit = (details: Partial<BookingData>) => {
+    updateBookingData(details);
+    if (validateStep(2)) {
+      setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
+    }
+  };
+
   const handleSubmit = async () => {
     if (!validateStep(currentStep)) {
       return;
@@ -190,88 +211,42 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={handleClose} />
-        
+    <AnimatePresence mode="wait">
+      {isOpen && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-xl"
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
         >
-          {/* Close button */}
-          <button
-            onClick={handleClose}
-            className="absolute right-4 top-4 p-2 text-gray-400 hover:text-gray-500"
-            disabled={isSubmitting}
+          <div className="fixed inset-0 bg-black/25" onClick={handleClose} />
+          <motion.div
+            className="relative bg-white rounded-lg shadow-xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto"
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ duration: 0.2 }}
           >
-            <X className="h-6 w-6" />
-          </button>
-
-          {/* Progress bar */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gray-100">
-            <motion.div
-              className="h-full bg-[#8B5C9E]"
-              initial={{ width: '0%' }}
-              animate={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
-            />
-          </div>
-
-          {/* Error display */}
-          {errors.length > 0 && (
-            <div className="px-6 pt-2">
-              <div className="rounded-md bg-red-50 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800">
-                      Please fix the following errors:
-                    </h3>
-                    <div className="mt-2 text-sm text-red-700">
-                      <ul className="list-disc pl-5 space-y-1">
-                        {errors.map((error, index) => (
-                          <li key={index}>{error.message}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Content */}
-          <div className="px-6 pt-6">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentStep}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-              >
+            <button
+              onClick={handleClose}
+              className="absolute right-4 top-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <ErrorBoundary>
+              <div className="p-6">
                 {currentStep === 0 && (
                   <DoctorSelection
                     selected={bookingData.doctor}
-                    onSelect={(doctorId) => {
-                      updateBookingData({ doctor: doctorId });
-                      handleNext();
-                    }}
+                    onSelect={handleDoctorSelect}
                   />
                 )}
                 {currentStep === 1 && (
                   <DateTimeSelection
                     selected={{ date: bookingData.date, time: bookingData.time }}
                     doctorId={bookingData.doctor}
-                    onSelect={(dateTime) => {
-                      updateBookingData(dateTime);
-                      handleNext();
-                    }}
+                    onSelect={handleDateTimeSelect}
                     onBack={handleBack}
                   />
                 )}
@@ -280,12 +255,10 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     data={{
                       name: bookingData.name,
                       phone: bookingData.phone,
-                      email: bookingData.email
+                      email: bookingData.email,
+                      notes: bookingData.notes
                     }}
-                    onSubmit={(details) => {
-                      updateBookingData(details);
-                      handleNext();
-                    }}
+                    onSubmit={handlePatientDetailsSubmit}
                     onBack={handleBack}
                   />
                 )}
@@ -314,23 +287,20 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     onClose={handleClose}
                   />
                 )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Footer */}
-          <div className="px-6 py-4 bg-gray-50 mt-6">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">
-                Step {currentStep + 1} of {steps.length}
-              </span>
-              <span className="font-medium text-[#8B5C9E]">
-                {steps[currentStep].title}
-              </span>
-            </div>
-          </div>
+              </div>
+            </ErrorBoundary>
+            {errors.length > 0 && (
+              <div className="p-4 bg-red-50 border-t border-red-100">
+                {errors.map((error, index) => (
+                  <p key={index} className="text-red-600 text-sm">
+                    {error.message}
+                  </p>
+                ))}
+              </div>
+            )}
+          </motion.div>
         </motion.div>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 }

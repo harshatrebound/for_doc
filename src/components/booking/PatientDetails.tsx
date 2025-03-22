@@ -12,6 +12,7 @@ const patientSchema = z.object({
     .max(15, 'Phone number must not exceed 15 digits')
     .regex(/^[0-9+\-\s()]*$/, 'Invalid phone number format'),
   email: z.string().email('Invalid email address'),
+  notes: z.string().optional(),
 });
 
 type PatientFormData = z.infer<typeof patientSchema>;
@@ -21,6 +22,7 @@ interface PatientDetailsProps {
     name: string;
     phone: string;
     email: string;
+    notes?: string;
   };
   onSubmit: (data: PatientFormData) => void;
   onBack: () => void;
@@ -106,6 +108,24 @@ const PatientDetails = ({ data, onSubmit, onBack }: PatientDetailsProps) => {
             {errors.email && (
               <p className="text-sm font-medium text-red-600">{errors.email.message}</p>
             )}
+          </div>
+
+          {/* Notes Field */}
+          <div className="space-y-1.5">
+            <label htmlFor="notes" className="block text-sm font-semibold text-gray-900">
+              Additional Notes <span className="text-gray-500 font-normal">(Optional)</span>
+            </label>
+            <textarea
+              id="notes"
+              {...register('notes')}
+              className={`
+                w-full px-4 py-3 rounded-lg border bg-white text-gray-900 placeholder:text-gray-500
+                focus:outline-none focus:ring-2 focus:ring-[#8B5C9E] focus:border-transparent
+                border-gray-200 hover:border-gray-300
+              `}
+              placeholder="Any additional information you'd like to share"
+              rows={3}
+            />
           </div>
         </div>
 
