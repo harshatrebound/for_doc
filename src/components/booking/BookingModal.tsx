@@ -1,521 +1,327 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState } from 'react';
+import { Dialog } from '@headlessui/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowLeft, ArrowRight, Check, Calendar, Clock, User, Mail, Phone } from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import { format, isValid } from 'date-fns';
+import type { BookingFormData, BookingStep } from '@/types/booking';
 import DoctorSelection from './DoctorSelection';
 import DateTimeSelection from './DateTimeSelection';
 import PatientDetails from './PatientDetails';
 import Summary from './Summary';
 import ThankYou from './ThankYou';
-import { ErrorBoundary } from '../ErrorBoundary';
-import { cn } from '@/lib/utils';
+import ProgressBar from './ProgressBar';
+import { AlertCircle, X } from 'lucide-react';
 
-// Brand colors
-const BRAND = {
-  primary: 'var(--brand-primary)',
-  primaryDark: 'var(--brand-primary-dark)',
-  primaryLight: 'var(--brand-primary-light)',
-  gradient: 'bg-brand-gradient'
-};
+const STEPS: BookingStep[] = [
+  { id: 'doctor', title: 'Select Doctor' },
+  { id: 'datetime', title: 'Date & Time' },
+  { id: 'details', title: 'Your Details' },
+  { id: 'summary', title: 'Summary' },
+  { id: 'thankyou', title: 'Thank You' }
+];
 
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-// Define the steps in the booking process
-const STEPS = [
-  { id: 'doctor', title: 'Doctor', description: 'Choose your doctor' },
-  { id: 'datetime', title: 'Date & Time', description: 'Select appointment time' },
-  { id: 'details', title: 'Your Details', description: 'Fill in your information' },
-  { id: 'confirm', title: 'Review', description: 'Confirm your booking' },
-];
-
-// Define the booking data structure with initial state
-interface BookingData {
-  doctor: string;
-  doctorName?: string;
-  date: Date | null;
-  time: string;
-  name: string;
-  phone: string;
-  email: string;
-  notes?: string;
-}
-
-const initialBookingData: BookingData = {
-  doctor: '',
-  doctorName: '',
-  date: null,
-  time: '',
-  name: '',
-  phone: '',
-  email: '',
-  notes: '',
-};
-
-// Define validation rules for each step
-const validateStep = (step: number, data: BookingData): string[] => {
-  const errors: string[] = [];
-  
-  switch (step) {
-    case 0: // Doctor selection
-      if (!data.doctor) errors.push('Please select a doctor');
-      break;
-    case 1: // Date & Time selection
-      if (!data.date) {
-        errors.push('Please select a date');
-      } else if (!isValid(data.date)) {
-        errors.push('Selected date is invalid');
-      }
-      
-      if (!data.time) {
-        errors.push('Please select a time');
-      }
-      break;
-    case 2: // Patient details
-      if (!data.name || data.name.trim().length < 2) 
-        errors.push('Please enter your full name (minimum 2 characters)');
-      if (!data.phone || data.phone.trim().length < 10) 
-        errors.push('Please enter a valid phone number (minimum 10 digits)');
-      if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
-        errors.push('Please enter a valid email address');
-      break;
-    case 3: // Review step - validate entire form again
-      if (!data.doctor) errors.push('Doctor selection is missing');
-      if (!data.date || !isValid(data.date)) errors.push('Invalid appointment date');
-      if (!data.time) errors.push('Appointment time is missing');
-      if (!data.name || data.name.trim().length < 2) errors.push('Patient name is invalid');
-      if (!data.phone || data.phone.trim().length < 10) errors.push('Phone number is invalid');
-      if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) errors.push('Email address is invalid');
-      break;
-  }
-  
-  return errors;
-};
+// Fix for the Dialog.Panel motion component
+const MotionDialogPanel = motion(Dialog.Panel);
 
 export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
-  // State management
   const [currentStep, setCurrentStep] = useState(0);
-  const [bookingData, setBookingData] = useState<BookingData>(initialBookingData);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [formData, setFormData] = useState<BookingFormData>({
+    doctor: null,
+    selectedDate: null,
+    selectedTime: '',
+    patientName: '',
+    email: '',
+    phone: '',
+    notes: ''
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isBooked, setIsBooked] = useState(false);
-  const [isValidatingStep, setIsValidatingStep] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Reset form when the modal is closed
-  useEffect(() => {
-    if (!isOpen) {
-      setTimeout(() => {
-        setCurrentStep(0);
-        setBookingData(initialBookingData);
-        setErrors([]);
-        setIsSubmitting(false);
-        setIsBooked(false);
-      }, 300); // Wait for exit animation to complete
-    }
-  }, [isOpen]);
+  const handleChange = (updates: Partial<BookingFormData>) => {
+    // Clear error when user makes changes
+    if (errorMessage) setErrorMessage(null);
+    setFormData(prevData => ({ ...prevData, ...updates }));
+  };
 
-  // Update booking data
-  const updateBookingData = useCallback((data: Partial<BookingData>) => {
-    setBookingData(prev => ({ ...prev, ...data }));
-    
-    // Clear errors when data changes
-    setErrors([]);
-  }, []);
+  const handleNext = () => {
+    setCurrentStep(prevStep => prevStep + 1);
+  };
 
-  // Handle next step with validation
-  const handleNext = useCallback(() => {
-    // Start validation
-    setIsValidatingStep(true);
+  const handleBack = () => {
+    setCurrentStep(prevStep => prevStep - 1);
+  };
 
-    // Validate current step
-    const stepErrors = validateStep(currentStep, bookingData);
-    setErrors(stepErrors);
+  const handleClose = () => {
+    setCurrentStep(0);
+    setFormData({
+      doctor: null,
+      selectedDate: null,
+      selectedTime: '',
+      patientName: '',
+      email: '',
+      phone: '',
+      notes: ''
+    });
+    onClose();
+  };
 
-    if (stepErrors.length === 0) {
-      // No errors, proceed to next step
-      setCurrentStep(prev => Math.min(prev + 1, STEPS.length));
-    } else {
-      // Show toast for validation errors
-      toast.error('Please complete all required fields');
-    }
-
-    // End validation
-    setIsValidatingStep(false);
-  }, [currentStep, bookingData]);
-
-  // Handle step back
-  const handleBack = useCallback(() => {
-    setCurrentStep(prev => Math.max(prev - 1, 0));
-    setErrors([]);
-  }, []);
-
-  // Handle final submission
-  const handleSubmit = useCallback(async () => {
-    if (isSubmitting) return;
-    
-    // Final validation before submission
-    const finalErrors = validateStep(3, bookingData);
-    if (finalErrors.length > 0) {
-      setErrors(finalErrors);
-      toast.error('Please correct all errors before submitting');
-      return;
-    }
-    
-    setIsSubmitting(true);
-    setErrors([]);
-    
+  const handleSubmitBooking = async () => {
     try {
-      // Prepare the appointment data with proper date formatting
-      const appointmentData = {
-        doctorId: bookingData.doctor,
-        patientName: bookingData.name,
-        email: bookingData.email,
-        phone: bookingData.phone,
-        date: bookingData.date ? format(bookingData.date, 'yyyy-MM-dd') : '',
-        time: bookingData.time,
-        notes: bookingData.notes || '',
+      setIsSubmitting(true);
+      setErrorMessage(null);
+      
+      // Validate required fields before submission
+      if (!formData.doctor?.id) {
+        throw new Error('Doctor selection is required');
+      }
+      
+      // Check if the doctor ID is a valid UUID or hyphenated ID
+      const isValidDoctorId = () => {
+        const id = formData.doctor?.id || '';
+        // UUID v4 format regex
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        // Allow any hyphenated or alphanumeric ID
+        const validIdRegex = /^[a-z0-9_-]+$/i;
+        return uuidRegex.test(id) || validIdRegex.test(id);
       };
       
-      // Call the API to create the appointment
-      const response = await fetch('/api/appointments', {
+      if (!isValidDoctorId()) {
+        throw new Error(`Invalid doctor ID format (${formData.doctor?.id}). Please select a different doctor.`);
+      }
+      
+      if (!formData.selectedDate) {
+        throw new Error('Appointment date is required');
+      }
+      
+      if (!formData.selectedTime) {
+        throw new Error('Appointment time is required');
+      }
+      
+      if (!formData.patientName.trim()) {
+        throw new Error('Patient name is required');
+      }
+      
+      if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        throw new Error('Valid email address is required');
+      }
+      
+      // Phone validation similar to backend (10+ digits)
+      if (!formData.phone.trim() || !/^\+?[\d\s-]{10,}$/.test(formData.phone.replace(/\D/g, ''))) {
+        throw new Error('Phone number must have at least 10 digits');
+      }
+      
+      // Format time to ensure it's in HH:MM format
+      const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
+      if (!timeRegex.test(formData.selectedTime)) {
+        throw new Error('Invalid time format. Should be HH:MM');
+      }
+
+      // Prepare booking data for submission
+      const phoneDigitsOnly = formData.phone.replace(/\D/g, '');
+      const formattedPhone = phoneDigitsOnly.length > 10 
+        ? `+${phoneDigitsOnly}` 
+        : phoneDigitsOnly;
+      
+      // Format the date to ensure it's properly normalized and in ISO format
+      const appointmentDate = new Date(formData.selectedDate);
+      // Set hours to 0 to avoid timezone issues
+      appointmentDate.setHours(0, 0, 0, 0);
+      
+      const bookingData = {
+        doctorId: formData.doctor.id,
+        patientName: formData.patientName.trim(),
+        email: formData.email.trim(),
+        phone: formattedPhone,
+        date: appointmentDate.toISOString(),
+        time: formData.selectedTime,
+        notes: formData.notes?.trim() || '',
+      };
+      
+      console.log('Submitting booking data:', bookingData);
+      
+      // Use the test endpoint when needed for debugging
+      const useTestEndpoint = true; // Set to true to use test endpoint
+      const endpoint = useTestEndpoint ? '/api/appointments/test' : '/api/appointments';
+      
+      // Make API call to create the appointment (webhook is handled on the server)
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(appointmentData),
+        body: JSON.stringify(bookingData),
       });
 
-      // Parse response
-      const data = await response.json();
-
-      // Handle response
+      const responseData = await response.json();
+      console.log('Response from server:', responseData);
+      
       if (!response.ok) {
-        // Handle specific error cases
-        if (response.status === 409) {
-          toast.error('This time slot is no longer available. Please select another time.');
-          setCurrentStep(1); // Go back to time selection
-          return;
-        }
-        
-        // Generic error handling
-        throw new Error(data.error || 'Failed to book appointment');
+        // Extract detailed error information if available
+        const errorMessage = responseData.error || 'Failed to create appointment';
+        const errorCode = responseData.code || '';
+        const detailedError = errorCode ? `${errorMessage} (${errorCode})` : errorMessage;
+        throw new Error(detailedError);
       }
 
-      // Success path
-      setIsBooked(true);
-      setCurrentStep(STEPS.length); // Move to thank you step
-      toast.success('Appointment booked successfully!');
+      // Move to thank you step after successful submission
+      handleNext();
     } catch (error) {
-      // Error handling
-      console.error('Booking error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to book appointment';
-      toast.error(errorMessage);
-      
-      // Add error to the list
-      setErrors([errorMessage]);
+      console.error('Error submitting booking:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to create appointment. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
-  }, [bookingData, isSubmitting]);
+  };
 
-  // Handle closing the modal
-  const handleClose = useCallback(() => {
-    if (isSubmitting) {
-      toast.error('Please wait while we process your booking');
-      return;
-    }
-    
-    // If there are changes and we're not at the thank you step, show confirmation
-    const hasChanges = 
-      bookingData.doctor !== initialBookingData.doctor ||
-      bookingData.date !== initialBookingData.date ||
-      bookingData.time !== initialBookingData.time ||
-      bookingData.name !== initialBookingData.name;
-    
-    if (hasChanges && !isBooked) {
-      const confirmed = window.confirm('Are you sure you want to cancel your booking? Any information entered will be lost.');
-      if (!confirmed) return;
-    }
-    
-    onClose();
-  }, [onClose, isSubmitting, bookingData, isBooked]);
-
-  // Doctor selection handler with doctor name
-  const handleDoctorSelect = useCallback((doctorId: string, doctorName: string) => {
-    updateBookingData({ doctor: doctorId, doctorName });
-    
-    // Immediately validate and proceed if valid
-    setTimeout(() => {
-      if (doctorId) {
-        setCurrentStep(1);
-      }
-    }, 100);
-  }, [updateBookingData]);
-
-  // Function to get contents for current step
-  const renderStepContent = () => {
+  const renderStep = () => {
     switch (currentStep) {
-      case 0: // Doctor selection
+      case 0:
         return (
           <DoctorSelection
-            selected={bookingData.doctor}
-            onSelect={handleDoctorSelect}
+            formData={formData}
+            onChange={handleChange}
+            onSubmit={handleNext}
           />
         );
-      case 1: // Date & Time selection
+      case 1:
         return (
           <DateTimeSelection
-            selected={{ date: bookingData.date, time: bookingData.time }}
-            doctorId={bookingData.doctor}
-            onSelect={dateTime => updateBookingData(dateTime)}
+            formData={formData}
+            onChange={handleChange}
+            onSubmit={handleNext}
             onBack={handleBack}
           />
         );
-      case 2: // Patient details
+      case 2:
         return (
           <PatientDetails
-            data={{
-              name: bookingData.name,
-              phone: bookingData.phone,
-              email: bookingData.email,
-              notes: bookingData.notes
-            }}
-            onSubmit={data => {
-              updateBookingData(data);
-              handleNext();
-            }}
+            formData={formData}
+            onChange={handleChange}
+            onSubmit={handleNext}
             onBack={handleBack}
           />
         );
-      case 3: // Summary
+      case 3:
         return (
           <Summary
-            bookingData={{
-              doctor: bookingData.doctor,
-              doctorName: bookingData.doctorName || '',
-              date: bookingData.date,
-              time: bookingData.time,
-              patientName: bookingData.name,
-              phone: bookingData.phone,
-              email: bookingData.email
-            }}
-            // The Summary component shouldn't need its own navigation or confirm button
-            // We'll handle this at the BookingModal level
-            onConfirm={() => {}} // Empty function as we're using our own buttons
-            onBack={() => {}} // Empty function as we're using our own buttons
+            formData={formData}
+            onSubmit={handleSubmitBooking}
+            onBack={handleBack}
             isSubmitting={isSubmitting}
           />
         );
-      case 4: // Thank you
-        return (
-          <ThankYou
-            bookingData={{
-              doctor: bookingData.doctor,
-              doctorName: bookingData.doctorName || '',
-              date: bookingData.date,
-              time: bookingData.time
-            }}
-            onClose={onClose}
-          />
-        );
+      case 4:
+        return <ThankYou formData={formData} />;
       default:
         return null;
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <motion.div 
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={handleClose}
-      />
-      
-      {/* Modal Container */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          className="relative z-10 bg-white rounded-2xl shadow-xl w-full max-w-3xl mx-4 overflow-hidden flex flex-col max-h-[90vh]"
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+    <Dialog
+      open={isOpen}
+      onClose={currentStep === 4 ? handleClose : () => {}}
+      className="relative z-50"
+    >
+      {/* Backdrop with blur effect */}
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity" aria-hidden="true" />
+
+      <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-6">
+        <MotionDialogPanel
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+          className="relative mx-auto max-w-xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden"
         >
-          {/* Close Button */}
-          <button
-            type="button"
-            onClick={handleClose}
-            className="absolute right-4 top-4 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full z-10"
-            aria-label="Close dialog"
-          >
-            <X className="h-5 w-5" />
-          </button>
-          
-          {/* Progress Steps - Only show for main steps, not final confirmation */}
-          {currentStep < STEPS.length && (
-            <div className="bg-gradient-to-br from-brand-light to-white border-b pt-6 pb-4 px-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900">
-                  {STEPS[currentStep].title}
-                </h2>
-                <span className="text-sm font-medium text-gray-500">
-                  Step {currentStep + 1} of {STEPS.length}
-                </span>
+          <div className="flex flex-col h-[85vh] max-h-[750px]">
+            {/* Progress Bar */}
+            {currentStep < 4 && (
+              <div className="px-6 pt-6 pb-4 border-b border-gray-100 pr-10">
+                <ProgressBar 
+                  steps={STEPS} 
+                  currentStep={currentStep} 
+                />
               </div>
-              
-              <div className="flex items-center w-full">
-                {STEPS.map((step, index) => (
-                  <div 
-                    key={step.id} 
-                    className="flex items-center relative"
-                    style={{ width: index === STEPS.length - 1 ? 'auto' : `${100 / STEPS.length}%` }}
-                  >
-                    {/* Step Circle */}
-                    <div
-                      className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center font-semibold z-10 border-2 transition-colors",
-                        index < currentStep 
-                          ? "bg-brand text-white border-brand" 
-                          : index === currentStep
-                            ? "bg-white text-brand border-brand"
-                            : "bg-white text-gray-400 border-gray-300"
-                      )}
-                    >
-                      {index < currentStep ? (
-                        <Check className="h-5 w-5" />
-                      ) : (
-                        <span>{index + 1}</span>
-                      )}
-                    </div>
-                    
-                    {/* Label - Show only on desktop */}
-                    <div className="hidden sm:block absolute -bottom-7 left-0 w-full text-center">
-                      <span 
-                        className={cn(
-                          "text-xs font-medium",
-                          index <= currentStep ? "text-brand" : "text-gray-500"
-                        )}
-                      >
-                        {step.title}
-                      </span>
-                    </div>
-                    
-                    {/* Connecting Line */}
-                    {index < STEPS.length - 1 && (
-                      <div className="h-[2px] flex-grow mx-2" style={{ width: `calc(100% - 3rem)` }}>
-                        <div
-                          className={index < currentStep ? "h-full bg-brand" : "h-full bg-gray-200"}
-                          style={{ width: '100%' }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Content Area */}
-          <ErrorBoundary>
-            <div className="flex-1 overflow-y-auto p-6">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`step-${currentStep}`}
-                  initial={{ opacity: 0, y: 10 }}
+            )}
+
+            {/* Error Message */}
+            <AnimatePresence>
+              {errorMessage && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="min-h-[300px]"
+                  className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start"
                 >
-                  {renderStepContent()}
+                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5 mr-2" />
+                  <div className="flex-1 text-sm text-red-700">{errorMessage}</div>
+                  <button 
+                    onClick={() => setErrorMessage(null)}
+                    className="text-red-400 hover:text-red-600 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Content Area with Custom Scrollbar */}
+            <div className="flex-1 overflow-y-auto scrollbar-thin p-6">
+              <AnimatePresence mode="wait">
+                {renderStep()}
               </AnimatePresence>
-              
-              {/* Error Messages */}
-              {errors.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-6 p-4 bg-red-50 border border-red-100 rounded-lg"
-                >
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0 mt-0.5">
-                      <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium text-red-800">
-                        {errors.length === 1 ? 'There is an issue' : 'There are issues that need your attention'}
-                      </h3>
-                      <div className="mt-2 text-sm text-red-700">
-                        <ul className="list-disc pl-5 space-y-1">
-                          {errors.map((error, idx) => (
-                            <li key={idx}>{error}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
             </div>
-          </ErrorBoundary>
-          
-          {/* Footer Navigation - Don't show on last (confirmation) step */}
-          {currentStep < STEPS.length && !isBooked && (
-            <div className="border-t border-gray-100 p-4 bg-gray-50 flex justify-between items-center">
-              {/* Back Button */}
+
+            {/* Close Button - positioned to avoid overlap with step indicators */}
+            {currentStep < 4 && (
               <button
-                type="button"
-                onClick={handleBack}
-                disabled={currentStep === 0 || isSubmitting}
-                className={cn(
-                  "px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-sm transition-colors",
-                  currentStep === 0 || isSubmitting
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                )}
+                onClick={handleClose}
+                className="absolute top-5 right-2 flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-gray-500 hover:bg-[#8B5C9E]/10 hover:text-[#8B5C9E] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#8B5C9E]/30"
+                aria-label="Close"
               >
-                <ArrowLeft className="h-4 w-4" />
-                Back
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x">
+                  <path d="M18 6 6 18"></path>
+                  <path d="m6 6 12 12"></path>
+                </svg>
               </button>
-              
-              {/* Next/Submit Button */}
-              {currentStep < STEPS.length - 1 ? (
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  disabled={isValidatingStep}
-                  className="px-5 py-2 rounded-lg bg-brand text-white font-medium text-sm hover:bg-brand-dark flex items-center gap-2 shadow-sm"
-                >
-                  {isValidatingStep ? 'Checking...' : 'Continue'}
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className="px-5 py-2 rounded-lg bg-brand text-white font-medium text-sm hover:bg-brand-dark flex items-center gap-2 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? 'Confirming...' : 'Confirm Booking'}
-                  <Check className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
-    </div>
+            )}
+          </div>
+        </MotionDialogPanel>
+      </div>
+
+      {/* Global styles for custom scrollbar */}
+      <style jsx global>{`
+        /* Modern scrollbar styling */
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 5px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: transparent;
+          margin: 0.5rem 0;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background: rgba(139, 92, 158, 0.2);
+          border-radius: 10px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+          background: rgba(139, 92, 158, 0.4);
+        }
+        
+        /* Firefox */
+        .scrollbar-thin {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(139, 92, 158, 0.2) transparent;
+        }
+      `}</style>
+    </Dialog>
   );
 }

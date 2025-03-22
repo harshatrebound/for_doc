@@ -5,10 +5,12 @@ export interface DoctorSchedule {
   startTime: string; // HH:mm format
   endTime: string; // HH:mm format
   isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
   slotDuration: number;
   bufferTime: number;
+  breakStart?: string; // HH:mm format
+  breakEnd?: string; // HH:mm format
 }
 
 export interface SpecialDate {

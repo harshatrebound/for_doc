@@ -1,31 +1,31 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '@/lib/db';
-import { Doctor } from '@/types/doctor';
+import type { Doctor } from '@/types/booking';
 
 // Fallback data in case database is not available
-const fallbackDoctors = [
+const fallbackDoctors: Doctor[] = [
   {
     id: 'dr-sameer',
     name: 'Dr. Sameer Kumar',
-    fee: 700,
     speciality: 'Orthopedic Surgeon',
+    fee: 700,
     experience: '15+ years',
     rating: 4.9,
     location: 'HSR Layout, Bangalore',
-    availability: 'Available Today',
+    availability: ['Available Today'],
     qualifications: ['MBBS', 'MS Ortho', 'Fellowship in Sports Medicine'],
     image: '/doctors/dr-sameer.jpg'
   },
   {
-    id: 'dr-priya',
-    name: 'Dr. Priya Sharma',
-    fee: 1000,
+    id: 'other-doctors',
+    name: 'Other Doctors',
     speciality: 'Sports Medicine Specialist',
+    fee: 1000,
     experience: '10+ years',
     rating: 4.7,
     location: 'HSR Layout, Bangalore',
-    availability: 'Available Today',
+    availability: ['Available Today'],
     qualifications: ['MBBS', 'MS Ortho'],
     image: '/doctors/default-doctor.jpg'
   }
@@ -33,33 +33,39 @@ const fallbackDoctors = [
 
 export async function GET() {
   try {
-    // Try to fetch from database first
-    const dbDoctors = await db.query(`
-      SELECT id, name, speciality, fee, 
-             "createdAt", "updatedAt"
+    // Query doctors from the database
+    const result = await db.query(`
+      SELECT id, name, speciality, fee, image
       FROM "Doctor"
       ORDER BY name ASC
     `);
 
-    if (dbDoctors.rows.length > 0) {
-      // If we have database results, enhance them with additional info
-      const enhancedDoctors = dbDoctors.rows.map((doctor) => ({
-        ...doctor,
-        experience: '10+ years',
-        rating: 4.7,
-        location: 'HSR Layout, Bangalore',
-        availability: 'Available Today',
-        qualifications: ['MBBS', 'MS Ortho'],
-        image: '/doctors/default-doctor.jpg'
-      }));
-      return NextResponse.json(enhancedDoctors);
-    }
+    // Log doctor data for debugging
+    console.log('Doctors from database:', result.rows);
 
-    // If no database results, return fallback data
-    return NextResponse.json(fallbackDoctors);
+    // Enhance doctor data with additional fields
+    const doctors: Doctor[] = result.rows.map(doctor => ({
+      ...doctor,
+      experience: doctor.id === 'dr-sameer' ? '15+ years' : '10+ years',
+      rating: doctor.id === 'dr-sameer' ? 4.9 : 4.7,
+      location: 'HSR Layout, Bangalore',
+      availability: ['Available Today'],
+      qualifications: doctor.id === 'dr-sameer' 
+        ? ['MBBS', 'MS Ortho', 'Fellowship in Sports Medicine']
+        : ['MBBS', 'MS Ortho'],
+      image: doctor.image || 
+        (doctor.id === 'dr-sameer' 
+          ? '/doctors/dr-sameer.jpg' 
+          : doctor.id === 'other-doctors'
+            ? '/doctors/default-doctor.jpg'
+            : '/doctors/default-doctor.jpg')
+    }));
+
+    return NextResponse.json(doctors);
   } catch (error) {
-    console.error('Database error:', error);
-    // Return fallback data if database fails
+    console.error('Failed to fetch doctors:', error);
+    
+    // Return fallback data in case of database error
     return NextResponse.json(fallbackDoctors);
   }
 }
