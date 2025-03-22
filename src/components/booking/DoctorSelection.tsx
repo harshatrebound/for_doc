@@ -33,27 +33,23 @@ const DoctorSelection = ({ selected, onSelect }: DoctorSelectionProps) => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
+        setIsLoading(true);
+        setError(null);
+        
         const response = await fetch('/api/doctors');
         if (!response.ok) {
-          throw new Error('Failed to fetch doctors');
+          throw new Error(`Failed to fetch doctors: ${response.statusText}`);
         }
+        
         const data = await response.json();
-        const enhancedData = data.map((doctor: Doctor) => ({
-          ...doctor,
-          experience: doctor.id === 'dr-sameer' ? '15+ years' : '10+ years',
-          rating: doctor.id === 'dr-sameer' ? 4.9 : 4.7,
-          location: 'HSR Layout, Bangalore',
-          availability: 'Available Today',
-          qualifications: doctor.id === 'dr-sameer' 
-            ? ['MBBS', 'MS Ortho', 'Fellowship in Sports Medicine']
-            : ['MBBS', 'MS Ortho'],
-          image: doctor.id === 'dr-sameer' 
-            ? '/doctors/dr-sameer.jpg' 
-            : '/doctors/default-doctor.jpg'
-        }));
-        setDoctors(enhancedData);
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid response format');
+        }
+        
+        setDoctors(data);
       } catch (err) {
-        setError('Failed to load doctors. Please try again later.');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load doctors';
+        setError(errorMessage);
         console.error('Error fetching doctors:', err);
       } finally {
         setIsLoading(false);
@@ -67,7 +63,7 @@ const DoctorSelection = ({ selected, onSelect }: DoctorSelectionProps) => {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <div className="w-8 h-8 border-4 border-[#8B5C9E] border-t-transparent rounded-full animate-spin" />
-        <p className="mt-4 text-gray-600 font-medium">Loading doctors...</p>
+        <p className="mt-4 text-gray-600">Loading available doctors...</p>
       </div>
     );
   }
@@ -75,13 +71,33 @@ const DoctorSelection = ({ selected, onSelect }: DoctorSelectionProps) => {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-500 font-medium">{error}</p>
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+          <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load Doctors</h3>
+        <p className="text-gray-600 mb-4">{error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-4 text-[#8B5C9E] hover:text-[#6B4A7E] font-medium"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#8B5C9E] hover:bg-[#7A4B8D] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8B5C9E]"
         >
           Try again
         </button>
+      </div>
+    );
+  }
+
+  if (!doctors.length) {
+    return (
+      <div className="text-center py-12">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 mb-4">
+          <svg className="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Doctors Available</h3>
+        <p className="text-gray-600">Please check back later or contact support for assistance.</p>
       </div>
     );
   }
