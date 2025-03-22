@@ -7,6 +7,7 @@ import { Calendar, Check } from 'lucide-react';
 interface ThankYouProps {
   bookingData: {
     doctor: string;
+    doctorName?: string;
     date: Date | null;
     time: string;
   };
@@ -14,7 +15,7 @@ interface ThankYouProps {
 }
 
 const ThankYou = ({ bookingData, onClose }: ThankYouProps) => {
-  const doctorName = bookingData.doctor === 'dr-sameer' ? 'Dr. Sameer' : 'Other Doctor';
+  const doctorName = bookingData.doctorName || (bookingData.doctor === 'dr-sameer' ? 'Dr. Sameer' : 'Other Doctor');
   const doctorFee = bookingData.doctor === 'dr-sameer' ? 700 : 1000;
 
   const addToCalendar = () => {

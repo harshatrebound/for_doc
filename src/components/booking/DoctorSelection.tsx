@@ -20,7 +20,7 @@ interface Doctor {
 
 interface DoctorSelectionProps {
   selected: string;
-  onSelect: (doctorId: string) => void;
+  onSelect: (doctorId: string, doctorName: string) => void;
 }
 
 const DoctorCard = motion.button;
@@ -107,7 +107,7 @@ const DoctorSelection = ({ selected, onSelect }: DoctorSelectionProps) => {
       {doctors.map((doctor) => (
         <DoctorCard
           key={doctor.id}
-          onClick={() => onSelect(doctor.id)}
+          onClick={() => onSelect(doctor.id, doctor.name)}
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
           className={`

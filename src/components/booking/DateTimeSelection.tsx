@@ -189,21 +189,11 @@ const DateTimeSelection = ({ selected, doctorId, onSelect, onBack }: DateTimeSel
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <button
-          onClick={onBack}
-          className="text-sm text-[#8B5C9E] hover:text-[#6B4A7E] font-medium flex items-center gap-1"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Back
-        </button>
-      </div>
-
       <div>
-        <h1 className="text-2xl font-semibold text-[#1a1a1a] mb-1">
+        <h1 className="text-xl font-semibold text-gray-900 mb-1">
           Select Date & Time
         </h1>
-        <p className="text-[#666666] font-medium">
+        <p className="text-base text-gray-600">
           Choose your preferred appointment slot
         </p>
       </div>

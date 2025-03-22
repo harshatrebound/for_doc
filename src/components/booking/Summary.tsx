@@ -7,6 +7,7 @@ import { Calendar, Clock, User, Phone, Mail, Check, Loader2 } from 'lucide-react
 interface SummaryProps {
   bookingData: {
     doctor: string;
+    doctorName?: string;
     date: Date | null;
     time: string;
     patientName: string;
@@ -20,13 +21,13 @@ interface SummaryProps {
 
 const Summary = ({ bookingData, onConfirm, onBack, isSubmitting }: SummaryProps) => {
   const doctorFee = bookingData.doctor === 'dr-sameer' ? 700 : 1000;
-  const doctorName = bookingData.doctor === 'dr-sameer' ? 'Dr. Sameer' : 'Other Doctor';
+  const doctorName = bookingData.doctorName || (bookingData.doctor === 'dr-sameer' ? 'Dr. Sameer' : 'Other Doctor');
 
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold text-gray-900">Booking Summary</h2>
-        <p className="text-base font-medium text-gray-600">Review your appointment details</p>
+        <h2 className="text-xl font-semibold text-gray-900">Booking Summary</h2>
+        <p className="text-base text-gray-600">Review your appointment details</p>
       </div>
 
       <div className="bg-gray-50 rounded-xl p-6 space-y-4 max-h-[calc(100vh-24rem)] overflow-y-auto">
@@ -95,35 +96,7 @@ const Summary = ({ bookingData, onConfirm, onBack, isSubmitting }: SummaryProps)
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex justify-between items-center pt-2">
-        <button
-          onClick={onBack}
-          disabled={isSubmitting}
-          className="px-6 py-2.5 text-gray-700 font-medium hover:text-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Back
-        </button>
-        <motion.button
-          onClick={onConfirm}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          disabled={isSubmitting}
-          className="flex items-center justify-center space-x-2 px-6 py-2.5 rounded-lg bg-[#8B5C9E] text-white font-medium hover:bg-[#7B4C8E] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Confirming...</span>
-            </>
-          ) : (
-            <>
-              <Check className="w-5 h-5" />
-              <span>Confirm Booking</span>
-            </>
-          )}
-        </motion.button>
-      </div>
+      {/* We're removing the actions section since we're handling navigation in the parent */}
     </div>
   );
 };

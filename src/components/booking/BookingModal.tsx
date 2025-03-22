@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowLeft, ArrowRight, Check, Calendar, Clock, User, Mail, Phone } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { format, isValid } from 'date-fns';
 import DoctorSelection from './DoctorSelection';
 import DateTimeSelection from './DateTimeSelection';
 import PatientDetails from './PatientDetails';
@@ -11,6 +12,14 @@ import Summary from './Summary';
 import ThankYou from './ThankYou';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { cn } from '@/lib/utils';
+
+// Brand colors
+const BRAND = {
+  primary: 'var(--brand-primary)',
+  primaryDark: 'var(--brand-primary-dark)',
+  primaryLight: 'var(--brand-primary-light)',
+  gradient: 'bg-brand-gradient'
+};
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -28,6 +37,7 @@ const STEPS = [
 // Define the booking data structure with initial state
 interface BookingData {
   doctor: string;
+  doctorName?: string;
   date: Date | null;
   time: string;
   name: string;
@@ -38,6 +48,7 @@ interface BookingData {
 
 const initialBookingData: BookingData = {
   doctor: '',
+  doctorName: '',
   date: null,
   time: '',
   name: '',
@@ -55,8 +66,15 @@ const validateStep = (step: number, data: BookingData): string[] => {
       if (!data.doctor) errors.push('Please select a doctor');
       break;
     case 1: // Date & Time selection
-      if (!data.date) errors.push('Please select a date');
-      if (!data.time) errors.push('Please select a time');
+      if (!data.date) {
+        errors.push('Please select a date');
+      } else if (!isValid(data.date)) {
+        errors.push('Selected date is invalid');
+      }
+      
+      if (!data.time) {
+        errors.push('Please select a time');
+      }
       break;
     case 2: // Patient details
       if (!data.name || data.name.trim().length < 2) 
@@ -65,6 +83,14 @@ const validateStep = (step: number, data: BookingData): string[] => {
         errors.push('Please enter a valid phone number (minimum 10 digits)');
       if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
         errors.push('Please enter a valid email address');
+      break;
+    case 3: // Review step - validate entire form again
+      if (!data.doctor) errors.push('Doctor selection is missing');
+      if (!data.date || !isValid(data.date)) errors.push('Invalid appointment date');
+      if (!data.time) errors.push('Appointment time is missing');
+      if (!data.name || data.name.trim().length < 2) errors.push('Patient name is invalid');
+      if (!data.phone || data.phone.trim().length < 10) errors.push('Phone number is invalid');
+      if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) errors.push('Email address is invalid');
       break;
   }
   
@@ -96,12 +122,14 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   // Update booking data
   const updateBookingData = useCallback((data: Partial<BookingData>) => {
     setBookingData(prev => ({ ...prev, ...data }));
+    
+    // Clear errors when data changes
     setErrors([]);
   }, []);
 
-  // Handle next step
+  // Handle next step with validation
   const handleNext = useCallback(() => {
-    // Start validation for the current step
+    // Start validation
     setIsValidatingStep(true);
 
     // Validate current step
@@ -112,7 +140,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       // No errors, proceed to next step
       setCurrentStep(prev => Math.min(prev + 1, STEPS.length));
     } else {
-      // Show toast notification for validation errors
+      // Show toast for validation errors
       toast.error('Please complete all required fields');
     }
 
@@ -130,25 +158,36 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const handleSubmit = useCallback(async () => {
     if (isSubmitting) return;
     
+    // Final validation before submission
+    const finalErrors = validateStep(3, bookingData);
+    if (finalErrors.length > 0) {
+      setErrors(finalErrors);
+      toast.error('Please correct all errors before submitting');
+      return;
+    }
+    
     setIsSubmitting(true);
     setErrors([]);
     
     try {
+      // Prepare the appointment data with proper date formatting
+      const appointmentData = {
+        doctorId: bookingData.doctor,
+        patientName: bookingData.name,
+        email: bookingData.email,
+        phone: bookingData.phone,
+        date: bookingData.date ? format(bookingData.date, 'yyyy-MM-dd') : '',
+        time: bookingData.time,
+        notes: bookingData.notes || '',
+      };
+      
       // Call the API to create the appointment
       const response = await fetch('/api/appointments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          doctorId: bookingData.doctor,
-          patientName: bookingData.name,
-          email: bookingData.email,
-          phone: bookingData.phone,
-          date: bookingData.date?.toISOString(),
-          time: bookingData.time,
-          notes: bookingData.notes,
-        }),
+        body: JSON.stringify(appointmentData),
       });
 
       // Parse response
@@ -206,9 +245,9 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     onClose();
   }, [onClose, isSubmitting, bookingData, isBooked]);
 
-  // Single doctor selection handler with immediate validation
-  const handleDoctorSelect = useCallback((doctorId: string) => {
-    updateBookingData({ doctor: doctorId });
+  // Doctor selection handler with doctor name
+  const handleDoctorSelect = useCallback((doctorId: string, doctorName: string) => {
+    updateBookingData({ doctor: doctorId, doctorName });
     
     // Immediately validate and proceed if valid
     setTimeout(() => {
@@ -258,14 +297,17 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
           <Summary
             bookingData={{
               doctor: bookingData.doctor,
+              doctorName: bookingData.doctorName || '',
               date: bookingData.date,
               time: bookingData.time,
               patientName: bookingData.name,
               phone: bookingData.phone,
               email: bookingData.email
             }}
-            onConfirm={handleSubmit}
-            onBack={handleBack}
+            // The Summary component shouldn't need its own navigation or confirm button
+            // We'll handle this at the BookingModal level
+            onConfirm={() => {}} // Empty function as we're using our own buttons
+            onBack={() => {}} // Empty function as we're using our own buttons
             isSubmitting={isSubmitting}
           />
         );
@@ -274,6 +316,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
           <ThankYou
             bookingData={{
               doctor: bookingData.doctor,
+              doctorName: bookingData.doctorName || '',
               date: bookingData.date,
               time: bookingData.time
             }}
@@ -319,7 +362,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
           
           {/* Progress Steps - Only show for main steps, not final confirmation */}
           {currentStep < STEPS.length && (
-            <div className="bg-gradient-to-br from-purple-50 to-white border-b pt-6 pb-4 px-6">
+            <div className="bg-gradient-to-br from-brand-light to-white border-b pt-6 pb-4 px-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-gray-900">
                   {STEPS[currentStep].title}
@@ -341,9 +384,9 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       className={cn(
                         "w-10 h-10 rounded-full flex items-center justify-center font-semibold z-10 border-2 transition-colors",
                         index < currentStep 
-                          ? "bg-purple-600 text-white border-purple-600" 
+                          ? "bg-brand text-white border-brand" 
                           : index === currentStep
-                            ? "bg-white text-purple-600 border-purple-600"
+                            ? "bg-white text-brand border-brand"
                             : "bg-white text-gray-400 border-gray-300"
                       )}
                     >
@@ -359,7 +402,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       <span 
                         className={cn(
                           "text-xs font-medium",
-                          index <= currentStep ? "text-purple-600" : "text-gray-500"
+                          index <= currentStep ? "text-brand" : "text-gray-500"
                         )}
                       >
                         {step.title}
@@ -370,11 +413,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     {index < STEPS.length - 1 && (
                       <div className="h-[2px] flex-grow mx-2" style={{ width: `calc(100% - 3rem)` }}>
                         <div
-                          className="h-full transition-all duration-300"
-                          style={{
-                            backgroundColor: index < currentStep ? '#9333ea' : '#e5e7eb',
-                            width: '100%'
-                          }}
+                          className={index < currentStep ? "h-full bg-brand" : "h-full bg-gray-200"}
+                          style={{ width: '100%' }}
                         />
                       </div>
                     )}
@@ -456,7 +496,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   type="button"
                   onClick={handleNext}
                   disabled={isValidatingStep}
-                  className="px-5 py-2 rounded-lg bg-purple-600 text-white font-medium text-sm hover:bg-purple-700 flex items-center gap-2 shadow-sm"
+                  className="px-5 py-2 rounded-lg bg-brand text-white font-medium text-sm hover:bg-brand-dark flex items-center gap-2 shadow-sm"
                 >
                   {isValidatingStep ? 'Checking...' : 'Continue'}
                   <ArrowRight className="h-4 w-4" />
@@ -466,7 +506,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   type="button"
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="px-5 py-2 rounded-lg bg-purple-600 text-white font-medium text-sm hover:bg-purple-700 flex items-center gap-2 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="px-5 py-2 rounded-lg bg-brand text-white font-medium text-sm hover:bg-brand-dark flex items-center gap-2 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? 'Confirming...' : 'Confirm Booking'}
                   <Check className="h-4 w-4" />

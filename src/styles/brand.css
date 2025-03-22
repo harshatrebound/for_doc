@@ -1,0 +1,53 @@
+:root {
+  --brand-primary: #8B5C9E;
+  --brand-primary-dark: #7A4B8D;
+  --brand-primary-light: #8B5C9E33;
+  --brand-gradient: linear-gradient(to bottom right, #8B5C9E, #6B4A7E);
+  --brand-text: #1a1a1a;
+  --brand-text-secondary: #666666;
+  --brand-success: #10b981;
+  --brand-error: #ef4444;
+  --brand-warning: #f59e0b;
+  --brand-info: #3b82f6;
+  
+  /* Animation durations */
+  --transition-fast: 150ms;
+  --transition-normal: 250ms;
+  --transition-slow: 350ms;
+}
+
+/* Utility classes for direct HTML use */
+.text-brand {
+  color: var(--brand-primary);
+}
+
+.bg-brand {
+  background-color: var(--brand-primary);
+}
+
+.bg-brand-gradient {
+  background-image: var(--brand-gradient);
+}
+
+.border-brand {
+  border-color: var(--brand-primary);
+}
+
+.hover\:bg-brand-dark:hover {
+  background-color: var(--brand-primary-dark);
+}
+
+.focus\:ring-brand:focus {
+  --tw-ring-color: var(--brand-primary);
+}
+
+/* Animation classes */
+.transition-brand {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: var(--transition-normal);
+}
+
+.bg-brand-light {
+  background-color: var(--brand-primary-light);
+} 

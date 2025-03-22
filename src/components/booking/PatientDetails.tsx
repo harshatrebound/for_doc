@@ -41,8 +41,8 @@ const PatientDetails = ({ data, onSubmit, onBack }: PatientDetailsProps) => {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold text-gray-900">Patient Details</h2>
-        <p className="text-base font-medium text-gray-600">Please provide your contact information</p>
+        <h2 className="text-xl font-semibold text-gray-900">Patient Details</h2>
+        <p className="text-base text-gray-600">Please provide your contact information</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -129,29 +129,8 @@ const PatientDetails = ({ data, onSubmit, onBack }: PatientDetailsProps) => {
           </div>
         </div>
 
-        {/* Navigation */}
-        <div className="flex justify-between items-center pt-6">
-          <button
-            type="button"
-            onClick={onBack}
-            className="px-6 py-2.5 text-gray-700 font-medium hover:text-gray-900 transition-colors"
-          >
-            Back
-          </button>
-          <motion.button
-            type="submit"
-            disabled={isSubmitting}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className={`
-              px-6 py-2.5 rounded-lg bg-[#8B5C9E] text-white font-medium
-              hover:bg-[#7B4C8E] transition-colors
-              disabled:opacity-50 disabled:cursor-not-allowed
-            `}
-          >
-            {isSubmitting ? 'Submitting...' : 'Continue'}
-          </motion.button>
-        </div>
+        {/* Submit Button - We'll hide this and just use the parent's navigation */}
+        <input type="submit" className="hidden" />
       </form>
     </div>
   );
