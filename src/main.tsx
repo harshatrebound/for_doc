@@ -29,6 +29,13 @@ import CustomizedTrainingPage from './pages/CustomizedTraining'
 import CustomizedTrainingDetail from './pages/CustomizedTraining/[slug]'
 import ContactPage from './pages/Contact'
 import AboutPage from './pages/About'
+import VirtualTeamBuildingPage from './pages/VirtualTeamBuilding'
+import CorporateGiftingPage from './pages/CorporateGifting'
+import ThankYouPage from './pages/ThankYou'
+import PrivacyPolicyPage from './pages/PrivacyPolicy'
+import TermsAndConditionsPage from './pages/TermsAndConditions'
+import OutboundTeamBuildingPage from './pages/OutboundTeamBuilding'
+import CorporateTeamOutingsPage from './pages/CorporateTeamOutings'
 
 const emotionCache = createCache({ key: 'css' });
 
@@ -79,6 +86,13 @@ const Root = () => (
               <Route path="/customized-training" element={<CustomizedTrainingPage />} />
               <Route path="/customized-training/:slug" element={<CustomizedTrainingDetail />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/virtual-team-building" element={<VirtualTeamBuildingPage />} />
+              <Route path="/corporate-gifting" element={<CorporateGiftingPage />} />
+              <Route path="/thank-you" element={<ThankYouPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
+              <Route path="/outbound-teambuilding-activities" element={<OutboundTeamBuildingPage />} />
+              <Route path="/corporate-team-outings" element={<CorporateTeamOutingsPage />} />
             </Routes>
           </Router>
         </CombinedProvider>

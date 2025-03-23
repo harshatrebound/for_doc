@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
@@ -85,7 +86,7 @@ const StatBadge = ({ type, children }: { type: 'participants' | 'outbound' | 'ti
   </div>
 );
 
-const OutboundSection = () => {
+const OutboundSection: React.FC = () => {
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -230,4 +231,294 @@ const OutboundSection = () => {
   );
 };
 
-export default OutboundSection;
+export const VirtualActivitiesSection = () => {
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
+  const { activities, loading: activitiesLoading, error: activitiesError } = useActivities();
+
+  // Filter virtual activities and take 3 random ones
+  const virtualExperiences = activities
+    ?.filter(activity => activity.activity_type === 'Virtual')
+    ?.sort(() => Math.random() - 0.5)
+    ?.slice(0, 3)
+    ?.map(activity => ({
+      image: activity.main_image,
+      title: activity.name,
+      description: activity.tagline,
+      slug: activity.slug,
+      stats: {
+        participants: activity.group_size || '15-150',
+        duration: activity.activity_type || 'Virtual',
+        difficulty: activity.duration || '30 mins'
+      }
+    })) || [];
+
+  if (activitiesError) {
+    return (
+      <div className="text-center py-8 text-red-500">
+        <p>Error loading experiences: {activitiesError}</p>
+      </div>
+    );
+  }
+
+  return (
+    <section className="w-full bg-white py-12" ref={ref}>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-6 max-w-[1200px]">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6 lg:gap-12 mb-12">
+          <div className="flex-1 max-w-2xl">
+            <motion.span
+              initial={{ opacity: 0, y: 10 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5 }}
+              className="inline-block text-lg font-medium font-['DM Sans'] text-[#636363] mb-2"
+            >
+              Top Virtual Activities
+            </motion.span>
+            <motion.h2
+              initial={{ opacity: 0, y: 10 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-[40px] font-semibold font-['Inter'] leading-tight bg-gradient-to-b from-[#FF4C39] to-[#FFB573] bg-clip-text text-transparent"
+            >
+              Connect Teams Virtually.
+            </motion.h2>
+          </div>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="lg:max-w-md text-left lg:text-right text-base font-normal font-['DM Sans'] text-[#757575] lg:pt-6"
+          >
+            Engage your remote teams with interactive virtual experiences designed to build stronger connections.
+          </motion.p>
+        </div>
+
+        {/* Experience Cards */}
+        {activitiesLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((index) => (
+              <div key={index} className="bg-[#eeeeee] rounded-[20px] overflow-hidden animate-pulse">
+                <div className="p-7">
+                  <div className="aspect-[386/304] rounded-[20px] bg-gray-300 mb-6" />
+                  <div className="h-8 bg-gray-300 rounded mb-4" />
+                  <div className="h-6 bg-gray-300 rounded mb-6" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {virtualExperiences.map((experience, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 10 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                className="w-full bg-[#eeeeee] rounded-[16px] hover:shadow-md transition-all duration-300 group"
+              >
+                <div className="p-5 flex flex-col h-full">
+                  <div className="relative aspect-[386/304] rounded-[16px] overflow-hidden shadow-sm mb-4">
+                    <img
+                      src={experience.image}
+                      alt={experience.title}
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 left-3">
+                      <RatingBadge />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 flex-1">
+                    <h3 className="text-lg font-semibold font-['DM Sans'] text-[#313131] line-clamp-1">
+                      {experience.title}
+                    </h3>
+                    <p className="text-base font-normal font-['DM Sans'] text-[#636363] line-clamp-2">
+                      {experience.description}
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 justify-between mt-4">
+                    <StatBadge type="participants">{experience.stats.participants}</StatBadge>
+                    <StatBadge type="outbound">{experience.stats.duration}</StatBadge>
+                    <StatBadge type="time">{experience.stats.difficulty}</StatBadge>
+                  </div>
+
+                  <div className="mt-4">
+                    <a href={`/team-building-activity/${experience.slug}`}>
+                      <ViewDetailsButton />
+                    </a>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* View More Button */}
+        <div className="flex justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="w-full max-w-[200px]"
+          >
+            <a href="/team-building-activity">
+              <ViewMoreButton />
+            </a>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const OutboundActivitiesSection: React.FC = () => {
+  const [ref, inView] = useInView({
+    threshold: 0.1,
+    triggerOnce: true,
+  });
+
+  const { activities, loading: activitiesLoading, error: activitiesError } = useActivities();
+
+  // Filter outbound activities and take 3 random ones
+  const outboundActivities = activities
+    ?.filter(activity => activity.activity_type === 'Outbound')
+    ?.sort(() => Math.random() - 0.5)
+    ?.slice(0, 3)
+    ?.map(activity => ({
+      image: activity.main_image,
+      title: activity.name,
+      description: activity.tagline,
+      slug: activity.slug,
+      stats: {
+        participants: activity.group_size || '15-150',
+        duration: activity.activity_type || 'Outbound',
+        difficulty: activity.duration || '2 hrs'
+      }
+    })) || [];
+
+  if (activitiesError) {
+    return (
+      <div className="text-center py-8 text-red-500">
+        <p>Error loading activities: {activitiesError}</p>
+      </div>
+    );
+  }
+
+  return (
+    <section ref={ref} className="w-full bg-white py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-6 max-w-[1200px]">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6 lg:gap-12 mb-12">
+          <div className="flex-1 max-w-2xl">
+            <motion.span
+              initial={{ opacity: 0, y: 10 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5 }}
+              className="inline-block text-lg font-medium font-['DM Sans'] text-[#636363] mb-2"
+            >
+              Top Outbound Activities
+            </motion.span>
+            <motion.h2
+              initial={{ opacity: 0, y: 10 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-[40px] font-semibold font-['Inter'] leading-tight bg-gradient-to-b from-[#FF4C39] to-[#FFB573] bg-clip-text text-transparent"
+            >
+              Explore Beyond Boundaries.
+            </motion.h2>
+          </div>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="lg:max-w-md text-left lg:text-right text-base font-normal font-['DM Sans'] text-[#757575] lg:pt-6"
+          >
+            Engage your teams with exciting outdoor experiences designed to build stronger bonds and create lasting memories.
+          </motion.p>
+        </div>
+
+        {/* Activity Cards Grid */}
+        {activitiesLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((index) => (
+              <div key={index} className="bg-[#eeeeee] rounded-[20px] overflow-hidden animate-pulse">
+                <div className="p-7">
+                  <div className="aspect-[386/304] rounded-[20px] bg-gray-300 mb-6" />
+                  <div className="h-8 bg-gray-300 rounded mb-4" />
+                  <div className="h-6 bg-gray-300 rounded mb-6" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {outboundActivities.map((activity, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 10 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                className="w-full bg-[#eeeeee] rounded-[16px] hover:shadow-md transition-all duration-300 group"
+              >
+                <div className="p-5 flex flex-col h-full">
+                  <div className="relative aspect-[386/304] rounded-[16px] overflow-hidden shadow-sm mb-4">
+                    <img
+                      src={activity.image}
+                      alt={activity.title}
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 left-3">
+                      <RatingBadge />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 flex-1">
+                    <h3 className="text-lg font-semibold font-['DM Sans'] text-[#313131] line-clamp-1">
+                      {activity.title}
+                    </h3>
+                    <p className="text-base font-normal font-['DM Sans'] text-[#636363] line-clamp-2">
+                      {activity.description}
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    <StatBadge type="participants">{activity.stats.participants}</StatBadge>
+                    <StatBadge type="outbound">{activity.stats.duration}</StatBadge>
+                    <StatBadge type="time">{activity.stats.difficulty}</StatBadge>
+                  </div>
+
+                  <div className="mt-4">
+                    <a href={`/team-building-activity/${activity.slug}`}>
+                      <ViewDetailsButton />
+                    </a>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* View All Activities Button */}
+        <div className="flex justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="w-full max-w-[200px]"
+          >
+            <a href="/team-building-activity">
+              <ViewMoreButton />
+            </a>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export { OutboundSection as default, OutboundActivitiesSection };

@@ -48,44 +48,18 @@ function App() {
       </Helmet>
 
       <div className="relative min-h-screen overflow-x-hidden bg-white">
-        {/* Main Content */}
-        <main>
-          {/* Hero Section */}
-          <GradientHero />
-
-          {/* Main Navigation */}
-          <Navbar />
-
-          {/* Services Section */}
-          <ServicesSection />
-
-          {/* Steps Section */}
-          <StepsSection />
-
-          {/* Outbound Experiences */}
-          <OutboundSection />
-
-          {/* Top Destinations */}
-          <DestinationsSection />
-
-          {/* Inbound Experiences */}
-          <InboundSection />
-
-          {/* Blog Section */}
-          <BlogSection />
-
-          {/* Testimonials */}
-          <TestimonialsSection />
-
-          {/* Partners Section */}
-          <PartnersSection />
-
-          {/* Contact Form */}
-          <ContactSection />
-
-          {/* Footer */}
-          <Footer />
-        </main>
+        <Navbar />
+        <GradientHero />
+        <ServicesSection />
+        <StepsSection />
+        <OutboundSection />
+        <DestinationsSection />
+        <InboundSection />
+        <BlogSection />
+        <TestimonialsSection />
+        <PartnersSection />
+        <ContactSection />
+        <Footer />
         <SkipSearchPopup isVisible={isVisible} onClose={closePopup} />
       </div>
     </>

@@ -1,79 +1,94 @@
-PS F:\Trebound\trebound_vscode\apple-gradient-hero> npm run build
+PS C:\Users\MUDUMBA'S\Downloads\main_site-main\main_site-main> npm run build
 
 > apple-gradient-hero@0.0.0 build
-> tsc -b && vite build
+> tsc && vite build
 
-src/pages/DestinationDetail/index.tsx:11:46 - error TS2307: Cannot find module '../../contexts/ActivitiesContext' or its corresponding type declarations.
+src/pages/CorporateGifting/index.tsx:2:18 - error TS6133: 'useScroll' is declared but its value is never read.
 
-11 import { useActivitiesByDestinationId } from '../../contexts/ActivitiesContext';
-                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2 import { motion, useScroll, useSpring } from 'framer-motion';
+                   ~~~~~~~~~
 
-src/pages/DestinationDetail/index.tsx:115:9 - error TS6198: All destructured elements are unused.
+src/pages/CorporateGifting/index.tsx:2:29 - error TS6133: 'useSpring' is declared but its value is never read.
 
-115   const { activities, loading: activitiesLoading } = useActivitiesByDestinationId(destinationId);
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2 import { motion, useScroll, useSpring } from 'framer-motion';
+                              ~~~~~~~~~
 
-src/pages/Destinations/index.tsx:8:1 - error TS6133: 'FiMapPin' is declared but its value is never read.
+src/pages/CorporateGifting/index.tsx:4:1 - error TS6192: All imports in import declaration are unused.      
 
-8 import { FiMapPin } from 'react-icons/fi';
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4 import { useState, useEffect, useRef } from 'react';
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-src/pages/Destinations/index.tsx:23:9 - error TS6133: 'regionSlug' is declared but its value is never read.
+src/pages/CorporateGifting/index.tsx:20:19 - error TS6133: 'heroInView' is declared but its value is never read.
 
-23   const { regionSlug } = useParams();
-           ~~~~~~~~~~~~~~
+20   const [heroRef, heroInView] = useInView({
+                     ~~~~~~~~~~
 
-src/pages/Destinations/index.tsx:29:11 - error TS6133: 'regions' is declared but its value is never read.
+src/pages/CorporateGifting/index.tsx:45:10 - error TS6133: 'giftingRef' is declared but its value is never read.
 
-29   const { regions, loading: regionsLoading } = useRegions();
-             ~~~~~~~
+45   const [giftingRef, giftingInView] = useInView({
+            ~~~~~~~~~~
 
-src/pages/Destinations/index.tsx:31:25 - error TS6133: 'setCurrentRegion' is declared but its value is never read.
+src/pages/CorporateGifting/index.tsx:45:22 - error TS6133: 'giftingInView' is declared but its value is never read.
 
-31   const [currentRegion, setCurrentRegion] = useState<Region | null>(null);
-                           ~~~~~~~~~~~~~~~~
+45   const [giftingRef, giftingInView] = useInView({
+                        ~~~~~~~~~~~~~
 
-src/pages/StayDetail/index.tsx:91:9 - error TS6133: 'displayedImages' is declared but its value is never read.
+src/pages/CorporateTeamOutings/index.tsx:2:18 - error TS6133: 'useScroll' is declared but its value is never read.
 
-91   const displayedImages = stayImages.slice(0, Math.min(4, stayImages.length));
-           ~~~~~~~~~~~~~~~
+2 import { motion, useScroll, useSpring } from 'framer-motion';
+                   ~~~~~~~~~
 
-src/pages/Stays/index.tsx:1:1 - error TS6133: 'useState' is declared but its value is never read.
+src/pages/CorporateTeamOutings/index.tsx:2:29 - error TS6133: 'useSpring' is declared but its value is never read.
 
-1 import { useState } from 'react';
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2 import { motion, useScroll, useSpring } from 'framer-motion';
+                              ~~~~~~~~~
 
-src/pages/Stays/index.tsx:5:20 - error TS6133: 'FiClock' is declared but its value is never read.
+src/pages/CorporateTeamOutings/index.tsx:21:19 - error TS6133: 'heroInView' is declared but its value is never read.
 
-5 import { FiMapPin, FiClock, FiUsers } from 'react-icons/fi';
-                     ~~~~~~~
+21   const [heroRef, heroInView] = useInView({
+                     ~~~~~~~~~~
 
-src/pages/Stays/index.tsx:14:11 - error TS6196: 'StayFilters' is declared but never used.
+src/pages/OutboundTeamBuilding/index.tsx:2:18 - error TS6133: 'useScroll' is declared but its value is never read.
 
-14 interface StayFilters {
-             ~~~~~~~~~~~
+2 import { motion, useScroll, useSpring } from 'framer-motion';
+                   ~~~~~~~~~
 
-src/pages/Stays/index.tsx:23:7 - error TS6133: 'extractTextFromHtml' is declared but its value is never read.
+src/pages/OutboundTeamBuilding/index.tsx:2:29 - error TS6133: 'useSpring' is declared but its value is never read.
 
-23 const extractTextFromHtml = (html: string | undefined) => {
-         ~~~~~~~~~~~~~~~~~~~
+2 import { motion, useScroll, useSpring } from 'framer-motion';
+                              ~~~~~~~~~
 
-src/pages/Stays/index.tsx:74:7 - error TS6133: 'FilterButton' is declared but its value is never read.
+src/pages/OutboundTeamBuilding/index.tsx:4:1 - error TS6192: All imports in import declaration are unused.  
 
-74 const FilterButton = ({
-         ~~~~~~~~~~~~
+4 import { useState, useEffect, useRef } from 'react';
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-src/pages/Stays/index.tsx:95:7 - error TS6133: 'Dropdown' is declared but its value is never read.
+src/pages/ThankYou/index.tsx:2:18 - error TS6133: 'useScroll' is declared but its value is never read.      
 
-95 const Dropdown = ({
-         ~~~~~~~~
+2 import { motion, useScroll, useSpring } from 'framer-motion';
+                   ~~~~~~~~~
 
-src/pages/Stays/index.tsx:124:10 - error TS2304: Cannot find name 'FiChevronDown'.
+src/pages/ThankYou/index.tsx:2:29 - error TS6133: 'useSpring' is declared but its value is never read.      
 
-124         <FiChevronDown size={20} />
-             ~~~~~~~~~~~~~
+2 import { motion, useScroll, useSpring } from 'framer-motion';
+                              ~~~~~~~~~
+
+src/pages/ThankYou/index.tsx:4:1 - error TS6192: All imports in import declaration are unused.
+
+4 import { useState, useEffect, useRef } from 'react';
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/pages/ThankYou/index.tsx:20:19 - error TS6133: 'heroInView' is declared but its value is never read.    
+
+20   const [heroRef, heroInView] = useInView({
+                     ~~~~~~~~~~
 
 
-Found 14 errors.
+Found 16 errors in 4 files.
 
-PS F:\Trebound\trebound_vscode\apple-gradient-hero> 
+Errors  Files
+     6  src/pages/CorporateGifting/index.tsx:2
+     3  src/pages/CorporateTeamOutings/index.tsx:2
+     3  src/pages/OutboundTeamBuilding/index.tsx:2
+     4  src/pages/ThankYou/index.tsx:2
+PS C:\Users\MUDUMBA'S\Downloads\main_site-main\main_site-main> 
