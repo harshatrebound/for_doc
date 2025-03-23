@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { format, addDays, isSameDay, isAfter, startOfToday, isWeekend, parse, addMinutes, setHours, setMinutes, getDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, Calendar } from 'lucide-react';
 import type { SpecialDate } from '@/types/schedule';
 import type { DateTimeSelectionProps } from '@/types/booking';
 
@@ -26,7 +26,22 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
   const [isLoading, setIsLoading] = useState(false);
   const [dataFetched, setDataFetched] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Check if mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
 
   const dates = useMemo(() => {
     const today = startOfToday();
@@ -210,11 +225,80 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
     setTimeSlots(slots);
   }, [formData.selectedDate, schedule, specialDates]);
 
+  // Custom scrollbar for date selection
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      // Calculate scroll amount based on mobile or desktop
+      const scrollAmount = direction === 'left' ? -200 : 200;
+      
+      // Get visible items to determine precise scrolling
+      const dateItems = scrollRef.current.querySelectorAll('button');
+      
+      if (dateItems.length > 0) {
+        const containerWidth = scrollRef.current.offsetWidth;
+        const itemWidth = dateItems[0].offsetWidth + 8; // Include margin
+        
+        // Calculate items per view for precise scrolling
+        const itemsPerView = Math.floor(containerWidth / itemWidth);
+        const scrollBy = direction === 'left' ? -itemWidth * itemsPerView : itemWidth * itemsPerView;
+        
+        // Add smooth scrolling with better touch feedback
+        scrollRef.current.scrollBy({ 
+          left: scrollBy, 
+          behavior: 'smooth' 
+        });
+      } else {
+        // Fallback to default scrolling
+        scrollRef.current.scrollBy({ 
+          left: scrollAmount, 
+          behavior: 'smooth' 
+        });
+      }
+      
+      // Add haptic feedback on mobile if available
+      if (isMobile && window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(20);
+      }
+    }
+  };
+
+  const dateScrollIntoView = (date: Date) => {
+    if (!scrollRef.current) return;
+    
+    const dateItems = scrollRef.current.querySelectorAll('button');
+    const targetDate = date.getDate().toString();
+    
+    // Find the button with matching date
+    for (let i = 0; i < dateItems.length; i++) {
+      if (dateItems[i].textContent?.includes(targetDate)) {
+        dateItems[i].scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+        break;
+      }
+    }
+  };
+
   const handleDateSelect = (date: Date) => {
+    // Add haptic feedback on mobile if available
+    if (isMobile && window.navigator && window.navigator.vibrate) {
+      window.navigator.vibrate(30);
+    }
+    
     onChange({ selectedDate: date, selectedTime: '' });
+    
+    // Ensure the selected date is centered in view
+    dateScrollIntoView(date);
   };
 
   const handleTimeSelect = (time: string) => {
+    // Add haptic feedback on mobile if available
+    if (isMobile && window.navigator && window.navigator.vibrate) {
+      window.navigator.vibrate(30);
+    }
+    
     onChange({ selectedTime: time });
     onSubmit();
   };
@@ -245,29 +329,55 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
     return daySchedule?.isActive ?? false;
   };
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = direction === 'left' ? -200 : 200;
-      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
-  };
-
+  // Loading skeleton for better UX
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="w-8 h-8 border-4 border-[#8B5C9E] border-t-transparent rounded-full animate-spin" />
-        <p className="mt-4 text-gray-600">Loading schedule...</p>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="h-9 w-16 bg-gray-200 rounded-md animate-pulse"></div>
+        </div>
+        
+        <div>
+          <div className="h-7 w-3/4 bg-gray-200 rounded mb-2 animate-pulse"></div>
+          <div className="h-5 w-1/2 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        
+        {/* Date selection skeleton */}
+        <div className="mt-6 mb-8">
+          <div className="h-5 w-40 bg-gray-200 rounded mb-4 animate-pulse"></div>
+          <div className="flex space-x-3 overflow-x-hidden">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-24 w-20 bg-gray-200 rounded-xl animate-pulse"></div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Time slot skeleton */}
+        <div className="mt-6">
+          <div className="h-5 w-32 bg-gray-200 rounded mb-4 animate-pulse"></div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="h-12 bg-gray-200 rounded-lg animate-pulse"></div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <p className="text-red-500">{error}</p>
+      <div className="text-center py-6 sm:py-12">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+          <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load Schedule</h3>
+        <p className="text-gray-600 mb-4">{error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-4 text-[#8B5C9E] hover:text-[#6B4A7E]"
+          className="inline-flex items-center px-4 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-[#8B5C9E] hover:bg-[#7A4B8D] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8B5C9E]"
         >
           Try again
         </button>
@@ -288,10 +398,10 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
       </div>
 
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900 mb-1">
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-1">
           Select Date & Time
         </h1>
-        <p className="text-gray-600">
+        <p className="text-sm sm:text-base text-gray-600">
           Choose your preferred appointment slot
         </p>
       </div>
@@ -299,13 +409,14 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
       {/* Date Selection */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-gray-900">Select Date</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900">Select Date</h3>
           <div className="flex items-center space-x-2">
             <motion.button 
               onClick={() => scroll('left')} 
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               className="p-1.5 rounded-full hover:bg-[#8B5C9E]/10 text-gray-600 hover:text-[#8B5C9E] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#8B5C9E]/30"
+              aria-label="Previous dates"
             >
               <ChevronLeft className="w-5 h-5" />
             </motion.button>
@@ -314,16 +425,17 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               className="p-1.5 rounded-full hover:bg-[#8B5C9E]/10 text-gray-600 hover:text-[#8B5C9E] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#8B5C9E]/30"
+              aria-label="Next dates"
             >
               <ChevronRight className="w-5 h-5" />
             </motion.button>
           </div>
         </div>
 
-        <div className="relative">
+        <div className="date-scroller-container">
           <motion.div
             ref={scrollRef}
-            className="flex space-x-3 overflow-x-auto pb-2 date-scroller"
+            className="flex space-x-2 sm:space-x-3 overflow-x-auto pb-2 date-scroller"
           >
             {dates.map((date) => {
               const isSelected = formData.selectedDate && isSameDay(date, formData.selectedDate);
@@ -335,13 +447,13 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
               return (
                 <motion.button
                   key={dayOfMonth}
-                  whileHover={selectable ? { scale: 1.05, y: -2, boxShadow: '0 4px 12px rgba(139, 92, 158, 0.15)' } : {}}
+                  whileHover={selectable ? { scale: 1.05, y: -2 } : {}}
                   whileTap={selectable ? { scale: 0.95 } : {}}
                   disabled={!selectable}
                   onClick={() => selectable && handleDateSelect(date)}
                   className={`
-                    min-w-[5rem] h-24 rounded-xl flex flex-col items-center justify-center
-                    transition-all duration-300
+                    min-w-[4.5rem] sm:min-w-[5rem] h-20 sm:h-24 rounded-xl flex flex-col items-center justify-center
+                    transition-all duration-300 touch-manipulation
                     ${isSelected
                       ? 'bg-gradient-to-br from-[#8B5C9E] to-[#6B4A7E] text-white shadow-lg'
                       : selectable
@@ -353,14 +465,14 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
                   <span className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-gray-500'}`}>
                     {dayOfWeek}
                   </span>
-                  <span className={`text-2xl font-bold mt-1 ${isSelected ? 'text-white' : 'text-gray-900'}`}>
+                  <span className={`text-xl sm:text-2xl font-bold mt-1 ${isSelected ? 'text-white' : 'text-gray-900'}`}>
                     {dayOfMonth}
                   </span>
                   {isToday && (
-                    <span className={`text-xs font-medium mt-1.5 ${
+                    <span className={`text-xs font-medium mt-1 ${
                       isSelected 
-                        ? 'bg-white/20 text-white px-2.5 py-0.5 rounded-full' 
-                        : 'bg-[#8B5C9E]/10 text-[#8B5C9E] px-2.5 py-0.5 rounded-full'
+                        ? 'bg-white/20 text-white px-2 py-0.5 rounded-full' 
+                        : 'bg-[#8B5C9E]/10 text-[#8B5C9E] px-2 py-0.5 rounded-full'
                     }`}>
                       Today
                     </span>
@@ -370,46 +482,46 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
             })}
           </motion.div>
           
-          {/* Scroll fade indicators */}
-          <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-white to-transparent pointer-events-none"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none"></div>
+          {/* Fade indicators for better UX */}
+          <div className="date-scroller-fade-left"></div>
+          <div className="date-scroller-fade-right"></div>
         </div>
       </div>
 
       {/* Time Selection */}
       {formData.selectedDate && (
-        <div className="space-y-6">
-          <h3 className="text-lg font-semibold text-gray-900">Select Time</h3>
+        <div className="space-y-5">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900">Select Time</h3>
           
           {timeSlots.length > 0 ? (
             <div className="space-y-5">
               {/* Morning slots */}
               {timeSlots.some(slot => slot.period === 'morning') && (
-                <div>
+                <div className="time-slot-section">
                   <h4 className="flex items-center text-sm font-medium text-gray-500 mb-3">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mr-2 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
                     </svg>
                     Morning
                   </h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  <div className="time-slots-grid">
                     {timeSlots
                       .filter(slot => slot.period === 'morning')
                       .map(({ time, label }) => (
                         <motion.button
                           key={time}
-                          whileHover={{ scale: 1.05, y: -2, boxShadow: '0 4px 12px rgba(139, 92, 158, 0.12)' }}
+                          whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
                           onClick={() => handleTimeSelect(time)}
                           className={`
-                            py-4 rounded-xl text-center transition-all duration-300
+                            time-slot-button
                             ${formData.selectedTime === time
-                              ? 'bg-gradient-to-r from-[#8B5C9E] to-[#7A4B8D] text-white shadow-md font-medium'
-                              : 'border border-gray-200 text-gray-800 hover:border-[#8B5C9E] hover:bg-[#F9F5FF]'
+                              ? 'time-slot-selected'
+                              : 'time-slot-unselected'
                             }
                           `}
                         >
-                          <span className="text-base">{label}</span>
+                          <span className="text-sm sm:text-base">{label}</span>
                         </motion.button>
                       ))}
                   </div>
@@ -418,31 +530,31 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
 
               {/* Afternoon slots */}
               {timeSlots.some(slot => slot.period === 'afternoon') && (
-                <div>
+                <div className="time-slot-section">
                   <h4 className="flex items-center text-sm font-medium text-gray-500 mb-3">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mr-2 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 2a6 6 0 100 12A6 6 0 0010 4z" clipRule="evenodd" />
                     </svg>
                     Afternoon
                   </h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  <div className="time-slots-grid">
                     {timeSlots
                       .filter(slot => slot.period === 'afternoon')
                       .map(({ time, label }) => (
                         <motion.button
                           key={time}
-                          whileHover={{ scale: 1.05, y: -2, boxShadow: '0 4px 12px rgba(139, 92, 158, 0.12)' }}
+                          whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
                           onClick={() => handleTimeSelect(time)}
                           className={`
-                            py-4 rounded-xl text-center transition-all duration-300
+                            time-slot-button
                             ${formData.selectedTime === time
-                              ? 'bg-gradient-to-r from-[#8B5C9E] to-[#7A4B8D] text-white shadow-md font-medium'
-                              : 'border border-gray-200 text-gray-800 hover:border-[#8B5C9E] hover:bg-[#F9F5FF]'
+                              ? 'time-slot-selected'
+                              : 'time-slot-unselected'
                             }
                           `}
                         >
-                          <span className="text-base">{label}</span>
+                          <span className="text-sm sm:text-base">{label}</span>
                         </motion.button>
                       ))}
                   </div>
@@ -451,31 +563,31 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
 
               {/* Evening slots */}
               {timeSlots.some(slot => slot.period === 'evening') && (
-                <div>
+                <div className="time-slot-section">
                   <h4 className="flex items-center text-sm font-medium text-gray-500 mb-3">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mr-2 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
                     </svg>
                     Evening
                   </h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  <div className="time-slots-grid">
                     {timeSlots
                       .filter(slot => slot.period === 'evening')
                       .map(({ time, label }) => (
                         <motion.button
                           key={time}
-                          whileHover={{ scale: 1.05, y: -2, boxShadow: '0 4px 12px rgba(139, 92, 158, 0.12)' }}
+                          whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
                           onClick={() => handleTimeSelect(time)}
                           className={`
-                            py-4 rounded-xl text-center transition-all duration-300
+                            time-slot-button
                             ${formData.selectedTime === time
-                              ? 'bg-gradient-to-r from-[#8B5C9E] to-[#7A4B8D] text-white shadow-md font-medium'
-                              : 'border border-gray-200 text-gray-800 hover:border-[#8B5C9E] hover:bg-[#F9F5FF]'
+                              ? 'time-slot-selected'
+                              : 'time-slot-unselected'
                             }
                           `}
                         >
-                          <span className="text-base">{label}</span>
+                          <span className="text-sm sm:text-base">{label}</span>
                         </motion.button>
                       ))}
                   </div>
@@ -486,16 +598,30 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center py-12 border border-gray-200 rounded-xl bg-gray-50"
+              className="text-center py-8 sm:py-12 border border-gray-200 rounded-xl bg-gray-50"
             >
               <div className="flex flex-col items-center">
-                <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="text-gray-700 font-medium text-lg">No available slots for this date</p>
-                <p className="text-gray-500 mt-1 max-w-xs mx-auto">
+                <Calendar className="w-10 h-10 text-gray-400 mb-3" />
+                <p className="text-gray-700 font-medium text-base sm:text-lg">No available slots for this date</p>
+                <p className="text-gray-500 mt-1 max-w-xs mx-auto text-sm">
                   Please select another date or check back later for availability
                 </p>
+                
+                {/* Quick navigation buttons for better UX */}
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={() => scroll('left')}
+                    className="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:border-[#8B5C9E]/30 hover:bg-[#F9F5FF] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5C9E]/20"
+                  >
+                    Previous dates
+                  </button>
+                  <button
+                    onClick={() => scroll('right')}
+                    className="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:border-[#8B5C9E]/30 hover:bg-[#F9F5FF] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B5C9E]/20"
+                  >
+                    Next dates
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
@@ -507,11 +633,16 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
         .date-scroller {
           scrollbar-width: none;
           -ms-overflow-style: none;
-          -webkit-overflow-scrolling: touch;
+          -webkit-overflow-scrolling: touch; /* Improved iOS scrolling */
           scroll-behavior: smooth;
           scroll-snap-type: x mandatory;
           padding: 0.5rem 0;
           margin: -0.5rem 0;
+          /* Prevent overscroll behavior */
+          overscroll-behavior-x: contain;
+          /* Promote to GPU layer for smoother scrolling on mobile */
+          transform: translateZ(0);
+          will-change: scroll-position;
         }
         
         .date-scroller::-webkit-scrollbar {
@@ -519,7 +650,116 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
         }
         
         .date-scroller > button {
-          scroll-snap-align: start;
+          scroll-snap-align: center;
+          scroll-snap-stop: always;
+          flex: 0 0 auto;
+        }
+        
+        /* Better touch feedback */
+        @media (hover: none) {
+          .date-scroller > button:active {
+            transform: scale(0.97);
+          }
+          
+          /* Improve scroll performance on touch devices */
+          .date-scroller {
+            touch-action: pan-x;
+            -webkit-user-select: none;
+            user-select: none;
+          }
+        }
+        
+        /* Date scroller fade edges for UX cue */
+        .date-scroller-container {
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .date-scroller-fade-left,
+        .date-scroller-fade-right {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 8vw;
+          pointer-events: none;
+          z-index: 10;
+        }
+        
+        .date-scroller-fade-left {
+          left: 0;
+          background: linear-gradient(to right, rgba(255,255,255,1) 20%, rgba(255,255,255,0) 100%);
+        }
+        
+        .date-scroller-fade-right {
+          right: 0;
+          background: linear-gradient(to left, rgba(255,255,255,1) 20%, rgba(255,255,255,0) 100%);
+        }
+        
+        /* Time slot section styling */
+        .time-slot-section {
+          margin-bottom: 1.5rem;
+          padding: 0.5rem 0;
+        }
+        
+        .time-slots-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.5rem;
+          min-height: 5rem; /* Ensure grid has minimum height to be scrollable */
+        }
+        
+        @media (min-width: 640px) {
+          .time-slots-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+          }
+        }
+        
+        @media (min-width: 768px) {
+          .time-slots-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+          }
+        }
+        
+        .time-slot-button {
+          position: relative;
+          height: 3rem;
+          border-radius: 0.75rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          transition-property: all;
+          transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+          transition-duration: 300ms;
+          touch-action: manipulation;
+          /* Improve touch area */
+          min-height: 48px;
+        }
+        
+        .time-slot-selected {
+          background-image: linear-gradient(to right, rgb(139, 92, 158), rgb(122, 75, 141));
+          color: white;
+          font-weight: 500;
+          box-shadow: 0 4px 6px -1px rgba(139, 92, 158, 0.2);
+        }
+        
+        .time-slot-unselected {
+          border: 1px solid rgb(229, 231, 235);
+          color: rgb(31, 41, 55);
+        }
+        
+        .time-slot-unselected:hover {
+          border-color: rgba(139, 92, 158, 0.3);
+          background-color: rgb(249, 245, 255);
+        }
+        
+        /* Active state for touch screens */
+        @media (hover: none) {
+          .time-slot-button:active {
+            transform: scale(0.97);
+          }
         }
       `}</style>
     </div>
