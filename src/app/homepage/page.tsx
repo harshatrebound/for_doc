@@ -5,7 +5,8 @@ import { Calendar, Activity, Heart, Users, Phone, Mail, MapPin, ArrowRight, Star
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import BookingModal from '@/components/booking/BookingModal';
 
 const specialties = [
   {
@@ -88,6 +89,7 @@ const testimonials = [
 
 export default function HomePage() {
   const containerRef = useRef(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
@@ -187,6 +189,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   className="group bg-white text-[#8B5C9E] hover:bg-gray-100 rounded-full px-8 sm:px-10 py-6 sm:py-7 text-lg font-medium transition-all duration-300 hover:scale-105 hover:shadow-xl w-full sm:w-auto relative overflow-hidden"
+                  onClick={() => setIsBookingModalOpen(true)}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E]/0 via-[#8B5C9E]/10 to-[#8B5C9E]/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                   <span className="relative flex items-center justify-center">
@@ -635,6 +638,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Booking Modal */}
+      <BookingModal isOpen={isBookingModalOpen} onClose={() => setIsBookingModalOpen(false)} />
     </div>
   );
 } 

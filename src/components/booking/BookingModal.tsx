@@ -112,6 +112,15 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const handleChange = (updates: Partial<BookingFormData>) => {
     // Clear error when user makes changes
     if (errorMessage) setErrorMessage(null);
+    
+    // If updates include selectedDate or selectedTime, update the state variables too
+    if (updates.selectedDate !== undefined) {
+      setSelectedDate(updates.selectedDate);
+    }
+    if (updates.selectedTime !== undefined) {
+      setSelectedTime(updates.selectedTime);
+    }
+    
     setFormData(prevData => ({ ...prevData, ...updates }));
   };
 
@@ -358,34 +367,65 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
+    // Ensure the formData is fully updated with current selected date and time
+    const updatedFormData = {
+      ...formData,
+      selectedDate: selectedDate,
+      selectedTime: selectedTime
+    };
+
     setIsSubmitting(true);
     setErrorMessage(null);
 
     try {
+      console.log('Submitting booking with data:', updatedFormData);
+      
+      if (!updatedFormData.doctor?.id) {
+        throw new Error('Doctor selection is required');
+      }
+      
+      if (!updatedFormData.selectedDate) {
+        throw new Error('Please select a date');
+      }
+      
+      if (!updatedFormData.selectedTime) {
+        throw new Error('Please select a time');
+      }
+
+      // Format the date properly to avoid timezone issues
+      const formattedDate = updatedFormData.selectedDate.toISOString().split('T')[0];
+      
       const response = await fetch('/api/appointments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          doctorId: formData.doctor?.id,
-          patientName: formData.patientName.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone.trim(),
-          date: selectedDate?.toISOString().split('T')[0],
-          time: selectedTime,
-          notes: formData.notes?.trim() || '',
+          doctorId: updatedFormData.doctor.id,
+          patientName: updatedFormData.patientName.trim(),
+          email: updatedFormData.email.trim(),
+          phone: updatedFormData.phone.trim(),
+          date: formattedDate,
+          time: updatedFormData.selectedTime,
+          notes: updatedFormData.notes?.trim() || '',
         }),
       });
 
+      const responseData = await response.json();
+      
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create appointment');
+        throw new Error(responseData.error || 'Failed to create appointment');
       }
 
+      console.log('Appointment created successfully:', responseData);
+      
+      // Update formData with the final values
+      setFormData(updatedFormData);
+      
       // Move to the next step (thank you page)
       handleNext();
     } catch (error) {
+      console.error('Booking submission error:', error);
       setErrorMessage(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setIsSubmitting(false);
