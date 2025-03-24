@@ -4,9 +4,21 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { Calendar, Clock, User, Phone, Mail, Check, Loader2, ChevronLeft } from 'lucide-react';
-import type { SummaryProps } from '@/types/booking';
+import { BookingFormData } from '@/types/booking';
 
-const Summary = ({ formData, onSubmit, onBack, isSubmitting }: SummaryProps) => {
+interface SummaryProps {
+  formData: BookingFormData;
+  onSubmit: () => void;
+  onBack: () => void;
+  isSubmitting?: boolean;
+}
+
+export const Summary: React.FC<SummaryProps> = ({
+  formData,
+  onSubmit,
+  onBack,
+  isSubmitting = false
+}) => {
   const [isMobile, setIsMobile] = useState(false);
 
   // Check if mobile device

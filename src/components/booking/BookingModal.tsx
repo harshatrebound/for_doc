@@ -44,8 +44,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [isMobile, setIsMobile] = useState(false);
   const dragControls = useDragControls();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string>('');
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
@@ -79,12 +77,12 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   // Fetch available slots when date changes
   useEffect(() => {
     async function fetchAvailableSlots() {
-      if (!selectedDate || !formData.doctor?.id) return;
+      if (!formData.selectedDate || !formData.doctor?.id) return;
 
       setIsLoadingSlots(true);
       try {
         const response = await fetch(
-          `/api/available-slots?doctorId=${encodeURIComponent(formData.doctor.id)}&date=${selectedDate.toISOString().split('T')[0]}`
+          `/api/available-slots?doctorId=${encodeURIComponent(formData.doctor.id)}&date=${formData.selectedDate.toISOString().split('T')[0]}`
         );
         
         if (!response.ok) {
@@ -95,8 +93,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         setAvailableSlots(data.slots);
         
         // Clear selected time if it's no longer available
-        if (!data.slots.includes(selectedTime)) {
-          setSelectedTime('');
+        if (!data.slots.includes(formData.selectedTime)) {
+          setFormData(prev => ({ ...prev, selectedTime: '' }));
         }
       } catch (error) {
         console.error('Error fetching available slots:', error);
@@ -107,20 +105,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     }
 
     fetchAvailableSlots();
-  }, [selectedDate, formData.doctor?.id]);
+  }, [formData.selectedDate, formData.doctor?.id]);
 
   const handleChange = (updates: Partial<BookingFormData>) => {
     // Clear error when user makes changes
     if (errorMessage) setErrorMessage(null);
-    
-    // If updates include selectedDate or selectedTime, update the state variables too
-    if (updates.selectedDate !== undefined) {
-      setSelectedDate(updates.selectedDate);
-    }
-    if (updates.selectedTime !== undefined) {
-      setSelectedTime(updates.selectedTime);
-    }
-    
     setFormData(prevData => ({ ...prevData, ...updates }));
   };
 
@@ -216,9 +205,28 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         : phoneDigitsOnly;
       
       // Format the date to ensure it's properly normalized and in ISO format
-      const appointmentDate = new Date(formData.selectedDate);
-      // Set hours to 0 to avoid timezone issues
-      appointmentDate.setHours(0, 0, 0, 0);
+      let appointmentDate;
+      try {
+        // Handle different date formats
+        if (formData.selectedDate instanceof Date) {
+          appointmentDate = new Date(formData.selectedDate);
+        } else if (typeof formData.selectedDate === 'string') {
+          appointmentDate = new Date(formData.selectedDate);
+        } else {
+          throw new Error('Invalid date format');
+        }
+        
+        // Validate the date is valid
+        if (isNaN(appointmentDate.getTime())) {
+          throw new Error('Invalid date');
+        }
+        
+        // Set hours to 0 to avoid timezone issues
+        appointmentDate.setHours(0, 0, 0, 0);
+      } catch (error) {
+        console.error('Date formatting error:', error);
+        throw new Error('Invalid appointment date format');
+      }
       
       const bookingData = {
         doctorId: formData.doctor.id,
@@ -230,7 +238,15 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         notes: formData.notes?.trim() || '',
       };
       
-      console.log('Submitting booking data:', bookingData);
+      // Log the formatted data for debugging
+      console.log('Submitting booking data:', {
+        ...bookingData,
+        dateType: formData.selectedDate ? typeof formData.selectedDate : 'null',
+        dateInstanceCheck: formData.selectedDate instanceof Date,
+        originalDate: formData.selectedDate,
+        formattedDate: appointmentDate,
+        isoDate: appointmentDate.toISOString()
+      });
       
       // Always use the main endpoint to ensure webhook is triggered
       const endpoint = '/api/appointments';
@@ -324,9 +340,9 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         availableSlots.map((slot) => (
           <button
             key={slot}
-            onClick={() => setSelectedTime(slot)}
+            onClick={() => setFormData(prev => ({ ...prev, selectedTime: slot }))}
             className={`p-2 rounded-lg text-sm ${
-              selectedTime === slot
+              formData.selectedTime === slot
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 hover:bg-gray-200'
             }`}
@@ -340,26 +356,52 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
   // Add this to your form validation
   const validateForm = () => {
-    if (!selectedDate) {
-      setErrorMessage('Please select a date');
+    if (!formData.doctor?.id) {
+      setErrorMessage('Please select a doctor');
       return false;
     }
-    if (!selectedTime) {
+    
+    if (!formData.selectedDate) {
+      setErrorMessage('Please select an appointment date');
+      return false;
+    }
+    
+    // Validate the date is a valid Date object
+    try {
+      const testDate = new Date(formData.selectedDate);
+      if (isNaN(testDate.getTime())) {
+        console.error('Invalid date object:', formData.selectedDate);
+        setErrorMessage('Invalid appointment date selected. Please select a different date.');
+        return false;
+      }
+    } catch (error) {
+      console.error('Date validation error:', error);
+      setErrorMessage('Invalid appointment date selected. Please try again.');
+      return false;
+    }
+    
+    // Check for time selection
+    if (!formData.selectedTime || formData.selectedTime.trim() === '') {
       setErrorMessage('Please select an available time slot');
       return false;
     }
+    
+    // Check patient details
     if (!formData.patientName.trim()) {
       setErrorMessage('Please enter patient name');
       return false;
     }
+    
     if (!formData.email.trim()) {
       setErrorMessage('Please enter email');
       return false;
     }
+    
     if (!formData.phone.trim()) {
       setErrorMessage('Please enter phone number');
       return false;
     }
+    
     return true;
   };
 
@@ -370,8 +412,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     // Ensure the formData is fully updated with current selected date and time
     const updatedFormData = {
       ...formData,
-      selectedDate: selectedDate,
-      selectedTime: selectedTime
+      selectedDate: formData.selectedDate,
+      selectedTime: formData.selectedTime
     };
 
     setIsSubmitting(true);
@@ -393,7 +435,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       }
 
       // Format the date properly to avoid timezone issues
-      const formattedDate = updatedFormData.selectedDate.toISOString().split('T')[0];
+      const formattedDate = updatedFormData.selectedDate.toISOString();
       
       const response = await fetch('/api/appointments', {
         method: 'POST',

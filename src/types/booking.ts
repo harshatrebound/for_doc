@@ -32,6 +32,7 @@ export interface DateTimeSelectionProps {
   onChange: (data: Partial<BookingFormData>) => void;
   onSubmit: () => void;
   onBack: () => void;
+  isSelectable?: (date: Date) => boolean;
 }
 
 export interface PatientDetailsProps {

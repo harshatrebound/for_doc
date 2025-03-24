@@ -38,7 +38,7 @@ export default function SpecialDatesCalendar({ doctorId }: SpecialDatesCalendarP
         );
         if (!response.ok) throw new Error('Failed to fetch special dates');
         const data = await response.json();
-        setSpecialDates(data);
+        setSpecialDates(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Failed to fetch special dates:', error);
         toast.error('Failed to load special dates');
@@ -102,9 +102,9 @@ export default function SpecialDatesCalendar({ doctorId }: SpecialDatesCalendarP
   });
 
   const getSpecialDateForDay = (date: Date) => {
-    return specialDates.find(special => 
+    return Array.isArray(specialDates) ? specialDates.find(special => 
       isSameDay(new Date(special.date), date)
-    );
+    ) : undefined;
   };
 
   return (
