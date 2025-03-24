@@ -88,7 +88,7 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
 
     // Check if it's a holiday in special dates
     const specialDate = findSpecialDate(sd => 
-      sd.date && isSameDay(new Date(sd.date), date)
+      Boolean(sd.date) && isSameDay(new Date(sd.date), date)
     );
     
     if (specialDate?.type === 'HOLIDAY') {
@@ -107,6 +107,36 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
 
     // Return true only if there's an active schedule for this day
     return Boolean(daySchedule?.isActive);
+  };
+
+  // Add scroll function with proper typing
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = direction === 'left' ? -200 : 200;
+      scrollRef.current.scrollBy({ 
+        left: scrollAmount, 
+        behavior: 'smooth' 
+      });
+    }
+  };
+
+  // Add dates array generation
+  const dates = useMemo(() => {
+    const today = startOfToday();
+    return Array.from({ length: 14 }, (_, i) => addDays(today, i));
+  }, []);
+
+  // Add date selection handler
+  const handleDateSelect = (date: Date) => {
+    onChange({ 
+      selectedDate: date,
+      selectedTime: '' 
+    });
+  };
+
+  // Add time selection handler
+  const handleTimeSelect = (time: string) => {
+    onChange({ selectedTime: time });
   };
 
   // Render loading state
@@ -192,7 +222,7 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
             ref={scrollRef}
             className="flex space-x-2 sm:space-x-3 overflow-x-auto pb-2 date-scroller"
           >
-            {dates.map((date) => {
+            {dates.map((date: Date) => {
               const isSelected = formData.selectedDate && isSameDay(date, formData.selectedDate);
               const selectable = isDateSelectable(date);
               const dayOfMonth = format(date, 'd');
@@ -270,10 +300,9 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
                           onClick={() => handleTimeSelect(time)}
                           className={`
                             time-slot-button
-                            ${formData.selectedTime === time
-                              ? 'time-slot-selected'
-                              : 'time-slot-unselected'
-                            }
+                            ${formData.selectedTime === time ?
+                              'time-slot-selected' : 
+                              'time-slot-unselected'}
                           `}
                         >
                           <span className="text-sm sm:text-base">{label}</span>
@@ -303,10 +332,9 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
                           onClick={() => handleTimeSelect(time)}
                           className={`
                             time-slot-button
-                            ${formData.selectedTime === time
-                              ? 'time-slot-selected'
-                              : 'time-slot-unselected'
-                            }
+                            ${formData.selectedTime === time ?
+                              'time-slot-selected' : 
+                              'time-slot-unselected'}
                           `}
                         >
                           <span className="text-sm sm:text-base">{label}</span>
@@ -336,10 +364,9 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
                           onClick={() => handleTimeSelect(time)}
                           className={`
                             time-slot-button
-                            ${formData.selectedTime === time
-                              ? 'time-slot-selected'
-                              : 'time-slot-unselected'
-                            }
+                            ${formData.selectedTime === time ?
+                              'time-slot-selected' : 
+                              'time-slot-unselected'}
                           `}
                         >
                           <span className="text-sm sm:text-base">{label}</span>
@@ -348,6 +375,10 @@ const DateTimeSelection = ({ formData, onChange, onSubmit, onBack }: DateTimeSel
                   </div>
                 </div>
               )}
+            </div>
+          ) : (
+            <div className="text-center py-8 border border-gray-200 rounded-lg bg-gray-50">
+              <p className="text-gray-600">No available slots for this date</p>
             </div>
           )}
         </div>
