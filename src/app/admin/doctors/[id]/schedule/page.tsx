@@ -110,26 +110,35 @@ export default function DoctorSchedulePage() {
     
     setIsSaving(true);
     try {
-      const response = await fetch('/api/doctors/schedule', {
+      // Create payload and log it for debugging
+      const payload = {
+        doctorId: params.id,
+        schedules: schedules
+      };
+      
+      console.log("Submitting doctor schedule:", payload);
+      
+      const response = await fetch('/api/admin/schedule', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          doctorId: params.id,
-          schedules: schedules
-        }),
+        body: JSON.stringify(payload),
       });
 
+      const responseData = await response.json();
+      
       if (!response.ok) {
-        throw new Error('Failed to save schedule');
+        console.error("Error response:", responseData);
+        throw new Error(responseData.error || 'Failed to save schedule');
       }
 
+      console.log("Schedule update successful:", responseData);
       toast.success('Schedule updated successfully');
       router.push('/admin/schedule');
     } catch (error) {
       console.error('Error saving schedule:', error);
-      toast.error('Failed to save schedule');
+      toast.error(error instanceof Error ? error.message : 'Failed to save schedule');
     } finally {
       setIsSaving(false);
     }

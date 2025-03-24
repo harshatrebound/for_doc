@@ -55,25 +55,45 @@ export default function DoctorModal({ isOpen, onClose, doctor, onSuccess }: Doct
     setIsSubmitting(true);
 
     try {
-      const endpoint = doctor ? `/api/doctors/${doctor.id}` : '/api/doctors';
+      // Validate fee before submitting
+      const fee = parseFloat(formData.fee);
+      if (isNaN(fee)) {
+        toast.error("Please enter a valid fee amount");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const endpoint = doctor ? `/api/admin/doctors` : '/api/admin/doctors';
       const method = doctor ? 'PUT' : 'POST';
+
+      // Create request payload
+      const payload = {
+        ...formData,
+        fee: fee,  // Use the validated fee
+        ...(doctor && { id: doctor.id }),
+      };
+
+      console.log("Submitting payload:", payload);
 
       const response = await fetch(endpoint, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          fee: parseFloat(formData.fee),
-        }),
+        body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error('Failed to save doctor');
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        console.error("Error response:", responseData);
+        throw new Error(responseData.error || 'Failed to save doctor');
+      }
 
       onSuccess();
       onClose();
     } catch (error) {
+      console.error('Error:', error);
       toast.error(`Failed to ${doctor ? 'update' : 'add'} doctor`);
     } finally {
       setIsSubmitting(false);

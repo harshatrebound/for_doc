@@ -6,14 +6,32 @@ const nextConfig = {
   
   // Disable image optimization in development for faster builds
   images: {
-    domains: ['localhost', 'yamabiko.proxy.rlwy.net', 'images.unsplash.com'],
     unoptimized: process.env.NODE_ENV === 'development',
     remotePatterns: [
       {
-        protocol: process.env.NODE_ENV === 'development' ? 'http' : 'https',
-        hostname: process.env.NODE_ENV === 'development' ? 'localhost' : 'bookingdoc-production.up.railway.app',
-        port: process.env.NODE_ENV === 'development' ? '3000' : '',
-        pathname: '/doctors/**',
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'yamabiko.proxy.rlwy.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'bookingdoc-production.up.railway.app',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.rlwy.net',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
       }
     ],
   },
