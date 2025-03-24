@@ -1,215 +1,233 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Calendar, Clock, DollarSign, Users, TrendingUp, Activity } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { DataTable } from '@/components/admin/DataTable';
+import { format, subDays } from 'date-fns';
+import { toast } from 'react-hot-toast';
+import { fetchAnalytics } from '@/app/actions/admin';
+import { Card } from '@/components/ui/card';
+
+interface DoctorRevenue {
+  id: string;
+  name: string;
+  revenue: number;
+}
+
+interface ActivityItem {
+  id: string;
+  patientName: string;
+  doctorName: string;
+  date: string;
+  status: string;
+}
 
 interface Analytics {
   totalAppointments: number;
+  completedAppointments: number;
+  cancelledAppointments: number;
   totalRevenue: number;
-  totalPatients: number;
-  appointmentsByStatus: {
-    status: string;
-    count: number;
-  }[];
-  appointmentsByDoctor: {
-    doctorName: string;
-    count: number;
-    revenue: number;
-  }[];
-  dailyAppointments: {
+  appointmentsByDay: {
     date: string;
     count: number;
   }[];
+  revenueByDoctor: DoctorRevenue[];
+  recentActivity: ActivityItem[];
 }
 
-export default function AnalyticsDashboard() {
+export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [error, setError] = useState<string | null>(null);
+  const [dateRange] = useState({
+    startDate: subDays(new Date(), 30),
+    endDate: new Date(),
+  });
 
   useEffect(() => {
-    fetchAnalytics();
-  }, [selectedMonth]);
+    loadAnalytics();
+  }, [dateRange]);
 
-  const fetchAnalytics = async () => {
-    setIsLoading(true);
+  const loadAnalytics = async () => {
     try {
-      const start = format(startOfMonth(selectedMonth), 'yyyy-MM-dd');
-      const end = format(endOfMonth(selectedMonth), 'yyyy-MM-dd');
+      setIsLoading(true);
+      setError(null);
       
-      const response = await fetch(`/api/admin/analytics?start=${start}&end=${end}`);
-      if (!response.ok) throw new Error('Failed to fetch analytics');
-      const data = await response.json();
-      setAnalytics(data);
+      const result = await fetchAnalytics(dateRange.startDate, dateRange.endDate);
+      if (result.success && result.data) {
+        setAnalytics(result.data);
+      } else {
+        setError(result.error || 'Failed to load analytics');
+        toast.error(result.error || 'Failed to load analytics');
+      }
     } catch (error) {
-      console.error('Failed to fetch analytics:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load analytics';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const revenueColumns = [
+    {
+      header: 'Doctor',
+      accessorKey: 'name' as keyof DoctorRevenue,
+      sortable: true,
+      cell: (row: DoctorRevenue) => (
+        <span className="text-gray-900 font-medium">{row.name}</span>
+      ),
+    },
+    {
+      header: 'Revenue',
+      accessorKey: 'revenue' as keyof DoctorRevenue,
+      cell: (row: DoctorRevenue) => (
+        <span className="text-gray-900 font-medium">
+          ₹{row.revenue.toFixed(2)}
+        </span>
+      ),
+      sortable: true,
+    },
+  ];
+
+  const activityColumns = [
+    {
+      header: 'Patient',
+      accessorKey: 'patientName' as keyof ActivityItem,
+      cell: (row: ActivityItem) => (
+        <span className="text-gray-900">{row.patientName}</span>
+      ),
+      sortable: true,
+    },
+    {
+      header: 'Doctor',
+      accessorKey: 'doctorName' as keyof ActivityItem,
+      cell: (row: ActivityItem) => (
+        <span className="text-gray-900">{row.doctorName}</span>
+      ),
+      sortable: true,
+    },
+    {
+      header: 'Date',
+      accessorKey: 'date' as keyof ActivityItem,
+      cell: (row: ActivityItem) => (
+        <span className="text-gray-700">
+          {format(new Date(row.date), 'PP')}
+        </span>
+      ),
+      sortable: true,
+    },
+    {
+      header: 'Status',
+      accessorKey: 'status' as keyof ActivityItem,
+      cell: (row: ActivityItem) => {
+        const status = row.status.toLowerCase();
+        const getStatusStyle = () => {
+          switch (status) {
+            case 'completed':
+              return 'bg-green-100 text-green-800';
+            case 'cancelled':
+              return 'bg-red-100 text-red-800';
+            case 'confirmed':
+              return 'bg-blue-100 text-blue-800';
+            default:
+              return 'bg-gray-100 text-gray-800';
+          }
+        };
+
+        return (
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusStyle()}`}
+          >
+            {status}
+          </span>
+        );
+      },
+      sortable: true,
+    },
+  ];
+
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8B5C9E]"></div>
+      <div className="container mx-auto p-4">
+        <div className="text-center py-12 text-gray-600">Loading analytics...</div>
       </div>
     );
   }
 
-  if (!analytics) {
+  if (error || !analytics) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-gray-500">Failed to load analytics</p>
+      <div className="container mx-auto p-4">
+        <div className="text-center py-12 text-red-600">
+          {error || 'Failed to load analytics data'}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
+    <div className="container mx-auto p-4 space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1))}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <Calendar className="w-5 h-5 text-gray-600" />
-          </button>
-          <span className="text-lg font-medium text-gray-900 min-w-[140px] text-center">
-            {format(selectedMonth, 'MMMM yyyy')}
-          </span>
-          <button
-            onClick={() => setSelectedMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1))}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <Calendar className="w-5 h-5 text-gray-600" />
-          </button>
+        <div className="text-sm text-gray-500">
+          Last 30 days overview
         </div>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <Calendar className="w-6 h-6 text-[#8B5C9E]" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Appointments</p>
-              <p className="text-2xl font-bold text-gray-900">{analytics.totalAppointments}</p>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <DollarSign className="w-6 h-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">₹{analytics.totalRevenue}</p>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Users className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Patients</p>
-              <p className="text-2xl font-bold text-gray-900">{analytics.totalPatients}</p>
-            </div>
-          </div>
-        </motion.div>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-6 border-0 shadow-md bg-white">
+          <h3 className="text-sm font-medium text-gray-500">Total Appointments</h3>
+          <p className="mt-2 text-3xl font-semibold text-gray-900">
+            {analytics.totalAppointments}
+          </p>
+        </Card>
+        <Card className="p-6 border-0 shadow-md bg-white">
+          <h3 className="text-sm font-medium text-gray-500">Completed</h3>
+          <p className="mt-2 text-3xl font-semibold text-green-600">
+            {analytics.completedAppointments}
+          </p>
+        </Card>
+        <Card className="p-6 border-0 shadow-md bg-white">
+          <h3 className="text-sm font-medium text-gray-500">Cancelled</h3>
+          <p className="mt-2 text-3xl font-semibold text-red-600">
+            {analytics.cancelledAppointments}
+          </p>
+        </Card>
+        <Card className="p-6 border-0 shadow-md bg-white">
+          <h3 className="text-sm font-medium text-gray-500">Total Revenue</h3>
+          <p className="mt-2 text-3xl font-semibold text-[#8B5C9E]">
+            ₹{analytics.totalRevenue.toFixed(2)}
+          </p>
+        </Card>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Daily Appointments Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
-        >
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Daily Appointments</h2>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analytics.dailyAppointments}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#8B5C9E" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
-
-        {/* Doctor Performance Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
-        >
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Doctor Performance</h2>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analytics.appointmentsByDoctor}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="doctorName" />
-                <YAxis yAxisId="left" orientation="left" stroke="#8B5C9E" />
-                <YAxis yAxisId="right" orientation="right" stroke="#10B981" />
-                <Tooltip />
-                <Bar yAxisId="left" dataKey="count" fill="#8B5C9E" name="Appointments" />
-                <Bar yAxisId="right" dataKey="revenue" fill="#10B981" name="Revenue" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Status Distribution */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
-      >
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Appointment Status Distribution</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-          {analytics.appointmentsByStatus.map(({ status, count }) => (
-            <div
-              key={status}
-              className="bg-gray-50 rounded-lg p-4 text-center"
-            >
-              <p className="text-sm font-medium text-gray-600">{status}</p>
-              <p className="text-xl font-bold text-gray-900 mt-1">{count}</p>
-            </div>
-          ))}
+      {/* Revenue by Doctor */}
+      <Card className="border-0 shadow-md bg-white">
+        <div className="p-6 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-gray-900">Revenue by Doctor</h2>
         </div>
-      </motion.div>
+        <div className="p-6">
+          <DataTable
+            columns={revenueColumns}
+            data={analytics.revenueByDoctor}
+            sortable
+          />
+        </div>
+      </Card>
+
+      {/* Recent Activity */}
+      <Card className="border-0 shadow-md bg-white">
+        <div className="p-6 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+        </div>
+        <div className="p-6">
+          <DataTable
+            columns={activityColumns}
+            data={analytics.recentActivity}
+            sortable
+          />
+        </div>
+      </Card>
     </div>
   );
 } 

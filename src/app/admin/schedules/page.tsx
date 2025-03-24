@@ -19,20 +19,26 @@ interface TimeSlot {
 }
 
 interface DaySchedule {
-  id?: string;
-  dayOfWeek: number;
-  isActive: boolean;
+  dayOfWeek: string;
   startTime: string;
   endTime: string;
-  slotDuration: number;
-  bufferTime: number;
-  breakStart?: string;
-  breakEnd?: string;
+  isActive: boolean;
 }
+
+interface Schedule {
+  [day: string]: {
+    [time: string]: boolean;
+  };
+}
+
+const timeSlots = [
+  '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
+  '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'
+];
 
 export default function ScheduleManagement() {
   const [selectedDoctor, setSelectedDoctor] = useState<string>('');
-  const [schedule, setSchedule] = useState<DaySchedule[]>([]);
+  const [schedule, setSchedule] = useState<Schedule>({});
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -41,68 +47,60 @@ export default function ScheduleManagement() {
   const durations = [5, 10, 15, 30, 45, 60];
   const bufferTimes = [0, 5, 10, 15, 30];
 
-  // Fetch doctors
   useEffect(() => {
-    const fetchDoctors = async () => {
-      try {
-        const response = await fetch('/api/doctors');
-        const data = await response.json();
-        setDoctors(data);
-      } catch (error) {
-        console.error('Failed to fetch doctors:', error);
-        toast.error('Failed to load doctors');
-      }
-    };
     fetchDoctors();
   }, []);
 
-  // Fetch schedule when doctor is selected
   useEffect(() => {
-    if (!selectedDoctor) return;
-
-    const fetchSchedule = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(`/api/admin/schedules?doctorId=${selectedDoctor}`);
-        const data = await response.json();
-        
-        // Initialize schedule for days without data
-        const fullSchedule = daysOfWeek.map((_, index) => {
-          const existingSchedule = data.find((s: DaySchedule) => s.dayOfWeek === index);
-          return existingSchedule || {
-            dayOfWeek: index,
-            isActive: false,
-            startTime: '09:00',
-            endTime: '17:00',
-            slotDuration: 15,
-            bufferTime: 5
-          };
-        });
-        
-        setSchedule(fullSchedule);
-      } catch (error) {
-        console.error('Failed to fetch schedule:', error);
-        toast.error('Failed to load schedule');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSchedule();
+    if (selectedDoctor) {
+      fetchSchedule();
+    }
   }, [selectedDoctor]);
+
+  const fetchDoctors = async () => {
+    try {
+      const response = await fetch('/api/admin/doctors');
+      if (!response.ok) throw new Error('Failed to fetch doctors');
+      const data = await response.json();
+      setDoctors(data);
+    } catch (error) {
+      console.error('Failed to fetch doctors:', error);
+    }
+  };
+
+  const fetchSchedule = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/admin/schedules/${selectedDoctor}`);
+      if (!response.ok) throw new Error('Failed to fetch schedule');
+      const fullSchedule: DaySchedule[] = await response.json();
+      
+      const newSchedule: Schedule = {};
+      fullSchedule.forEach((daySchedule) => {
+        if (!newSchedule[daySchedule.dayOfWeek]) {
+          newSchedule[daySchedule.dayOfWeek] = {};
+        }
+        newSchedule[daySchedule.dayOfWeek][daySchedule.startTime] = daySchedule.isActive;
+        newSchedule[daySchedule.dayOfWeek][daySchedule.endTime] = daySchedule.isActive;
+      });
+      
+      setSchedule(newSchedule);
+    } catch (error) {
+      console.error('Failed to fetch schedule:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!selectedDoctor) return;
-
+    
     setIsSaving(true);
     try {
-      const response = await fetch('/api/admin/schedules', {
+      const response = await fetch(`/api/admin/schedules/${selectedDoctor}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          doctorId: selectedDoctor,
-          schedules: schedule
-        }),
+        body: JSON.stringify(schedule),
       });
 
       if (!response.ok) throw new Error('Failed to save schedule');
@@ -116,26 +114,28 @@ export default function ScheduleManagement() {
     }
   };
 
-  const updateDaySchedule = (dayIndex: number, updates: Partial<DaySchedule>) => {
-    setSchedule(current => 
-      current.map((day, index) => 
-        index === dayIndex ? { ...day, ...updates } : day
-      )
-    );
+  const handleScheduleChange = (day: string, time: string) => {
+    setSchedule(prev => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [time]: !prev[day]?.[time]
+      }
+    }));
   };
 
   return (
     <div className="min-h-screen bg-gray-50/40">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-[--text-primary]">Schedule Management</h1>
+        <div className="px-4 sm:px-6 h-16 flex items-center justify-between">
+          <h1 className="text-xl sm:text-2xl font-semibold text-[--text-primary]">Schedule Management</h1>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleSave}
             disabled={!selectedDoctor || isSaving}
-            className="inline-flex items-center px-4 py-2 bg-[--primary] text-white font-medium rounded-lg hover:bg-[--primary-dark] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            className="inline-flex items-center px-3 sm:px-4 py-2 bg-[--primary] text-white text-sm sm:text-base font-medium rounded-lg hover:bg-[--primary-dark] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             {isSaving ? (
               <>
@@ -153,157 +153,72 @@ export default function ScheduleManagement() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column */}
-          <div className="space-y-6">
-            {/* Doctor Selection */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-[--text-primary] mb-4">Doctor Selection</h2>
-              <select
-                value={selectedDoctor}
-                onChange={(e) => setSelectedDoctor(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-[--text-primary] focus:ring-2 focus:ring-[--primary] focus:border-transparent transition-all"
-              >
-                <option value="">Select a doctor</option>
-                {doctors.map((doctor) => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Weekly Schedule */}
-            {selectedDoctor && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-semibold text-[--text-primary] mb-6">Weekly Schedule</h2>
-                <div className="space-y-6">
-                  {daysOfWeek.map((day, index) => (
-                    <div
-                      key={day}
-                      className={`p-4 rounded-xl border ${
-                        schedule[index]?.isActive
-                          ? 'border-[--primary] bg-[--primary]/5'
-                          : 'border-gray-200 bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="font-medium text-[--text-primary]">{day}</span>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={schedule[index]?.isActive}
-                            onChange={(e) => updateDaySchedule(index, { isActive: e.target.checked })}
-                            className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[--primary]/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[--primary]"></div>
-                        </label>
-                      </div>
-
-                      {schedule[index]?.isActive && (
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-[--text-secondary] mb-2">
-                                Start Time
-                              </label>
-                              <input
-                                type="time"
-                                value={schedule[index].startTime}
-                                onChange={(e) => updateDaySchedule(index, { startTime: e.target.value })}
-                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[--primary] focus:border-transparent transition-all"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-[--text-secondary] mb-2">
-                                End Time
-                              </label>
-                              <input
-                                type="time"
-                                value={schedule[index].endTime}
-                                onChange={(e) => updateDaySchedule(index, { endTime: e.target.value })}
-                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[--primary] focus:border-transparent transition-all"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-[--text-secondary] mb-2">
-                                Slot Duration
-                              </label>
-                              <select
-                                value={schedule[index].slotDuration}
-                                onChange={(e) => updateDaySchedule(index, { slotDuration: Number(e.target.value) })}
-                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[--primary] focus:border-transparent transition-all"
-                              >
-                                {durations.map(duration => (
-                                  <option key={duration} value={duration}>
-                                    {duration} minutes
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-[--text-secondary] mb-2">
-                                Buffer Time
-                              </label>
-                              <select
-                                value={schedule[index].bufferTime}
-                                onChange={(e) => updateDaySchedule(index, { bufferTime: Number(e.target.value) })}
-                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[--primary] focus:border-transparent transition-all"
-                              >
-                                {bufferTimes.map(time => (
-                                  <option key={time} value={time}>
-                                    {time} minutes
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-[--text-secondary] mb-2">
-                                Break Start
-                              </label>
-                              <input
-                                type="time"
-                                value={schedule[index].breakStart || ''}
-                                onChange={(e) => updateDaySchedule(index, { breakStart: e.target.value })}
-                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[--primary] focus:border-transparent transition-all"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-[--text-secondary] mb-2">
-                                Break End
-                              </label>
-                              <input
-                                type="time"
-                                value={schedule[index].breakEnd || ''}
-                                onChange={(e) => updateDaySchedule(index, { breakEnd: e.target.value })}
-                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[--primary] focus:border-transparent transition-all"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Right Column - Special Dates */}
-          {selectedDoctor && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-              <SpecialDatesCalendar doctorId={selectedDoctor} />
-            </div>
-          )}
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
+        {/* Doctor Selection */}
+        <div className="mb-6">
+          <label htmlFor="doctor" className="block text-sm font-medium text-gray-700 mb-2">
+            Select Doctor
+          </label>
+          <select
+            id="doctor"
+            value={selectedDoctor}
+            onChange={(e) => setSelectedDoctor(e.target.value)}
+            className="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-[#8B5C9E] focus:border-[#8B5C9E] text-sm sm:text-base"
+          >
+            <option value="">Choose a doctor</option>
+            {doctors.map((doctor) => (
+              <option key={doctor.id} value={doctor.id}>
+                {doctor.name}
+              </option>
+            ))}
+          </select>
         </div>
-      </main>
+
+        {/* Schedule Grid */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">
+                    Time
+                  </th>
+                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                    <th key={day} className="px-4 sm:px-6 py-3 text-center text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">
+                      {day.slice(0, 3)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {timeSlots.map((time) => (
+                  <tr key={time}>
+                    <td className="px-4 sm:px-6 py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                      {time}
+                    </td>
+                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                      <td key={day} className="px-4 sm:px-6 py-3 whitespace-nowrap text-center">
+                        <input
+                          type="checkbox"
+                          checked={schedule[day]?.[time] || false}
+                          onChange={() => handleScheduleChange(day, time)}
+                          className="h-4 w-4 text-[#8B5C9E] focus:ring-[#8B5C9E] border-gray-300 rounded"
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Special Dates Calendar */}
+        <div className="mt-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Special Dates</h2>
+          <SpecialDatesCalendar doctorId={selectedDoctor} />
+        </div>
+      </div>
     </div>
   );
 } 

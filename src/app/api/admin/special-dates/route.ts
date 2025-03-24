@@ -118,6 +118,64 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    
+    if (!body.id) {
+      return NextResponse.json(
+        { error: 'Special date ID is required' },
+        { status: 400 }
+      );
+    }
+    
+    const { id, doctorId, date, type, reason } = body;
+    
+    // Validate date format
+    if (date && isNaN(new Date(date).getTime())) {
+      return NextResponse.json(
+        { error: 'Invalid date format' },
+        { status: 400 }
+      );
+    }
+    
+    // Check if the special date exists
+    const existingSpecialDate = await prisma.specialDate.findUnique({
+      where: { id }
+    });
+    
+    if (!existingSpecialDate) {
+      return NextResponse.json(
+        { error: 'Special date not found' },
+        { status: 404 }
+      );
+    }
+    
+    // Update special date
+    const updatedSpecialDate = await prisma.specialDate.update({
+      where: { id },
+      data: {
+        doctorId: doctorId !== undefined ? doctorId : undefined,
+        date: date ? new Date(date) : undefined,
+        type: type !== undefined ? type : undefined,
+        reason: reason !== undefined ? reason : undefined
+      }
+    });
+    
+    return NextResponse.json({
+      success: true,
+      data: updatedSpecialDate,
+      message: 'Special date updated successfully'
+    });
+  } catch (error) {
+    console.error('Failed to update special date:', error);
+    return NextResponse.json(
+      { error: 'Failed to update special date' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const id = request.url.split('/').pop();

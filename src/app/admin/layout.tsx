@@ -1,49 +1,28 @@
 'use client';
 
-import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
-import { 
-  Calendar, 
-  Users, 
-  Clock, 
-  Settings, 
+import React, { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import {
+  Calendar,
+  Users,
+  Clock,
   BarChart2,
+  Settings,
   Menu,
   X,
-  LogOut
+  LogOut,
 } from 'lucide-react';
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
 
-const ADMIN_EMAIL = 'admin@bookingpress.com';
-
-const navigation = [
-  {
-    name: 'Schedule Management',
-    href: '/admin/schedules',
-    icon: Calendar
-  },
-  {
-    name: 'Doctor Management',
-    href: '/admin/doctors',
-    icon: Users
-  },
-  {
-    name: 'Appointments',
-    href: '/admin/appointments',
-    icon: Clock
-  },
-  {
-    name: 'Analytics',
-    href: '/admin/analytics',
-    icon: BarChart2
-  },
-  {
-    name: 'Settings',
-    href: '/admin/settings',
-    icon: Settings
-  }
+const menuItems = [
+  { href: '/admin', label: 'Dashboard', icon: BarChart2 },
+  { href: '/admin/doctors', label: 'Doctors', icon: Users },
+  { href: '/admin/schedule', label: 'Schedule', icon: Calendar },
+  { href: '/admin/appointments', label: 'Appointments', icon: Clock },
+  { href: '/admin/analytics', label: 'Analytics', icon: BarChart2 },
+  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 export default function AdminLayout({
@@ -51,15 +30,34 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // Handle sidebar visibility based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSidebarOpen(window.innerWidth >= 768);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Close sidebar on mobile when route changes
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      setIsSidebarOpen(false);
+    }
+  }, [pathname]);
 
   const handleLogout = async () => {
-    setIsLoggingOut(true);
     try {
-      const response = await fetch('/api/admin/auth/logout', {
+      const response = await fetch('/api/auth/logout', {
         method: 'POST',
       });
 
@@ -69,97 +67,99 @@ export default function AdminLayout({
       toast.success('Logged out successfully');
     } catch (error) {
       toast.error('Failed to logout');
-    } finally {
-      setIsLoggingOut(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
-        <button
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="p-2 rounded-lg bg-white shadow-md text-gray-600 hover:text-[#8B5C9E] transition-colors"
-        >
-          {isSidebarOpen ? (
-            <X className="w-6 h-6" />
-          ) : (
-            <Menu className="w-6 h-6" />
-          )}
-        </button>
-      </div>
+    <div className="flex h-screen bg-gray-50">
+      {/* Overlay for mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-20 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
 
       {/* Sidebar */}
-      <AnimatePresence>
-        {isSidebarOpen && (
-          <motion.div
-            initial={{ x: -300 }}
-            animate={{ x: 0 }}
-            exit={{ x: -300 }}
-            className="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-40"
-          >
-            <div className="flex flex-col h-full">
-              {/* Logo */}
-              <div className="p-6 border-b border-gray-200">
-                <h1 className="text-2xl font-bold text-[#8B5C9E]">
-                  BookingPress
-                </h1>
-                <p className="text-sm text-gray-600">Admin Dashboard</p>
-              </div>
-
-              {/* Navigation */}
-              <nav className="flex-1 p-4 space-y-1">
-                {navigation.map((item) => {
-                  const isActive = pathname === item.href;
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className={`
-                        flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors
-                        ${isActive
-                          ? 'bg-[#8B5C9E] text-white'
-                          : 'text-gray-600 hover:bg-[#8B5C9E]/5 hover:text-[#8B5C9E]'
-                        }
-                      `}
-                    >
-                      <item.icon className="w-5 h-5 mr-3" />
-                      {item.name}
-                    </Link>
-                  );
-                })}
-              </nav>
-
-              {/* User Profile & Logout */}
-              <div className="p-4 border-t border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center">
-                      <Users className="w-5 h-5 text-[#8B5C9E]" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Admin</p>
-                      <p className="text-xs text-gray-600">{ADMIN_EMAIL}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    disabled={isLoggingOut}
-                    className="p-2 rounded-lg text-gray-600 hover:text-[#8B5C9E] hover:bg-[#8B5C9E]/5 transition-colors"
-                  >
-                    <LogOut className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+      <aside
+        className={cn(
+          'fixed md:sticky top-0 left-0 z-30 h-full w-64 bg-white border-r border-gray-200',
+          'transform transition-transform duration-200 ease-in-out',
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
+          'md:translate-x-0 flex-shrink-0' // Always visible on desktop and prevent shrinking
         )}
-      </AnimatePresence>
+      >
+        <div className="flex flex-col h-full">
+          {/* Logo */}
+          <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
+            <h1 className="text-xl font-bold text-[#8B5C9E]">Admin Panel</h1>
+            <button
+              className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
+              onClick={() => setIsSidebarOpen(false)}
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto py-4">
+            <ul className="space-y-1 px-2">
+              {menuItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <li key={item.href}>
+                    <a
+                      href={item.href}
+                      className={cn(
+                        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                        isActive
+                          ? 'bg-[#8B5C9E] text-white'
+                          : 'text-gray-600 hover:bg-gray-100'
+                      )}
+                    >
+                      <item.icon className="w-5 h-5" />
+                      {item.label}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+
+          {/* Logout Button */}
+          <div className="p-4 border-t border-gray-200">
+            <Button
+              variant="outline"
+              className="w-full justify-start gap-2"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </Button>
+          </div>
+        </div>
+      </aside>
 
       {/* Main Content */}
-      <div className={`${isSidebarOpen ? 'lg:pl-64' : ''} transition-all duration-300`}>
-        {children}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile Header */}
+        <header className="sticky top-0 z-10 md:hidden bg-white border-b border-gray-200">
+          <div className="flex items-center justify-between h-16 px-4">
+            <button
+              className="p-2 hover:bg-gray-100 rounded-lg"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu className="w-5 h-5 text-gray-500" />
+            </button>
+            <h1 className="text-lg font-semibold text-[#8B5C9E]">Admin Panel</h1>
+            <div className="w-10" /> {/* Spacer for alignment */}
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <div className="flex-1 overflow-auto p-4">
+          {children}
+        </div>
       </div>
     </div>
   );

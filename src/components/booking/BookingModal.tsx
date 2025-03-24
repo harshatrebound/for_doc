@@ -44,6 +44,10 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [isMobile, setIsMobile] = useState(false);
   const dragControls = useDragControls();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string>('');
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -71,6 +75,39 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       window.removeEventListener('resize', checkIsMobile);
     };
   }, []);
+
+  // Fetch available slots when date changes
+  useEffect(() => {
+    async function fetchAvailableSlots() {
+      if (!selectedDate || !formData.doctor?.id) return;
+
+      setIsLoadingSlots(true);
+      try {
+        const response = await fetch(
+          `/api/available-slots?doctorId=${encodeURIComponent(formData.doctor.id)}&date=${selectedDate.toISOString().split('T')[0]}`
+        );
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch available slots');
+        }
+
+        const data = await response.json();
+        setAvailableSlots(data.slots);
+        
+        // Clear selected time if it's no longer available
+        if (!data.slots.includes(selectedTime)) {
+          setSelectedTime('');
+        }
+      } catch (error) {
+        console.error('Error fetching available slots:', error);
+        setErrorMessage('Failed to load available time slots');
+      } finally {
+        setIsLoadingSlots(false);
+      }
+    }
+
+    fetchAvailableSlots();
+  }, [selectedDate, formData.doctor?.id]);
 
   const handleChange = (updates: Partial<BookingFormData>) => {
     // Clear error when user makes changes
@@ -186,11 +223,10 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       
       console.log('Submitting booking data:', bookingData);
       
-      // Use the test endpoint when needed for debugging
-      const useTestEndpoint = true; // Set to true to use test endpoint
-      const endpoint = useTestEndpoint ? '/api/appointments/test' : '/api/appointments';
+      // Always use the main endpoint to ensure webhook is triggered
+      const endpoint = '/api/appointments';
       
-      // Make API call to create the appointment (webhook is handled on the server)
+      // Make API call to create the appointment
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -208,6 +244,34 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         const errorCode = responseData.code || '';
         const detailedError = errorCode ? `${errorMessage} (${errorCode})` : errorMessage;
         throw new Error(detailedError);
+      }
+
+      // For debugging: Send webhook from client side to see in network tab
+      if (responseData.debug?.webhookUrl && responseData.debug?.shouldSendWebhook) {
+        console.log('Sending client-side webhook for debugging');
+        try {
+          const webhookResponse = await fetch(responseData.debug.webhookUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Webhook-Event': 'appointment.created',
+              'X-Debug-Mode': 'true'
+            },
+            body: JSON.stringify({
+              event: 'appointment.created',
+              data: responseData.appointment,
+              timestamp: new Date().toISOString(),
+            }),
+          });
+          
+          const webhookResult = await webhookResponse.text();
+          console.log('Debug webhook response:', {
+            status: webhookResponse.status,
+            body: webhookResult
+          });
+        } catch (webhookError) {
+          console.error('Debug webhook error:', webhookError);
+        }
       }
 
       // Provide haptic feedback on success (if available)
@@ -231,6 +295,98 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         const errorEl = document.querySelector('.error-message');
         errorEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Time slot selection component
+  const TimeSlotSelector = () => (
+    <div className="grid grid-cols-3 gap-2 mt-4">
+      {isLoadingSlots ? (
+        <div className="col-span-3 text-center py-4">
+          Loading available slots...
+        </div>
+      ) : availableSlots.length === 0 ? (
+        <div className="col-span-3 text-center py-4 text-gray-500">
+          No available slots for this date
+        </div>
+      ) : (
+        availableSlots.map((slot) => (
+          <button
+            key={slot}
+            onClick={() => setSelectedTime(slot)}
+            className={`p-2 rounded-lg text-sm ${
+              selectedTime === slot
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 hover:bg-gray-200'
+            }`}
+          >
+            {slot}
+          </button>
+        ))
+      )}
+    </div>
+  );
+
+  // Add this to your form validation
+  const validateForm = () => {
+    if (!selectedDate) {
+      setErrorMessage('Please select a date');
+      return false;
+    }
+    if (!selectedTime) {
+      setErrorMessage('Please select an available time slot');
+      return false;
+    }
+    if (!formData.patientName.trim()) {
+      setErrorMessage('Please enter patient name');
+      return false;
+    }
+    if (!formData.email.trim()) {
+      setErrorMessage('Please enter email');
+      return false;
+    }
+    if (!formData.phone.trim()) {
+      setErrorMessage('Please enter phone number');
+      return false;
+    }
+    return true;
+  };
+
+  // Update your handleSubmit to use the selected time
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          doctorId: formData.doctor?.id,
+          patientName: formData.patientName.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          date: selectedDate?.toISOString().split('T')[0],
+          time: selectedTime,
+          notes: formData.notes?.trim() || '',
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create appointment');
+      }
+
+      // Move to the next step (thank you page)
+      handleNext();
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setIsSubmitting(false);
     }
@@ -268,7 +424,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         return (
           <Summary
             formData={formData}
-            onSubmit={handleSubmitBooking}
+            onSubmit={handleSubmit}
             onBack={handleBack}
             isSubmitting={isSubmitting}
           />

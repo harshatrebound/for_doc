@@ -43,39 +43,102 @@ export class AppointmentError extends Error {
 }
 
 /**
- * Sends a notification to the configured webhook
+ * Sends a notification to the configured webhook with retries
  */
 export async function sendWebhookNotification(event: string, data: any) {
-  try {
-    const webhookUrl = process.env.WEBHOOK_URL;
-    
-    if (!webhookUrl) {
-      console.warn('No webhook URL configured');
-      return;
-    }
-    
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        event,
-        data,
-        timestamp: new Date().toISOString(),
-      }),
-    });
-    
-    if (!response.ok) {
-      console.warn(`Webhook notification failed with status ${response.status}`);
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error sending webhook notification:', error);
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY = 1000; // 1 second
+
+  const webhookUrl = process.env.WEBHOOK_URL;
+  
+  if (!webhookUrl) {
+    console.warn('No webhook URL configured in environment variables');
     return false;
   }
+
+  if (!webhookUrl.startsWith('http://') && !webhookUrl.startsWith('https://')) {
+    console.error('Invalid webhook URL format:', webhookUrl);
+    return false;
+  }
+
+  const payload = {
+    event,
+    data,
+    timestamp: new Date().toISOString(),
+  };
+
+  console.log('Preparing webhook notification:', {
+    url: webhookUrl,
+    event,
+    timestamp: new Date().toISOString(),
+    payloadSize: JSON.stringify(payload).length
+  });
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      console.log(`Starting webhook attempt ${attempt}/${MAX_RETRIES}`);
+      
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'BookingPress/1.0',
+          'X-Webhook-Event': event,
+          'X-Attempt-Number': attempt.toString(),
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeout));
+      
+      const responseText = await response.text();
+      
+      console.log(`Webhook response (attempt ${attempt}):`, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+        body: responseText.substring(0, 1000), // Limit response body logging
+      });
+
+      if (response.ok) {
+        console.log('Webhook notification sent successfully');
+        return true;
+      }
+
+      console.warn(
+        `Webhook notification failed (attempt ${attempt}/${MAX_RETRIES}):`,
+        `Status ${response.status} - ${response.statusText}`,
+        responseText
+      );
+
+      if (attempt < MAX_RETRIES) {
+        const delay = RETRY_DELAY * Math.pow(2, attempt - 1); // Exponential backoff
+        console.log(`Waiting ${delay}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(
+        `Webhook request failed (attempt ${attempt}/${MAX_RETRIES}):`,
+        {
+          error: errorMessage,
+          type: error instanceof Error ? error.name : typeof error,
+          isAbortError: error instanceof Error && error.name === 'AbortError',
+        }
+      );
+
+      if (attempt < MAX_RETRIES) {
+        const delay = RETRY_DELAY * Math.pow(2, attempt - 1); // Exponential backoff
+        console.log(`Waiting ${delay}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  console.error('Webhook notification failed after all retry attempts');
+  return false;
 }
 
 export async function validateAndCreateAppointment(data: NewAppointment) {
@@ -111,34 +174,74 @@ export async function validateAndCreateAppointment(data: NewAppointment) {
     if (!doctor && isCustomId) {
       console.log(`Attempting to create appointment with custom ID doctor: ${validatedData.doctorId}`);
       // For fallback doctors, we'll create a mock response instead of failing
-      // This is a temporary solution during development
+      const mockAppointment = {
+        id: `mock-${Date.now()}`,
+        doctorId: validatedData.doctorId,
+        patientName: validatedData.patientName,
+        email: validatedData.email,
+        phone: validatedData.phone,
+        date: new Date(validatedData.date),
+        time: validatedData.time,
+        notes: validatedData.notes,
+        status: 'SCHEDULED',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        doctor: {
+          name: validatedData.doctorId === 'dr-sameer' ? 'Dr. Sameer Kumar' : 
+               validatedData.doctorId === 'other-doctors' ? 'Other Doctors' : 
+               'Doctor',
+          speciality: validatedData.doctorId === 'dr-sameer' ? 'Orthopedic Surgeon' : 
+                      validatedData.doctorId === 'other-doctors' ? 'Sports Medicine Specialist' : 
+                      'Specialist',
+          fee: validatedData.doctorId === 'dr-sameer' ? 700 : 
+               validatedData.doctorId === 'other-doctors' ? 1000 : 
+               500,
+        }
+      };
+
+      // Send webhook for mock appointment
+      try {
+        console.log('About to send webhook notification for mock appointment:', mockAppointment.id);
+        console.log('WEBHOOK_URL:', process.env.WEBHOOK_URL);
+        
+        const webhookData = {
+          id: mockAppointment.id,
+          doctorId: mockAppointment.doctorId,
+          doctorName: mockAppointment.doctor.name,
+          speciality: mockAppointment.doctor.speciality,
+          fee: mockAppointment.doctor.fee,
+          patientName: mockAppointment.patientName,
+          email: mockAppointment.email,
+          phone: mockAppointment.phone,
+          date: mockAppointment.date.toISOString(),
+          time: mockAppointment.time,
+          notes: mockAppointment.notes,
+          status: mockAppointment.status,
+          createdAt: mockAppointment.createdAt.toISOString(),
+        };
+
+        const webhookSent = await sendWebhookNotification('appointment.created', webhookData);
+        console.log('Mock appointment webhook notification completed. Result:', {
+          success: webhookSent,
+          appointmentId: mockAppointment.id,
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error('Failed to send webhook notification for mock appointment:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          appointmentId: mockAppointment.id,
+          timestamp: new Date().toISOString()
+        });
+      }
+
       return {
         success: true,
-        appointment: {
-          id: `mock-${Date.now()}`,
-          doctorId: validatedData.doctorId,
-          patientName: validatedData.patientName,
-          email: validatedData.email,
-          phone: validatedData.phone,
-          date: new Date(validatedData.date),
-          time: validatedData.time,
-          notes: validatedData.notes,
-          status: 'SCHEDULED',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          doctor: {
-            name: validatedData.doctorId === 'dr-sameer' ? 'Dr. Sameer Kumar' : 
-                 validatedData.doctorId === 'other-doctors' ? 'Other Doctors' : 
-                 'Doctor',
-            speciality: validatedData.doctorId === 'dr-sameer' ? 'Orthopedic Surgeon' : 
-                        validatedData.doctorId === 'other-doctors' ? 'Sports Medicine Specialist' : 
-                        'Specialist',
-            fee: validatedData.doctorId === 'dr-sameer' ? 700 : 
-                 validatedData.doctorId === 'other-doctors' ? 1000 : 
-                 500,
-          }
-        },
+        appointment: mockAppointment,
         message: 'Appointment scheduled successfully with fallback doctor',
+        debug: {
+          webhookUrl: process.env.WEBHOOK_URL,
+          shouldSendWebhook: true
+        }
       };
     }
 
@@ -280,15 +383,34 @@ export async function validateAndCreateAppointment(data: NewAppointment) {
       createdAt: appointment.createdAt.toISOString(),
     };
 
-    // Send webhook asynchronously - don't wait for the response
-    sendWebhookNotification('appointment.created', webhookData).catch(err => {
-      console.error('Failed to send webhook notification:', err);
-    });
+    // Send webhook notification with proper error handling
+    try {
+      console.log('About to send webhook notification for appointment:', appointment.id);
+      console.log('WEBHOOK_URL:', process.env.WEBHOOK_URL);
+      
+      const webhookSent = await sendWebhookNotification('appointment.created', webhookData);
+      console.log('Webhook notification completed. Result:', {
+        success: webhookSent,
+        appointmentId: appointment.id,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      // Log webhook error but don't fail the appointment creation
+      console.error('Failed to send webhook notification:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        appointmentId: appointment.id,
+        timestamp: new Date().toISOString()
+      });
+    }
 
     return {
       success: true,
       appointment,
       message: 'Appointment scheduled successfully',
+      debug: {
+        webhookUrl: process.env.WEBHOOK_URL,
+        shouldSendWebhook: true
+      }
     };
 
   } catch (error) {

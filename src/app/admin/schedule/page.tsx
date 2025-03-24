@@ -1,125 +1,179 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Calendar } from '@/components/Calendar';
-import { TimeGrid } from '@/components/TimeGrid';
-import { DoctorSelect } from '@/components/DoctorSelect';
-import { Doctor } from '@/types/doctor';
-import { DoctorSchedule, Appointment } from '@/types/schedule';
-import { format, startOfWeek, addDays } from 'date-fns';
+import React, { useEffect, useState } from 'react';
+import { DataTable } from '@/components/admin/DataTable';
+import { Button } from '@/components/ui/button';
+import { format } from 'date-fns';
+import { fetchDoctors, fetchDoctorSchedule } from '@/app/actions/admin';
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
+import { Card } from '@/components/ui/card';
 
-export default function ScheduleManagement() {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
-  const [schedule, setSchedule] = useState<DoctorSchedule[]>([]);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+interface Doctor {
+  id: string;
+  name: string;
+  speciality: string;
+}
+
+interface Schedule {
+  id: string;
+  doctorId: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  isActive: boolean;
+  slotDuration: number;
+  bufferTime: number;
+  breakStart?: string | null;
+  breakEnd?: string | null;
+}
+
+interface DoctorWithSchedule extends Doctor {
+  schedules: Schedule[];
+}
+
+const daysOfWeek = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+];
+
+export default function SchedulePage() {
+  const [doctorsWithSchedule, setDoctorsWithSchedule] = useState<DoctorWithSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    if (selectedDoctor) {
-      fetchSchedule();
-      fetchAppointments();
-    }
-  }, [selectedDoctor, selectedDate]);
+    loadDoctorsWithSchedule();
+  }, []);
 
-  const fetchSchedule = async () => {
-    if (!selectedDoctor) return;
-    
+  const loadDoctorsWithSchedule = async () => {
     try {
-      const response = await fetch(`/api/doctors/${selectedDoctor.id}/schedule`);
-      if (!response.ok) throw new Error('Failed to fetch schedule');
-      const data = await response.json();
-      setSchedule(data);
-    } catch (error) {
-      toast.error('Failed to load schedule');
-    }
-  };
+      const doctorsResult = await fetchDoctors();
+      if (!doctorsResult.success || !doctorsResult.data) {
+        throw new Error(doctorsResult.error || 'Failed to fetch doctors');
+      }
 
-  const fetchAppointments = async () => {
-    if (!selectedDoctor) return;
-
-    try {
-      const startDate = format(startOfWeek(selectedDate), 'yyyy-MM-dd');
-      const endDate = format(addDays(startOfWeek(selectedDate), 6), 'yyyy-MM-dd');
-      
-      const response = await fetch(
-        `/api/doctors/${selectedDoctor.id}/appointments?start=${startDate}&end=${endDate}`
+      const doctorsWithSchedule = await Promise.all(
+        doctorsResult.data.map(async (doctor) => {
+          const scheduleResult = await fetchDoctorSchedule(doctor.id);
+          return {
+            id: doctor.id,
+            name: doctor.name,
+            speciality: doctor.speciality,
+            schedules: scheduleResult.success && scheduleResult.data ? scheduleResult.data.map(schedule => ({
+              id: schedule.id,
+              doctorId: schedule.doctorId,
+              dayOfWeek: schedule.dayOfWeek,
+              startTime: schedule.startTime,
+              endTime: schedule.endTime,
+              isActive: schedule.isActive,
+              slotDuration: schedule.slotDuration,
+              bufferTime: schedule.bufferTime,
+              breakStart: schedule.breakStart,
+              breakEnd: schedule.breakEnd,
+            })) : [],
+          } as DoctorWithSchedule;
+        })
       );
-      if (!response.ok) throw new Error('Failed to fetch appointments');
-      const data = await response.json();
-      setAppointments(data);
+      setDoctorsWithSchedule(doctorsWithSchedule);
     } catch (error) {
-      toast.error('Failed to load appointments');
+      console.error('Error loading schedules:', error);
+      toast.error('Failed to load schedules');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleScheduleUpdate = async (daySchedule: DoctorSchedule) => {
-    if (!selectedDoctor) return;
+  const formatSchedule = (schedules: Schedule[]) => {
+    if (!schedules.length) return 'No schedule set';
+    
+    const activeDays = schedules
+      .filter((s) => s.isActive)
+      .map((s) => ({
+        day: daysOfWeek[s.dayOfWeek],
+        time: `${s.startTime} - ${s.endTime}`,
+        break: s.breakStart && s.breakEnd ? `Break: ${s.breakStart} - ${s.breakEnd}` : null,
+      }));
 
-    try {
-      const response = await fetch(`/api/doctors/${selectedDoctor.id}/schedule/${daySchedule.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(daySchedule),
-      });
+    if (!activeDays.length) return 'Not available';
 
-      if (!response.ok) throw new Error('Failed to update schedule');
-      toast.success('Schedule updated successfully');
-      fetchSchedule();
-    } catch (error) {
-      toast.error('Failed to update schedule');
-    }
+    return activeDays
+      .map((d) => `${d.day}: ${d.time}${d.break ? `\n${d.break}` : ''}`)
+      .join('\n');
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Schedule Management</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Manage doctor schedules and appointments
-            </p>
-          </div>
-          <DoctorSelect
-            value={selectedDoctor}
-            onChange={setSelectedDoctor}
-          />
-        </div>
+  const columns = [
+    {
+      header: 'Doctor',
+      accessorKey: 'name' as keyof DoctorWithSchedule,
+      sortable: true,
+      cell: (row: DoctorWithSchedule) => (
+        <div className="font-medium text-gray-900">{row.name}</div>
+      ),
+    },
+    {
+      header: 'Speciality',
+      accessorKey: 'speciality' as keyof DoctorWithSchedule,
+      sortable: true,
+      cell: (row: DoctorWithSchedule) => (
+        <div className="text-gray-700">{row.speciality}</div>
+      ),
+    },
+    {
+      header: 'Schedule',
+      accessorKey: 'schedules' as keyof DoctorWithSchedule,
+      cell: (row: DoctorWithSchedule) => (
+        <pre className="whitespace-pre-wrap text-sm text-gray-700 font-mono bg-gray-50 p-2 rounded">
+          {formatSchedule(row.schedules)}
+        </pre>
+      ),
+    },
+  ];
 
-        {selectedDoctor ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1">
-              <Calendar
-                value={selectedDate}
-                onChange={setSelectedDate}
-                appointments={appointments}
-              />
-            </div>
-            <div className="lg:col-span-2">
-              <TimeGrid
-                date={selectedDate}
-                schedule={schedule}
-                appointments={appointments}
-                onScheduleUpdate={handleScheduleUpdate}
-                isLoading={isLoading}
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No doctor selected</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Please select a doctor to manage their schedule
-            </p>
-          </div>
-        )}
+  const actions = (row: DoctorWithSchedule) => [
+    {
+      label: 'Edit Schedule',
+      onClick: () => router.push(`/admin/doctors/${row.id}/schedule`),
+    },
+    {
+      label: 'Special Dates',
+      onClick: () => router.push(`/admin/doctors/${row.id}/special-dates`),
+    },
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center text-gray-600">Loading schedules...</div>
       </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-4 space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Schedule Management</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage doctor schedules and availability
+          </p>
+        </div>
+      </div>
+
+      <Card className="border-0 shadow-md overflow-hidden">
+        <DataTable
+          columns={columns}
+          data={doctorsWithSchedule}
+          actions={actions}
+          searchable
+          sortable
+        />
+      </Card>
     </div>
   );
 } 

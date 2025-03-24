@@ -3,24 +3,18 @@ description:
 globs: 
 alwaysApply: true
 ---
-We are building a feature list as discussed in [BookingPress_Features.md](mdc:BookingPress_Features.md)
+We are optimizing /admin for Mobile based web app.
 
-We are only going to build one at a time without disturbing existing codebase and features. 
+You can use Postgres MCP as needed to understand the data. 
 
-You will use Postgresql MCP as needed. 
+Yu are required to stirctly stick to brand colors. Be aware that most of our application is already built. 
 
-Prefer simplistic codebase architecture without too much complexity. 
+We are ony optimizing all screens for mobile.
 
-Ensure all code files are withing 200-300 lines, always refactor as necessary.
+You should not tolerate cookie cutter designs, we need apple level aesthetics and figma standards in designing.
 
-You will always follow the todo list created here [TODO.md](mdc:TODO.md). Ensure you keep updating the file as we are progresssing. 
+Do one unit test for all features in most simplistic fashion. 
 
-I do not want cookie cutter designs. You should design like a top figma designing expert.
+If not aware of all files and folders, archietcture, app flow and tech stack. Feel free to check all files by scanning or grepping. 
 
-Strictly update my [TODO.md](mdc:TODO.md) after each run
-
-We are using Prisma for database and connections, my variables are added in .env
-
-We are using MCP only here in dev server for data queries in this IDE.
-
-Remember we already have front end modal for users to book appoointments with us.We are now only building backen admin panel actions
+You are building a world class backend application for appointment booking management for doctors. Which shall be handled by Layman.
