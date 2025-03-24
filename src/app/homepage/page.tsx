@@ -12,37 +12,37 @@ const specialties = [
     title: 'Knee',
     description: 'Knee joint, Ligaments, Cartilage, Muscles & Bones around.',
     icon: Activity,
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1200',
+    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1200&auto=format&fit=crop',
   },
   {
     title: 'Shoulder',
     description: 'Shoulder joint, Ligaments, Cartilage, Muscles & Bones around.',
     icon: Activity,
-    image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1200',
+    image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1200&auto=format&fit=crop',
   },
   {
     title: 'Ankle',
     description: 'Ankle Joint, Ligaments, Cartilage, Muscles & Bones around.',
     icon: Activity,
-    image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?q=80&w=1200',
+    image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?q=80&w=1200&auto=format&fit=crop',
   },
   {
     title: 'Hip',
     description: 'Hip Joint, Ligaments, Cartilage, Muscles and Bones around.',
     icon: Activity,
-    image: 'https://images.unsplash.com/photo-1571019613576-2b22c76fd955?q=80&w=1200',
+    image: 'https://images.unsplash.com/photo-1571019613576-2b22c76fd955?q=80&w=1200&auto=format&fit=crop',
   },
   {
     title: 'Elbow',
     description: 'Elbow Joint, Ligaments, Cartilage, Muscles and Bones around.',
     icon: Activity,
-    image: 'https://images.unsplash.com/photo-1612776572997-76cc42e058c3?q=80&w=1200',
+    image: 'https://images.unsplash.com/photo-1612776572997-76cc42e058c3?q=80&w=1200&auto=format&fit=crop',
   },
   {
     title: 'Wrist',
     description: 'Wrist Joint, Ligaments, Cartilage, Muscles & Bones around.',
     icon: Activity,
-    image: 'https://images.unsplash.com/photo-1584515933487-779824d29309?q=80&w=1200',
+    image: 'https://images.unsplash.com/photo-1584515933487-779824d29309?q=80&w=1200&auto=format&fit=crop',
   },
 ];
 
@@ -75,14 +75,14 @@ const testimonials = [
     role: "Patient",
     comment: "Exceptional care and attention to detail. The team made my recovery journey smooth.",
     rating: 5,
-    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=400"
+    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=400&auto=format&fit=crop"
   },
   {
     name: "Michael Chen",
     role: "Athlete",
     comment: "Professional sports medicine care that got me back on track faster than expected.",
     rating: 5,
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400"
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop"
   }
 ];
 
@@ -106,7 +106,7 @@ export default function HomePage() {
           className="absolute inset-0 z-0"
         >
           <Image
-            src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=2000"
+            src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=2000&auto=format&fit=crop"
             alt="Modern medical facility"
             fill
             className="object-cover scale-110"
@@ -317,6 +317,7 @@ export default function HomePage() {
                       src={specialty.image}
                       alt={specialty.title}
                       fill
+                      loading="lazy"
                       className="object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-60 group-hover:opacity-70 transition-opacity duration-500" />
@@ -517,6 +518,7 @@ export default function HomePage() {
                         width={60}
                         height={60}
                         className="rounded-full relative z-10"
+                        loading="lazy"
                       />
                     </div>
                     <div className="ml-4">
@@ -549,7 +551,7 @@ export default function HomePage() {
       <section className="relative py-20 md:py-32 overflow-hidden bg-gray-50">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1579684453423-f84349ef60b0?q=80&w=2000"
+            src="https://images.unsplash.com/photo-1579684453423-f84349ef60b0?q=80&w=2000&auto=format&fit=crop"
             alt="Medical facility interior"
             fill
             className="object-cover opacity-10"
