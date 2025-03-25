@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Star, Clock, Calendar, MapPin } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Star, Clock, Calendar, MapPin, Search, Filter, X, Users, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import type { Doctor, DoctorSelectionProps } from '@/types/booking';
+import type { Doctor } from '@/types/booking';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { useBookingForm } from '@/contexts/BookingFormContext';
 
 interface DoctorCardProps {
   doctor: Doctor;
@@ -13,154 +15,120 @@ interface DoctorCardProps {
 }
 
 const DoctorCard = ({ doctor, isSelected, onSelect }: DoctorCardProps) => (
-  <motion.button
-    whileHover={{ scale: 1.01 }}
-    whileTap={{ scale: 0.99 }}
+  <motion.div
+    layout
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
     onClick={() => onSelect(doctor)}
     className={`
-      w-full p-5 rounded-2xl transition-all duration-200
-      ${isSelected 
-        ? 'bg-gradient-to-br from-[#8B5C9E] to-[#6B4A7E] text-white shadow-lg' 
-        : 'bg-white border border-gray-200 hover:border-[#8B5C9E]/30 hover:bg-[#F9F5FF]'
+      relative w-full rounded-2xl overflow-hidden cursor-pointer
+      transition-all duration-200 touch-manipulation
+      ${isSelected
+        ? 'bg-gradient-to-br from-[#8B5C9E] to-[#6B4A7E] text-white shadow-xl'
+        : 'bg-white border border-gray-200 hover:border-[#8B5C9E] hover:shadow-md'
       }
     `}
   >
-    <div className="flex items-start gap-4">
-      {/* Doctor Image */}
-      <div className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden bg-gray-100">
-        <Image
-          src={doctor.image || '/default-doctor.png'}
-          alt={doctor.name}
-          width={80}
-          height={80}
-          className="w-full h-full object-cover"
-        />
-      </div>
-
-      {/* Doctor Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className={`text-lg font-semibold ${isSelected ? 'text-white' : 'text-gray-900'}`}>
-              {doctor.name}
-            </h3>
-            <p className={`text-sm mt-0.5 ${isSelected ? 'text-white/90' : 'text-gray-600'}`}>
-              {doctor.speciality}
-            </p>
+    <div className="p-4 sm:p-5">
+      <div className="flex gap-4">
+        {/* Doctor Image with Status */}
+        <div className="relative flex-shrink-0">
+          <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 ring-2 ring-white">
+            <Image
+              src={doctor.image || '/default-doctor.png'}
+              alt={doctor.name}
+              width={80}
+              height={80}
+              className="w-full h-full object-cover"
+            />
           </div>
-          <div className="text-right">
-            <div className={`text-xl font-semibold ${isSelected ? 'text-white' : 'text-gray-900'}`}>₹{doctor.fee}</div>
-            <div className={`text-xs mt-0.5 ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>Per Consultation</div>
-          </div>
-        </div>
-
-        {/* Qualifications */}
-        <div className="mt-3 flex flex-wrap gap-2">
-          {doctor.qualifications?.map((qual: string, index: number) => (
-            <span
-              key={index}
-              className={`
-                px-3 py-1 rounded-full text-xs font-medium
-                ${isSelected 
-                  ? 'bg-white/20 text-white' 
-                  : 'bg-[#8B5C9E]/5 text-[#8B5C9E]'
-                }
-              `}
-            >
-              {qual}
-            </span>
-          ))}
-        </div>
-
-        {/* Stats Row */}
-        <div className="mt-3 space-y-2">
-          <div className="flex items-center gap-6">
-            {doctor.rating && (
-              <div className="flex items-center">
-                <Star className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-yellow-500'}`} fill="currentColor" />
-                <span className={`ml-1 text-sm font-medium ${isSelected ? 'text-white' : 'text-gray-700'}`}>
-                  {doctor.rating}
-                </span>
-                <span className={`ml-1 text-sm ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>Rating</span>
-              </div>
-            )}
-            
-            {doctor.experience && (
-              <div className="flex items-center">
-                <Clock className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-[#8B5C9E]'}`} />
-                <span className={`ml-1 text-sm font-medium ${isSelected ? 'text-white' : 'text-gray-700'}`}>
-                  {doctor.experience}+
-                </span>
-                <span className={`ml-1 text-sm ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>years</span>
-              </div>
-            )}
-            
-            {doctor.availability && (
-              <div className="flex items-center">
-                <Calendar className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-[#8B5C9E]'}`} />
-                <span className={`ml-1 text-sm font-medium ${isSelected ? 'text-white' : 'text-gray-700'}`}>
-                  Available
-                </span>
-                <span className={`ml-1 text-sm ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>Today</span>
-              </div>
-            )}
-          </div>
-          
-          {/* Location on new line */}
-          {doctor.location && (
-            <div className="flex items-center">
-              <MapPin className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-[#8B5C9E]'}`} />
-              <span className={`ml-1 text-sm ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
-                {doctor.location}
-              </span>
-            </div>
+          {doctor.availability && (
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full ring-2 ring-white" />
           )}
+        </div>
+
+        {/* Doctor Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className={`text-lg font-semibold tracking-tight ${isSelected ? 'text-white' : 'text-gray-900'}`}>
+                {doctor.name}
+              </h3>
+              <p className={`text-sm mt-0.5 ${isSelected ? 'text-white/90' : 'text-gray-600'}`}>
+                {doctor.speciality}
+              </p>
+            </div>
+            <div className="text-right">
+              <div className={`text-xl font-bold ${isSelected ? 'text-white' : 'text-[#8B5C9E]'}`}>₹{doctor.fee}</div>
+              <div className={`text-xs mt-0.5 ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>Per Visit</div>
+            </div>
+          </div>
+
+          {/* Status Indicators */}
+          <div className="mt-4 flex flex-wrap gap-4">
+            <div className="flex items-center gap-2">
+              <div className={`
+                p-2 rounded-lg
+                ${isSelected ? 'bg-white/20' : 'bg-[#8B5C9E]/10'}
+              `}>
+                <Clock className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-[#8B5C9E]'}`} />
+              </div>
+              <div>
+                <p className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-gray-900'}`}>
+                  Available
+                </p>
+                <p className={`text-xs font-medium ${isSelected ? 'text-white/90' : 'text-gray-700'}`}>
+                  Today
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className={`
+                p-2 rounded-lg
+                ${isSelected ? 'bg-white/20' : 'bg-[#8B5C9E]/10'}
+              `}>
+                <MapPin className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-[#8B5C9E]'}`} />
+              </div>
+              <div>
+                <p className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-gray-900'}`}>
+                  HSR Layout
+                </p>
+                <p className={`text-xs font-medium ${isSelected ? 'text-white/90' : 'text-gray-700'}`}>
+                  Location
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </motion.button>
+  </motion.div>
 );
 
-const DoctorSelection = ({ formData, onChange, onSubmit }: DoctorSelectionProps) => {
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
+const DoctorSelection = () => {
+  const { state, dispatch } = useBookingForm();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    // Check if mobile device
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-    };
-  }, []);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
 
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
         setIsLoading(true);
-        setError(null);
-        
         const response = await fetch('/api/doctors');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch doctors: ${response.statusText}`);
-        }
-        
+        if (!response.ok) throw new Error('Failed to fetch doctors');
         const data = await response.json();
-        if (!Array.isArray(data)) {
-          throw new Error('Invalid response format');
-        }
-        
         setDoctors(data);
+        setError(null);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load doctors';
-        setError(errorMessage);
+        setError('Failed to load doctors. Please try again.');
         console.error('Error fetching doctors:', err);
       } finally {
         setIsLoading(false);
@@ -170,117 +138,155 @@ const DoctorSelection = ({ formData, onChange, onSubmit }: DoctorSelectionProps)
     fetchDoctors();
   }, []);
 
-  const handleDoctorSelect = (doctor: Doctor) => {
-    // Accept all doctor ID formats that are valid
-    const isValidDoctorId = (id: string) => {
-      // UUID v4 format regex
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      // Allow any hyphenated or alphanumeric ID
-      const validIdRegex = /^[a-z0-9_-]+$/i;
-      return uuidRegex.test(id) || validIdRegex.test(id);
-    };
+  const specialties = Array.from(new Set(doctors.map(doctor => doctor.speciality)));
 
-    if (!isValidDoctorId(doctor.id)) {
-      setError(`Cannot book with this doctor (Invalid ID format: ${doctor.id}). Please select a different doctor.`);
-      return;
-    }
-    
-    // Provide haptic feedback if available
-    if (window.navigator && window.navigator.vibrate) {
-      window.navigator.vibrate(50);
-    }
-    
-    onChange({ doctor });
-    onSubmit();
-  };
+  const filteredDoctors = doctors.filter(doctor => {
+    const matchesSearch = doctor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         doctor.speciality.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSpecialty = !selectedSpecialty || doctor.speciality === selectedSpecialty;
+    return matchesSearch && matchesSpecialty;
+  });
 
-  // Loading skeleton for better UX
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 w-3/4 bg-gray-200 rounded mb-2"></div>
-          <div className="h-5 w-1/2 bg-gray-200 rounded"></div>
-        </div>
-        
-        {[1, 2, 3].map(i => (
-          <div key={i} className="animate-pulse bg-white rounded-2xl p-4 border border-gray-100">
-            <div className="flex items-start gap-4">
-              <div className="w-16 h-24 rounded-xl bg-gray-200"></div>
-              <div className="flex-1">
-                <div className="h-5 bg-gray-200 rounded w-2/3 mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
-                <div className="flex gap-2 mb-4">
-                  <div className="h-6 w-16 bg-gray-200 rounded-full"></div>
-                  <div className="h-6 w-16 bg-gray-200 rounded-full"></div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="h-10 bg-gray-200 rounded"></div>
-                  <div className="h-10 bg-gray-200 rounded"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+      <div className="flex flex-col items-center justify-center py-12">
+        <div className="w-10 h-10 border-4 border-[#8B5C9E] border-t-transparent rounded-full animate-spin" />
+        <p className="mt-4 text-gray-600">Loading doctors...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-6 sm:py-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
-          <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+      <div className="flex flex-col items-center justify-center py-12 px-4">
+        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+          <AlertCircle className="w-8 h-8 text-red-600" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load Doctors</h3>
-        <p className="text-gray-600 mb-4">{error}</p>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Something went wrong</h3>
+        <p className="text-gray-600 text-center mb-4">{error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="inline-flex items-center px-4 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-[#8B5C9E] hover:bg-[#7A4B8D] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8B5C9E]"
+          className="px-4 py-2 bg-[#8B5C9E] text-white rounded-lg hover:bg-[#7A4B8D] transition-colors"
         >
-          Try again
+          Try Again
         </button>
-      </div>
-    );
-  }
-
-  if (!doctors.length) {
-    return (
-      <div className="text-center py-6 sm:py-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 mb-4">
-          <svg className="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-        </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Doctors Available</h3>
-        <p className="text-gray-600">Please check back later or contact support for assistance.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div>
         <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-1">
-          Choose Your Doctor
+          Select a Doctor
         </h1>
-        <p className="text-sm sm:text-base text-gray-600 font-medium">
-          Select a doctor to proceed with your appointment
+        <p className="text-sm sm:text-base text-gray-600">
+          Choose from our experienced medical professionals
         </p>
       </div>
 
-      <div className="space-y-3 sm:space-y-4">
-        {doctors.map((doctor) => (
-          <DoctorCard
-            key={doctor.id}
-            doctor={doctor}
-            isSelected={formData.doctor?.id === doctor.id}
-            onSelect={handleDoctorSelect}
+      {/* Search and Filter */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search doctors by name or specialty"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-[#8B5C9E] focus:ring-2 focus:ring-[#8B5C9E]/20 transition-all"
           />
-        ))}
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+        <button
+          onClick={() => setShowFilters(true)}
+          className={`
+            p-2.5 rounded-xl border transition-all
+            ${selectedSpecialty
+              ? 'border-[#8B5C9E] bg-[#8B5C9E] text-white'
+              : 'border-gray-200 text-gray-700 hover:border-[#8B5C9E] hover:text-[#8B5C9E]'
+            }
+          `}
+        >
+          <Filter className="w-5 h-5" />
+        </button>
       </div>
+
+      {/* Doctor List */}
+      <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-24rem)] overscroll-contain pb-6 scroll-smooth">
+        <AnimatePresence mode="popLayout">
+          {filteredDoctors.length > 0 ? (
+            filteredDoctors.map((doctor) => (
+              <DoctorCard
+                key={doctor.id}
+                doctor={doctor}
+                isSelected={state.doctor?.id === doctor.id}
+                onSelect={(doctor) => dispatch({ type: 'SET_DOCTOR', payload: doctor })}
+              />
+            ))
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="flex flex-col items-center justify-center py-8 px-4"
+            >
+              <Users className="w-12 h-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">No doctors found</h3>
+              <p className="text-gray-600 text-center">
+                Try adjusting your search or filters
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Filter Sheet */}
+      <Sheet open={showFilters} onOpenChange={setShowFilters}>
+        <SheetContent side="right" className="w-full sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>Filter Doctors</SheetTitle>
+          </SheetHeader>
+          <div className="py-6">
+            <h3 className="text-sm font-medium text-gray-900 mb-3">Specialty</h3>
+            <div className="space-y-2">
+              {specialties.map((specialty) => (
+                <button
+                  key={specialty}
+                  onClick={() => {
+                    setSelectedSpecialty(specialty === selectedSpecialty ? null : specialty);
+                    setShowFilters(false);
+                  }}
+                  className={`
+                    w-full flex items-center justify-between px-4 py-2 rounded-lg text-left
+                    ${specialty === selectedSpecialty
+                      ? 'bg-[#8B5C9E] text-white'
+                      : 'hover:bg-[#F9F5FF] text-gray-700'
+                    }
+                  `}
+                >
+                  <span>{specialty}</span>
+                  {specialty === selectedSpecialty && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="w-2 h-2 rounded-full bg-white"
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };

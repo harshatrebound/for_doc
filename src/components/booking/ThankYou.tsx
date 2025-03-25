@@ -1,236 +1,142 @@
 'use client';
 
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
-import { Calendar, Check } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import type { ThankYouProps } from '@/types/booking';
+import { CheckCircle2 } from 'lucide-react';
+import { useBookingForm } from '@/contexts/BookingFormContext';
 
-const ThankYou = ({ formData }: ThankYouProps) => {
-  const [confetti, setConfetti] = useState<{ x: number; y: number; size: number; color: string }[]>([]);
-  const [isMobile, setIsMobile] = useState(false);
+interface ThankYouProps {
+  onClose: () => void;
+}
 
-  // Check if mobile device
+const ThankYou = ({ onClose }: ThankYouProps) => {
+  const { state } = useBookingForm();
+
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640);
+    // Confetti effect
+    const confetti = () => {
+      const colors = ['#8B5C9E', '#6B4A7E', '#F9F5FF'];
+      const confettiCount = 100;
+      const container = document.createElement('div');
+      container.style.position = 'fixed';
+      container.style.top = '0';
+      container.style.left = '0';
+      container.style.width = '100%';
+      container.style.height = '100%';
+      container.style.pointerEvents = 'none';
+      container.style.zIndex = '9999';
+      document.body.appendChild(container);
+
+      Array.from({ length: confettiCount }).forEach(() => {
+        const confetti = document.createElement('div');
+        const size = Math.random() * 10 + 5;
+        confetti.style.position = 'absolute';
+        confetti.style.width = `${size}px`;
+        confetti.style.height = `${size}px`;
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.borderRadius = '50%';
+        confetti.style.opacity = '0';
+        confetti.style.transform = `translate(${Math.random() * window.innerWidth}px, ${-20}px)`;
+        container.appendChild(confetti);
+
+        const animation = confetti.animate(
+          [
+            {
+              transform: `translate(${Math.random() * window.innerWidth}px, ${-20}px)`,
+              opacity: 1,
+            },
+            {
+              transform: `translate(${Math.random() * window.innerWidth}px, ${window.innerHeight + 20}px)`,
+              opacity: 0,
+            },
+          ],
+          {
+            duration: Math.random() * 2000 + 1000,
+            easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+          }
+        );
+
+        animation.onfinish = () => {
+          confetti.remove();
+          if (container.children.length === 0) {
+            container.remove();
+          }
+        };
+      });
     };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
+
+    confetti();
+
+    // Cleanup function
     return () => {
-      window.removeEventListener('resize', checkMobile);
+      const container = document.querySelector('div[style*="pointer-events: none"]');
+      if (container) {
+        container.remove();
+      }
     };
   }, []);
 
-  useEffect(() => {
-    // Generate confetti particles - reduced for mobile
-    const colors = ['#8B5C9E', '#6B4A7E', '#FFC0CB', '#FFD700', '#90EE90', '#ADD8E6'];
-    const particleCount = isMobile ? 50 : 100; // Reduced for mobile
-    
-    const newConfetti = Array.from({ length: particleCount }).map(() => ({
-      x: Math.random() * 100, // percentage across screen
-      y: -20 - Math.random() * 80, // start above screen
-      size: isMobile ? 3 + Math.random() * 7 : 5 + Math.random() * 10, // smaller on mobile
-      color: colors[Math.floor(Math.random() * colors.length)],
-    }));
-    
-    setConfetti(newConfetti);
-    
-    // Success haptic feedback
-    if (isMobile && window.navigator && window.navigator.vibrate) {
-      window.navigator.vibrate([50, 20, 100]);
-    }
-  }, [isMobile]);
-
-  const addToCalendar = () => {
-    if (!formData.selectedDate || !formData.doctor) return;
-
-    const [hours, minutes] = formData.selectedTime.split(':');
-    const startDate = new Date(formData.selectedDate);
-    startDate.setHours(parseInt(hours), parseInt(minutes));
-    const endDate = new Date(startDate);
-    endDate.setHours(startDate.getHours() + 1);
-
-    const event = {
-      title: `Appointment with ${formData.doctor.name}`,
-      description: `Medical appointment\nDoctor: ${formData.doctor.name} (${formData.doctor.speciality})\nFee: ₹${formData.doctor.fee}`,
-      startTime: startDate.toISOString(),
-      endTime: endDate.toISOString(),
-      location: 'Medical Clinic',
-    };
-
-    // Use different calendar provider based on device
-    if (isMobile && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
-      // iOS calendar format
-      const iosCalendarUrl = `webcal://p76-caldav.icloud.com/published/2/MTI5NDI0MzM3MDEyOTQyNM3MTSCgbR7mUOCPpxM2G6qRCm`;
-      window.open(iosCalendarUrl, '_blank');
-    } else {
-      // Google Calendar (default)
-      const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-        event.title
-      )}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
-      }/${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
-      }&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(
-        event.location
-      )}`;
-      window.open(googleCalendarUrl, '_blank');
-    }
-  };
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className="flex flex-col items-center"
-    >
-      {/* Confetti animation - optimized for performance */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {confetti.map((particle, index) => (
-          <motion.div
-            key={index}
-            className="absolute rounded-full will-change-transform"
-            initial={{ 
-              x: `${particle.x}vw`, 
-              y: `${particle.y}vh`, 
-              opacity: 1 
-            }}
-            animate={{ 
-              y: '120vh', 
-              opacity: [1, 1, 0.8, 0.6, 0.4, 0],
-              rotate: Math.random() * 360,
-            }}
-            transition={{ 
-              duration: isMobile ? 2 + Math.random() * 2 : 4 + Math.random() * 4,
-              delay: Math.random() * 1,
-              ease: [0.23, 0.44, 0.34, 0.99],
-            }}
-            style={{
-              width: particle.size,
-              height: particle.size,
-              backgroundColor: particle.color,
-              transform: `translateZ(0)`, // hardware acceleration
-            }}
-          />
-        ))}
-      </div>
-
-      <motion.div 
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-        className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center shadow-lg mb-6"
+    <div className="text-center py-12 px-4">
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{
+          type: 'spring',
+          stiffness: 260,
+          damping: 20,
+        }}
+        className="w-16 h-16 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center"
       >
-        <Check className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+        <CheckCircle2 className="w-10 h-10 text-green-600" />
       </motion.div>
 
-      <motion.h2 
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3"
-      >
-        Thank You!
-      </motion.h2>
-      
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="text-center mb-8"
+        transition={{ delay: 0.2 }}
       >
-        <p className="text-lg sm:text-xl font-semibold text-gray-800 mb-1">Your Appointment is Confirmed</p>
-        {formData.doctor && formData.selectedDate && (
-          <p className="text-sm sm:text-base text-gray-600 max-w-md mx-auto px-4 sm:px-0">
-            Your appointment with <span className="font-medium text-[#8B5C9E]">{formData.doctor.name}</span> has been scheduled for{' '}
-            <span className="font-medium text-gray-800">
-              {format(formData.selectedDate, isMobile ? 'EEE, MMM d' : 'EEEE, MMMM d')} at {(() => {
-                const [hours, minutes] = formData.selectedTime.split(':');
-                const hour = parseInt(hours, 10);
-                const period = hour >= 12 ? 'PM' : 'AM';
-                const hour12 = hour % 12 || 12;
-                return `${hour12}:${minutes} ${period}`;
-              })()}
-            </span>
-          </p>
-        )}
-      </motion.div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Booking Confirmed!
+        </h2>
+        <p className="text-gray-600 mb-8">
+          Your appointment has been successfully scheduled
+        </p>
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-md w-full max-w-md mb-6 sm:mb-8 mx-4 sm:mx-0"
-      >
-        <div className="flex items-start mb-4">
-          <div className="bg-[#8B5C9E]/10 p-3 rounded-lg mr-4">
-            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-[#8B5C9E]" />
-          </div>
+        <div className="max-w-sm mx-auto bg-white rounded-xl border border-gray-200 p-6 space-y-4">
           <div>
-            <h3 className="font-semibold text-gray-900 mb-1">Appointment Details</h3>
-            <p className="text-xs sm:text-sm text-gray-500">Please arrive 10 minutes before your scheduled time</p>
-          </div>
-        </div>
-
-        {formData.doctor && (
-          <div className="bg-gray-50 rounded-lg p-4 mb-4">
-            <div className="flex justify-between mb-3">
-              <span className="text-sm text-gray-500">Doctor</span>
-              <span className="text-sm font-medium text-gray-900">{formData.doctor.name}</span>
-            </div>
-            <div className="flex justify-between mb-3">
-              <span className="text-sm text-gray-500">Specialty</span>
-              <span className="text-sm font-medium text-gray-900">{formData.doctor.speciality}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-500">Fee</span>
-              <span className="text-sm font-medium text-[#8B5C9E]">₹{formData.doctor.fee}</span>
-            </div>
-          </div>
-        )}
-
-        <div className="mb-4">
-          <div className="flex items-center mb-2">
-            <div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
-            <p className="text-xs sm:text-sm text-gray-500">
-              A confirmation email has been sent to <span className="font-medium">{formData.email}</span>
+            <p className="text-sm font-medium text-gray-500">Doctor</p>
+            <p className="text-base font-semibold text-gray-900">
+              {state.doctor?.name}
             </p>
           </div>
-          <div className="flex items-center">
-            <div className="w-2 h-2 rounded-full bg-gray-300 mr-2"></div>
-            <p className="text-xs sm:text-sm text-gray-500">
-              We've also sent the details to your phone at <span className="font-medium">{formData.phone}</span>
+
+          <div>
+            <p className="text-sm font-medium text-gray-500">Date & Time</p>
+            <p className="text-base font-semibold text-gray-900">
+              {state.selectedDate && format(state.selectedDate, 'MMMM d, yyyy')}
+              {' at '}
+              {state.selectedTime}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-gray-500">Patient</p>
+            <p className="text-base font-semibold text-gray-900">
+              {state.patientName}
             </p>
           </div>
         </div>
 
-        <motion.button
-          onClick={addToCalendar}
-          whileHover={{ scale: isMobile ? 1.01 : 1.03 }}
-          whileTap={{ scale: 0.98 }}
-          className="flex items-center justify-center w-full px-5 py-3 rounded-lg bg-gradient-to-r from-[#8B5C9E] to-[#7B4C8E] text-white font-medium hover:opacity-95 transition-all duration-200 shadow-md hover:shadow-lg touch-manipulation"
+        <button
+          onClick={onClose}
+          className="mt-8 px-6 py-2.5 bg-[#8B5C9E] text-white rounded-lg hover:bg-[#7A4B8D] transition-colors"
         >
-          <Calendar className="w-4 h-4 mr-2" />
-          <span>Add to {isMobile && /iPhone|iPad|iPod/.test(navigator.userAgent) ? "iOS" : "Google"} Calendar</span>
-        </motion.button>
+          Done
+        </button>
       </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        className="flex justify-center"
-      >
-        <a 
-          href="/" 
-          className="text-[#8B5C9E] hover:text-[#7A4B8D] text-sm font-medium transition-colors hover:underline px-4 py-2 touch-manipulation"
-        >
-          ← Return to Home
-        </a>
-      </motion.div>
-    </motion.div>
+    </div>
   );
 };
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Calendar, Activity, Heart, Users, Phone, Mail, MapPin, ArrowRight, Star } from 'lucide-react';
+import { Calendar, Activity, Heart, Users, Phone, Mail, MapPin, ArrowRight, Star, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -300,9 +300,7 @@ export default function HomePage() {
           </motion.div>
 
           {/* Enhanced Specialties Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E]/0 via-[#8B5C9E]/5 to-[#8B5C9E]/0 blur-3xl -z-10" />
-            
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {specialties.map((specialty, index) => (
               <motion.div
                 key={specialty.title}
@@ -315,7 +313,7 @@ export default function HomePage() {
                 {/* Enhanced Card Container */}
                 <div className="relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden">
                   {/* Image Container with Enhanced Effects */}
-                  <div className="aspect-[4/3] relative">
+                  <div className="relative h-64 w-full">
                     <Image
                       src={specialty.image}
                       alt={specialty.title}
@@ -323,7 +321,7 @@ export default function HomePage() {
                       loading="lazy"
                       className="object-cover transition-transform duration-700 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-60 group-hover:opacity-70 transition-opacity duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-80" />
                     
                     {/* Enhanced Floating Icon */}
                     <motion.div
@@ -337,50 +335,58 @@ export default function HomePage() {
                         <specialty.icon className="w-6 h-6 text-white transform group-hover:scale-110 transition-transform duration-500" />
                       </div>
                     </motion.div>
-
-                    {/* Added Corner Accent */}
-                    <div className="absolute top-0 left-0 w-16 h-16 overflow-hidden">
-                      <div className="absolute top-0 left-0 w-24 h-1 bg-gradient-to-r from-white/0 via-white/50 to-white/0 transform -rotate-45 translate-x-[-2rem] group-hover:translate-x-[5rem] transition-transform duration-1000" />
-                    </div>
                   </div>
 
-                  {/* Enhanced Content Container */}
-                  <div className="absolute bottom-0 left-0 right-0 p-8 transform translate-y-6 group-hover:translate-y-0 transition-transform duration-500">
-                    <div className="space-y-4">
-                      <h3 className="text-2xl font-semibold text-white flex items-center">
-                        <span className="relative">
-                          {specialty.title}
-                          <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-500" />
-                        </span>
-                        <motion.div
-                          initial={{ scale: 0, opacity: 0 }}
-                          whileInView={{ scale: 1, opacity: 1 }}
-                          transition={{ delay: index * 0.3, duration: 0.5 }}
-                          className="ml-3 w-2 h-2 rounded-full bg-[#8B5C9E] group-hover:animate-pulse"
-                        />
-                      </h3>
-                      <p className="text-gray-200 opacity-0 group-hover:opacity-100 transition-all duration-500 leading-relaxed transform translate-y-2 group-hover:translate-y-0">
-                        {specialty.description}
-                      </p>
-                      <div className="flex items-center space-x-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
-                        <Button
-                          variant="outline"
-                          className="bg-[#8B5C9E]/40 backdrop-blur-md border-white/20 text-white hover:bg-white/20 rounded-full transition-all duration-300 group-hover:scale-105"
-                        >
-                          Learn More
-                          <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                        </Button>
-                        <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
-                          <ArrowRight className="w-4 h-4 text-white" />
-                        </div>
+                  {/* Content Container - Always Visible */}
+                  <div className="p-6 relative z-10">
+                    <h3 className="text-2xl font-semibold text-gray-900 flex items-center mb-3">
+                      <span className="relative">
+                        {specialty.title}
+                        <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#8B5C9E] group-hover:w-full transition-all duration-500" />
+                      </span>
+                      <motion.div
+                        initial={{ scale: 0, opacity: 0 }}
+                        whileInView={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: index * 0.3, duration: 0.5 }}
+                        className="ml-3 w-2 h-2 rounded-full bg-[#8B5C9E] group-hover:animate-pulse"
+                      />
+                    </h3>
+                    <p className="text-gray-600 mb-4 leading-relaxed">
+                      {specialty.description}
+                    </p>
+                    
+                    {/* Enhanced Action Area */}
+                    <div className="flex items-center justify-between">
+                      <Button
+                        variant="outline"
+                        className="bg-transparent border-[#8B5C9E] text-[#8B5C9E] hover:bg-[#8B5C9E]/5 rounded-full transition-all duration-300 group-hover:scale-105"
+                      >
+                        Learn More
+                        <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                      </Button>
+                      
+                      {/* Hover Effect Indicator */}
+                      <div className="w-8 h-8 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center transform group-hover:rotate-45 transition-transform duration-500">
+                        <Plus className="w-4 h-4 text-[#8B5C9E] group-hover:scale-110 transition-transform duration-300" />
                       </div>
                     </div>
                   </div>
 
-                  {/* Enhanced Hover Gradient */}
+                  {/* Enhanced Hover Effects */}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#8B5C9E]/20 to-transparent" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E]/10 via-transparent to-[#8B5C9E]/10" />
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#8B5C9E]/10 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E]/5 via-transparent to-[#8B5C9E]/5" />
+                    
+                    {/* Animated Corner Lines */}
+                    <div className="absolute top-0 left-0 w-16 h-16">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-[#8B5C9E]/20 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
+                      <div className="absolute top-0 left-0 w-1 h-full bg-[#8B5C9E]/20 transform origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-500" />
+                    </div>
+                    <div className="absolute bottom-0 right-0 w-16 h-16">
+                      <div className="absolute bottom-0 right-0 w-full h-1 bg-[#8B5C9E]/20 transform origin-right scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
+                      <div className="absolute bottom-0 right-0 w-1 h-full bg-[#8B5C9E]/20 transform origin-bottom scale-y-0 group-hover:scale-y-100 transition-transform duration-500" />
+                    </div>
                   </div>
                 </div>
               </motion.div>

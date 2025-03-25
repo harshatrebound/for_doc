@@ -1,4 +1,14 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Monkpress
+
+A modern, elegant appointment booking system for medical professionals. Built with Next.js and designed for simplicity and efficiency.
+
+## Features
+
+- 🎯 Smart Scheduling: Intelligent appointment management system
+- 👨‍⚕️ Doctor Management: Easy-to-use interface for managing doctor schedules
+- 📱 Mobile Responsive: Optimized for all devices
+- 🔒 Secure: Built with security best practices
+- ⚡ Fast & Modern: Built with Next.js for optimal performance
 
 ## Getting Started
 
@@ -10,13 +20,33 @@ npm run dev
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tech Stack
+
+- **Framework**: Next.js 14
+- **Styling**: Tailwind CSS
+- **Database**: PostgreSQL with Prisma
+- **Authentication**: NextAuth.js
+- **UI Components**: Radix UI
+- **Animations**: Framer Motion
+
+## Development
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up your environment variables
+4. Run the development server: `npm run dev`
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+MIT License - feel free to use this project for your own purposes.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 

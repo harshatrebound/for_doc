@@ -185,15 +185,14 @@ export const Summary: React.FC<SummaryProps> = ({
         )}
       </div>
 
-      {/* Actions */}
+      {/* Submit Button */}
       <div className="flex justify-end pt-4">
         <motion.button
           type="button"
           onClick={handleSubmit}
-          whileHover={{ scale: isMobile ? 1 : 1.02 }}
           whileTap={{ scale: 0.98 }}
           disabled={isSubmitting}
-          className="w-full sm:w-auto px-5 py-3 text-sm font-medium text-white bg-[#8B5C9E] rounded-lg hover:bg-[#7A4B8D] shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8B5C9E] transition-colors disabled:opacity-70 disabled:cursor-not-allowed touch-manipulation"
+          className="w-full sm:w-auto px-6 py-3 text-sm font-medium text-white bg-[#8B5C9E] rounded-lg hover:bg-[#7A4B8D] shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8B5C9E] transition-colors disabled:opacity-70 disabled:cursor-not-allowed touch-manipulation"
         >
           {isSubmitting ? (
             <span className="flex items-center justify-center">

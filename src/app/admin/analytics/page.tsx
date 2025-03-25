@@ -148,7 +148,7 @@ export default function AnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto px-4 py-6">
         <div className="text-center py-12 text-gray-600">Loading analytics...</div>
       </div>
     );
@@ -156,7 +156,7 @@ export default function AnalyticsPage() {
 
   if (error || !analytics) {
     return (
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto px-4 py-6">
         <div className="text-center py-12 text-red-600">
           {error || 'Failed to load analytics data'}
         </div>
@@ -165,48 +165,48 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+    <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
         <div className="text-sm text-gray-500">
           Last 30 days overview
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-6 border-0 shadow-md bg-white">
-          <h3 className="text-sm font-medium text-gray-500">Total Appointments</h3>
-          <p className="mt-2 text-3xl font-semibold text-gray-900">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-4 sm:p-6 border-0 shadow-md bg-white">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-500">Total Appointments</h3>
+          <p className="mt-2 text-xl sm:text-3xl font-semibold text-gray-900">
             {analytics.totalAppointments}
           </p>
         </Card>
-        <Card className="p-6 border-0 shadow-md bg-white">
-          <h3 className="text-sm font-medium text-gray-500">Completed</h3>
-          <p className="mt-2 text-3xl font-semibold text-green-600">
+        <Card className="p-4 sm:p-6 border-0 shadow-md bg-white">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-500">Completed</h3>
+          <p className="mt-2 text-xl sm:text-3xl font-semibold text-green-600">
             {analytics.completedAppointments}
           </p>
         </Card>
-        <Card className="p-6 border-0 shadow-md bg-white">
-          <h3 className="text-sm font-medium text-gray-500">Cancelled</h3>
-          <p className="mt-2 text-3xl font-semibold text-red-600">
+        <Card className="p-4 sm:p-6 border-0 shadow-md bg-white">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-500">Cancelled</h3>
+          <p className="mt-2 text-xl sm:text-3xl font-semibold text-red-600">
             {analytics.cancelledAppointments}
           </p>
         </Card>
-        <Card className="p-6 border-0 shadow-md bg-white">
-          <h3 className="text-sm font-medium text-gray-500">Total Revenue</h3>
-          <p className="mt-2 text-3xl font-semibold text-[#8B5C9E]">
+        <Card className="p-4 sm:p-6 border-0 shadow-md bg-white">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-500">Total Revenue</h3>
+          <p className="mt-2 text-xl sm:text-3xl font-semibold text-[#8B5C9E]">
             ₹{analytics.totalRevenue.toFixed(2)}
           </p>
         </Card>
       </div>
 
       {/* Revenue by Doctor */}
-      <Card className="border-0 shadow-md bg-white">
-        <div className="p-6 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Revenue by Doctor</h2>
+      <Card className="border-0 shadow-md bg-white overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-gray-100">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900">Revenue by Doctor</h2>
         </div>
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <DataTable
             columns={revenueColumns}
             data={analytics.revenueByDoctor}
@@ -216,11 +216,11 @@ export default function AnalyticsPage() {
       </Card>
 
       {/* Recent Activity */}
-      <Card className="border-0 shadow-md bg-white">
-        <div className="p-6 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+      <Card className="border-0 shadow-md bg-white overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-gray-100">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900">Recent Activity</h2>
         </div>
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <DataTable
             columns={activityColumns}
             data={analytics.recentActivity}

@@ -1,13 +1,33 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { DataTable } from '@/components/admin/DataTable';
 import { Button } from '@/components/ui/button';
-import { format } from 'date-fns';
 import { fetchDoctors, fetchDoctorSchedule } from '@/app/actions/admin';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { Card } from '@/components/ui/card';
+import { 
+  ChevronDown, 
+  ChevronUp, 
+  Search, 
+  MoreVertical,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Clock,
+  Plus,
+  Settings,
+  Users
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
 
 interface Doctor {
   id: string;
@@ -42,9 +62,15 @@ const daysOfWeek = [
   'Saturday',
 ];
 
+const shortDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 export default function SchedulePage() {
   const [doctorsWithSchedule, setDoctorsWithSchedule] = useState<DoctorWithSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDoctor, setSelectedDoctor] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -81,6 +107,9 @@ export default function SchedulePage() {
         })
       );
       setDoctorsWithSchedule(doctorsWithSchedule);
+      if (doctorsWithSchedule.length > 0) {
+        setSelectedDoctor(doctorsWithSchedule[0].id);
+      }
     } catch (error) {
       console.error('Error loading schedules:', error);
       toast.error('Failed to load schedules');
@@ -89,91 +118,247 @@ export default function SchedulePage() {
     }
   };
 
-  const formatSchedule = (schedules: Schedule[]) => {
-    if (!schedules.length) return 'No schedule set';
-    
-    const activeDays = schedules
-      .filter((s) => s.isActive)
-      .map((s) => ({
-        day: daysOfWeek[s.dayOfWeek],
-        time: `${s.startTime} - ${s.endTime}`,
-        break: s.breakStart && s.breakEnd ? `Break: ${s.breakStart} - ${s.breakEnd}` : null,
-      }));
-
-    if (!activeDays.length) return 'Not available';
-
-    return activeDays
-      .map((d) => `${d.day}: ${d.time}${d.break ? `\n${d.break}` : ''}`)
-      .join('\n');
+  const getWeekDays = () => {
+    const start = startOfWeek(selectedDate);
+    return Array.from({ length: 7 }, (_, i) => addDays(start, i));
   };
 
-  const columns = [
-    {
-      header: 'Doctor',
-      accessorKey: 'name' as keyof DoctorWithSchedule,
-      sortable: true,
-      cell: (row: DoctorWithSchedule) => (
-        <div className="font-medium text-gray-900">{row.name}</div>
-      ),
-    },
-    {
-      header: 'Speciality',
-      accessorKey: 'speciality' as keyof DoctorWithSchedule,
-      sortable: true,
-      cell: (row: DoctorWithSchedule) => (
-        <div className="text-gray-700">{row.speciality}</div>
-      ),
-    },
-    {
-      header: 'Schedule',
-      accessorKey: 'schedules' as keyof DoctorWithSchedule,
-      cell: (row: DoctorWithSchedule) => (
-        <pre className="whitespace-pre-wrap text-sm text-gray-700 font-mono bg-gray-50 p-2 rounded">
-          {formatSchedule(row.schedules)}
-        </pre>
-      ),
-    },
-  ];
+  const weekDays = getWeekDays();
 
-  const actions = (row: DoctorWithSchedule) => [
-    {
-      label: 'Edit Schedule',
-      onClick: () => router.push(`/admin/doctors/${row.id}/schedule`),
-    },
-    {
-      label: 'Special Dates',
-      onClick: () => router.push(`/admin/doctors/${row.id}/special-dates`),
-    },
-  ];
+  const filteredDoctors = doctorsWithSchedule.filter(doctor =>
+    doctor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    doctor.speciality.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const selectedDoctorData = doctorsWithSchedule.find(d => d.id === selectedDoctor);
+  const todaySchedule = selectedDoctorData?.schedules.find(
+    s => s.dayOfWeek === selectedDate.getDay()
+  );
+
+  const getTimeSlots = (schedule: Schedule) => {
+    if (!schedule) return [];
+    const slots = [];
+    let currentTime = schedule.startTime;
+    while (currentTime < schedule.endTime) {
+      slots.push(currentTime);
+      // Add duration and buffer time
+      const [hours, minutes] = currentTime.split(':').map(Number);
+      let totalMinutes = hours * 60 + minutes + schedule.slotDuration + schedule.bufferTime;
+      const newHours = Math.floor(totalMinutes / 60);
+      const newMinutes = totalMinutes % 60;
+      currentTime = `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+    }
+    return slots;
+  };
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center text-gray-600">Loading schedules...</div>
+      <div className="min-h-screen bg-gray-50 p-4 space-y-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+          <div className="h-24 bg-gray-200 rounded"></div>
+          <div className="grid grid-cols-4 gap-2">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-20 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Schedule Management</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Manage doctor schedules and availability
-          </p>
+    <div className="min-h-screen bg-gray-50 pb-20">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
+        <div className="px-4 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Schedule</h1>
+              <p className="mt-1 text-sm text-gray-500">
+                Manage availability and time slots
+              </p>
+            </div>
+            {/* Desktop Actions - Moved here */}
+            <div className="hidden md:flex items-center gap-2">
+              <Button
+                variant="outline"
+                className="border-[#8B5C9E] text-[#8B5C9E] hover:bg-[#8B5C9E]/5"
+                onClick={() => router.push(`/admin/doctors/${selectedDoctor}/special-dates`)}
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Special Dates
+              </Button>
+              <Button
+                className="bg-[#8B5C9E] hover:bg-[#8B5C9E]/90"
+                onClick={() => router.push(`/admin/doctors/${selectedDoctor}/schedule`)}
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Edit Schedule
+              </Button>
+            </div>
+          </div>
+
+          {/* Doctor Selector */}
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
+            {filteredDoctors.map((doctor) => (
+              <Button
+                key={doctor.id}
+                variant={selectedDoctor === doctor.id ? "default" : "outline"}
+                size="sm"
+                className={`flex-shrink-0 ${
+                  selectedDoctor === doctor.id 
+                    ? 'bg-[#8B5C9E] hover:bg-[#8B5C9E]/90' 
+                    : 'border-gray-200'
+                }`}
+                onClick={() => setSelectedDoctor(doctor.id)}
+              >
+                {doctor.name}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Week Navigation */}
+        <div className="px-4 pb-4">
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedDate(addDays(selectedDate, -7))}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <span className="text-sm font-medium text-gray-900">
+              {format(weekDays[0], 'MMM d')} - {format(weekDays[6], 'MMM d, yyyy')}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedDate(addDays(selectedDate, 7))}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-7 gap-1">
+            {weekDays.map((date, index) => (
+              <Button
+                key={index}
+                variant="ghost"
+                size="sm"
+                className={`p-1 h-auto flex flex-col items-center ${
+                  isSameDay(date, selectedDate)
+                    ? 'bg-[#8B5C9E]/10 text-[#8B5C9E] font-medium'
+                    : ''
+                }`}
+                onClick={() => setSelectedDate(date)}
+              >
+                <span className="text-xs">{shortDays[date.getDay()]}</span>
+                <span className="text-sm mt-1">{format(date, 'd')}</span>
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <Card className="border-0 shadow-md overflow-hidden">
-        <DataTable
-          columns={columns}
-          data={doctorsWithSchedule}
-          actions={actions}
-          searchable
-          sortable
-        />
-      </Card>
+      {/* Timeline View */}
+      <div className="p-4">
+        {todaySchedule ? (
+          <Card className="overflow-hidden">
+            <div className="p-4 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-[#8B5C9E]" />
+                  <span className="font-medium text-gray-900">
+                    {todaySchedule.startTime} - {todaySchedule.endTime}
+                  </span>
+                </div>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  todaySchedule.isActive 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {todaySchedule.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+            </div>
+
+            <div className="divide-y divide-gray-100">
+              {getTimeSlots(todaySchedule).map((slot, index) => {
+                const isBreak = todaySchedule.breakStart && todaySchedule.breakEnd &&
+                  slot >= todaySchedule.breakStart && slot < todaySchedule.breakEnd;
+
+                return (
+                  <div
+                    key={index}
+                    className={`p-4 ${
+                      isBreak ? 'bg-amber-50' : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-medium text-gray-900">
+                          {slot}
+                        </span>
+                        {isBreak && (
+                          <span className="text-xs text-amber-600 font-medium">
+                            Break Time
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {todaySchedule.slotDuration} min
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        ) : (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-8 h-8 text-[#8B5C9E]" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-1">No Schedule Set</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              {selectedDoctorData?.name} doesn't have a schedule for {format(selectedDate, 'EEEE')}
+            </p>
+            <Button
+              onClick={() => router.push(`/admin/doctors/${selectedDoctor}/schedule`)}
+              className="bg-[#8B5C9E] hover:bg-[#8B5C9E]/90"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Set Schedule
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Quick Actions */}
+      {todaySchedule && (
+        <>
+          {/* Mobile Actions */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1 border-[#8B5C9E] text-[#8B5C9E] hover:bg-[#8B5C9E]/5"
+                onClick={() => router.push(`/admin/doctors/${selectedDoctor}/schedule`)}
+              >
+                Edit Schedule
+              </Button>
+              <Button
+                className="flex-1 bg-[#8B5C9E] hover:bg-[#8B5C9E]/90"
+                onClick={() => router.push(`/admin/doctors/${selectedDoctor}/special-dates`)}
+              >
+                Special Dates
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 } 

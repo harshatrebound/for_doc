@@ -2,13 +2,10 @@ export interface Doctor {
   id: string;
   name: string;
   speciality: string;
-  fee: number;
   image?: string;
-  experience?: string;
-  rating?: number;
-  location?: string;
-  availability?: string[];
-  qualifications?: string[];
+  fee: number;
+  experience?: number;
+  availability?: boolean;
 }
 
 export interface BookingFormData {
@@ -18,26 +15,25 @@ export interface BookingFormData {
   patientName: string;
   email: string;
   phone: string;
-  notes: string;
+  notes?: string;
 }
 
 export interface DoctorSelectionProps {
   formData: BookingFormData;
-  onChange: (data: Partial<BookingFormData>) => void;
+  onChange: (updates: Partial<BookingFormData>) => void;
   onSubmit: () => void;
 }
 
 export interface DateTimeSelectionProps {
   formData: BookingFormData;
-  onChange: (data: Partial<BookingFormData>) => void;
+  onChange: (updates: Partial<BookingFormData>) => void;
   onSubmit: () => void;
   onBack: () => void;
-  isSelectable?: (date: Date) => boolean;
 }
 
 export interface PatientDetailsProps {
   formData: BookingFormData;
-  onChange: (data: Partial<BookingFormData>) => void;
+  onChange: (updates: Partial<BookingFormData>) => void;
   onSubmit: () => void;
   onBack: () => void;
 }
@@ -46,7 +42,7 @@ export interface SummaryProps {
   formData: BookingFormData;
   onSubmit: () => void;
   onBack: () => void;
-  isSubmitting?: boolean;
+  isSubmitting: boolean;
 }
 
 export interface ThankYouProps {
