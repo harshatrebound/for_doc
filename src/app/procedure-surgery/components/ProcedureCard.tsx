@@ -53,7 +53,7 @@ export const ProcedureCard = ({
   const categoryColor = getCategoryColor(categoryId);
 
   return (
-    <div className="group relative flex flex-col bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden h-full transform hover:-translate-y-1">
+    <div className="group relative flex flex-col bg-white rounded-xl hover:translate-y-[-4px] transition-all duration-300 overflow-hidden h-full transform shadow-[0_4px_8px_rgba(0,0,0,0.07)] hover:shadow-[0_8px_16px_rgba(0,0,0,0.1)]">
       {/* Image Container */}
       <div className="relative w-full h-48 overflow-hidden bg-gray-100">
         <Image 
