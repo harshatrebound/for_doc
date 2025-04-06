@@ -1,1 +1,10 @@
-'use client';\n\n// Import the HomePage component from the /homepage route\nimport HomePage from './homepage/page';\n\n// Root page component that simply renders the HomePage component\nexport default function RootPage() {\n  // Re-use the HomePage component for the root route\n  return <HomePage />;\n}
+'use client';
+
+// Import the HomePage component from the /homepage route
+import HomePage from './homepage/page';
+
+// Root page component that simply renders the HomePage component
+export default function RootPage() {
+  // Re-use the HomePage component for the root route
+  return <HomePage />;
+}
