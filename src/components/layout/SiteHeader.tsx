@@ -58,7 +58,7 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
   return (
     <>
       <header 
-        className={`w-full z-50 transition-all duration-300 mb-16 ${
+        className={`w-full z-50 transition-all duration-300 mb-8 ${
           scrolled ? 'py-3 bg-white shadow-md' : 'py-4 bg-white shadow-sm'
         }`}
       >
@@ -82,7 +82,7 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
             
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center">
-              <nav className="px-8 py-2 rounded-full transition-all duration-300 bg-gray-50 shadow-sm">
+              <nav className="px-8 py-2 rounded-full transition-all duration-300 bg-gray-50">
                 <ul className="flex items-center space-x-8">
                   {mainNavLinks.map((item) => (
                     <li key={item.name}>
@@ -162,7 +162,7 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
               
               {/* Book an Appointment Button */}
               <BookingButton 
-                className="ml-6 px-6 py-3 rounded-full font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]"
+                className="ml-6 px-6 py-3 rounded-full font-medium transition-colors duration-300 shadow-sm hover:shadow-md flex items-center bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]"
                 icon={<Calendar className="w-5 h-5 mr-2" />}
                 text="Book an Appointment"
               />
@@ -270,7 +270,7 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
       </header>
       
       {/* Spacer for fixed header pages - can be used conditionally if needed */}
-      {theme === 'fixed' && <div className="h-16 md:h-20 lg:h-24"></div>}
+      {theme === 'fixed' && <div className="h-14 md:h-16 lg:h-20"></div>}
     </>
   );
 } 
