@@ -54,11 +54,11 @@ export default function ProcedurePage({ params }: ProcedurePageProps) {
 
   return (
     <div className="min-h-screen bg-white">
-      <SiteHeader theme="light" />
+      <SiteHeader theme="transparent" />
       
-      <main className="pt-24 pb-16">
+      <main>
         {/* Hero Section */}
-        <div className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 mb-12">
+        <div className="w-full bg-gradient-to-r from-[#8B5C9E]/5 to-purple-50 pt-16">
           <div className="container mx-auto px-4 py-12">
             <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="flex-1 order-2 md:order-1">
@@ -107,7 +107,7 @@ export default function ProcedurePage({ params }: ProcedurePageProps) {
           </div>
         </div>
         
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 pt-12 pb-16">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Main Content */}
             <div className="w-full lg:w-2/3">

@@ -57,7 +57,7 @@ export default async function ProcedureSurgeryPage({
       
       <main>
         {/* Hero Section */}
-        <section className="px-4 md:px-8 lg:px-12">
+        <section className="pt-0">
           <div className="max-w-7xl mx-auto">
             <InteractiveHero 
               categories={categories} 

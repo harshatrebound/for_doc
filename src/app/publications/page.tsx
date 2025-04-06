@@ -318,10 +318,10 @@ export default async function PublicationsPage() {
             priority
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#8B5C9E]/80 to-[#392541]/90"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-[#8B5C9E]/90 to-[#392541]/95"></div>
         </div>
         
-        <div className="relative z-10 container mx-auto px-4">
+        <div className="relative z-10 container mx-auto px-4 pt-6">
           <div className="flex justify-center mb-6">
             <span className="inline-block p-3 rounded-full bg-white/10 backdrop-blur-sm">
               <BookOpen className="w-8 h-8 text-white" />

@@ -59,7 +59,7 @@ export const InteractiveHero = ({ categories, onCategorySelect }: InteractiveHer
   };
 
   return (
-    <div className="relative w-full h-[600px] bg-gradient-to-b from-purple-50 via-purple-100 to-white rounded-2xl overflow-hidden pt-24 mt-4">
+    <div className="relative w-full h-[600px] bg-gradient-to-b from-[#8B5C9E]/5 via-purple-100 to-white rounded-2xl overflow-hidden pt-16 mx-4 md:mx-8 lg:mx-12">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-[url('/images/blue-grid.svg')] opacity-5"></div>
       

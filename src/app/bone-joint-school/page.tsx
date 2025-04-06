@@ -294,10 +294,10 @@ export default async function BoneJointSchoolPage({
             className="object-cover opacity-70"
           />
           {/* Apply gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/80" /> 
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/60 to-black/80" /> 
         </div>
         
-        <div className="relative z-10 container mx-auto px-4">
+        <div className="relative z-10 container mx-auto px-4 pt-16">
           {/* Updated Heading Style */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] mb-6">
             <span className="relative inline-block">
