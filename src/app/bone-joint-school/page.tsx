@@ -280,7 +280,7 @@ export default async function BoneJointSchoolPage({
   
   return (
     <div className="min-h-screen bg-gray-50"> 
-      <SiteHeader theme="light" />
+      <SiteHeader theme="transparent" />
       
       {/* Enhanced Hero Section */}
       <section 

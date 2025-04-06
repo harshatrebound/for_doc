@@ -53,11 +53,11 @@ export default async function ProcedureSurgeryPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <SiteHeader theme="light" />
+      <SiteHeader theme="transparent" />
       
       <main>
         {/* Hero Section */}
-        <section className="pt-24 px-4 md:px-8 lg:px-12">
+        <section className="px-4 md:px-8 lg:px-12">
           <div className="max-w-7xl mx-auto">
             <InteractiveHero 
               categories={categories} 

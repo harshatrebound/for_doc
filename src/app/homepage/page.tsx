@@ -161,7 +161,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white" ref={containerRef}>
-      <SiteHeader />
+      <SiteHeader theme="transparent" />
 
       {/* Hero Section - Add more accessibility */}
       <section className="relative min-h-[100vh] flex flex-col justify-between overflow-hidden">

@@ -305,10 +305,10 @@ export default async function PublicationsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <SiteHeader theme="light" />
+      <SiteHeader theme="transparent" />
       
       {/* Hero Section with Academic Theme */}
-      <section className="relative py-24 md:py-32 flex items-center justify-center text-center overflow-hidden">
+      <section className="relative py-20 pt-32 md:py-32 flex items-center justify-center text-center overflow-hidden">
         {/* Background with abstract medical pattern */}
         <div className="absolute inset-0 z-0">
           <ClientImage

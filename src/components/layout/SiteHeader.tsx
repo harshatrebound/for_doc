@@ -7,10 +7,11 @@ import { Calendar, Menu, X, ChevronDown } from 'lucide-react';
 import BookingButton from '@/components/BookingButton';
 
 interface SiteHeaderProps {
-  theme?: 'light' | 'default' | 'fixed';
+  theme?: 'light' | 'transparent' | 'fixed' | 'default';
+  className?: string;
 }
 
-export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
+export default function SiteHeader({ theme = 'default', className = '' }: SiteHeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -24,7 +25,9 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const isLight = theme === 'light';
+  const isTransparent = theme === 'transparent' && !scrolled;
+  const isLight = theme === 'light' || (theme === 'transparent' && scrolled);
+  const isFixed = theme === 'fixed';
 
   // Main navigation links - reduced to essential items
   const mainNavLinks = [
@@ -58,9 +61,13 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
   return (
     <>
       <header 
-        className={`w-full z-50 transition-all duration-300 mb-8 ${
-          scrolled ? 'py-3 bg-white shadow-md' : 'py-4 bg-white shadow-sm'
-        }`}
+        className={`w-full z-50 transition-all duration-300 ${
+          isFixed ? 'fixed top-0 left-0 right-0' : 'absolute top-0 left-0 right-0'
+        } ${
+          scrolled 
+            ? 'py-3 bg-white shadow-md' 
+            : `py-4 ${isTransparent ? 'bg-transparent' : 'bg-white shadow-sm'}`
+        } ${className}`}
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
@@ -75,23 +82,33 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
                   className="object-contain"
                 />
               </div>
-              <span className="font-bold text-xl text-[#8B5C9E]">
+              <span className={`font-bold text-xl ${isTransparent && !scrolled ? 'text-white' : 'text-[#8B5C9E]'}`}>
                 Sports Orthopedics
               </span>
             </Link>
             
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center">
-              <nav className="px-8 py-2 rounded-full transition-all duration-300 bg-gray-50">
+              <nav className={`px-8 py-2 rounded-full transition-all duration-300 ${
+                isTransparent && !scrolled 
+                  ? 'bg-white/10 backdrop-blur-sm' 
+                  : 'bg-gray-50'
+              }`}>
                 <ul className="flex items-center space-x-8">
                   {mainNavLinks.map((item) => (
                     <li key={item.name}>
                       <Link 
                         href={item.href}
-                        className="font-medium transition-colors duration-300 relative group text-gray-800 hover:text-[#8B5C9E] py-2 block"
+                        className={`font-medium transition-colors duration-300 relative group ${
+                          isTransparent && !scrolled 
+                            ? 'text-white hover:text-white/80' 
+                            : 'text-gray-800 hover:text-[#8B5C9E]'
+                        } py-2 block`}
                       >
                         {item.name}
-                        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#8B5C9E] group-hover:w-full transition-all duration-300"></span>
+                        <span className={`absolute bottom-0 left-0 w-0 h-0.5 ${
+                          isTransparent && !scrolled ? 'bg-white' : 'bg-[#8B5C9E]'
+                        } group-hover:w-full transition-all duration-300`}></span>
                       </Link>
                     </li>
                   ))}
@@ -100,15 +117,27 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
                   <li className="relative">
                     <button
                       onClick={() => handleDropdownToggle('resources')}
-                      className="font-medium transition-colors duration-300 flex items-center group text-gray-800 hover:text-[#8B5C9E] py-2"
+                      className={`font-medium transition-colors duration-300 flex items-center group ${
+                        isTransparent && !scrolled 
+                          ? 'text-white hover:text-white/80' 
+                          : 'text-gray-800 hover:text-[#8B5C9E]'
+                      } py-2`}
                       aria-expanded={activeDropdown === 'resources'}
                       aria-haspopup="true"
                     >
                       Resources
-                      <span className="flex items-center justify-center ml-2 w-5 h-5 bg-gray-100 rounded-full group-hover:bg-[#8B5C9E]/10">
-                        <ChevronDown className="w-3.5 h-3.5 text-[#8B5C9E]" />
+                      <span className={`flex items-center justify-center ml-2 w-5 h-5 ${
+                        isTransparent && !scrolled 
+                          ? 'bg-white/20 group-hover:bg-white/30' 
+                          : 'bg-gray-100 group-hover:bg-[#8B5C9E]/10'
+                      } rounded-full`}>
+                        <ChevronDown className={`w-3.5 h-3.5 ${
+                          isTransparent && !scrolled ? 'text-white' : 'text-[#8B5C9E]'
+                        }`} />
                       </span>
-                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#8B5C9E] group-hover:w-full transition-all duration-300"></span>
+                      <span className={`absolute bottom-0 left-0 w-0 h-0.5 ${
+                        isTransparent && !scrolled ? 'bg-white' : 'bg-[#8B5C9E]'
+                      } group-hover:w-full transition-all duration-300`}></span>
                     </button>
                     
                     {activeDropdown === 'resources' && (
@@ -131,15 +160,27 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
                   <li className="relative">
                     <button
                       onClick={() => handleDropdownToggle('media')}
-                      className="font-medium transition-colors duration-300 flex items-center group text-gray-800 hover:text-[#8B5C9E] py-2"
+                      className={`font-medium transition-colors duration-300 flex items-center group ${
+                        isTransparent && !scrolled 
+                          ? 'text-white hover:text-white/80' 
+                          : 'text-gray-800 hover:text-[#8B5C9E]'
+                      } py-2`}
                       aria-expanded={activeDropdown === 'media'}
                       aria-haspopup="true"
                     >
                       Media
-                      <span className="flex items-center justify-center ml-2 w-5 h-5 bg-gray-100 rounded-full group-hover:bg-[#8B5C9E]/10">
-                        <ChevronDown className="w-3.5 h-3.5 text-[#8B5C9E]" />
+                      <span className={`flex items-center justify-center ml-2 w-5 h-5 ${
+                        isTransparent && !scrolled 
+                          ? 'bg-white/20 group-hover:bg-white/30' 
+                          : 'bg-gray-100 group-hover:bg-[#8B5C9E]/10'
+                      } rounded-full`}>
+                        <ChevronDown className={`w-3.5 h-3.5 ${
+                          isTransparent && !scrolled ? 'text-white' : 'text-[#8B5C9E]'
+                        }`} />
                       </span>
-                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#8B5C9E] group-hover:w-full transition-all duration-300"></span>
+                      <span className={`absolute bottom-0 left-0 w-0 h-0.5 ${
+                        isTransparent && !scrolled ? 'bg-white' : 'bg-[#8B5C9E]'
+                      } group-hover:w-full transition-all duration-300`}></span>
                     </button>
                     
                     {activeDropdown === 'media' && (
@@ -162,7 +203,11 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
               
               {/* Book an Appointment Button */}
               <BookingButton 
-                className="ml-6 px-6 py-3 rounded-full font-medium transition-colors duration-300 shadow-sm hover:shadow-md flex items-center bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]"
+                className={`ml-6 px-6 py-3 rounded-full font-medium transition-colors duration-300 shadow-sm hover:shadow-md flex items-center ${
+                  isTransparent && !scrolled
+                    ? 'bg-white text-[#8B5C9E] hover:bg-white/90'
+                    : 'bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]'
+                }`}
                 icon={<Calendar className="w-5 h-5 mr-2" />}
                 text="Book an Appointment"
               />
@@ -174,9 +219,9 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
-                <X className="text-[#8B5C9E]" size={24} />
+                <X className={isTransparent && !scrolled ? 'text-white' : 'text-[#8B5C9E]'} size={24} />
               ) : (
-                <Menu className="text-[#8B5C9E]" size={24} />
+                <Menu className={isTransparent && !scrolled ? 'text-white' : 'text-[#8B5C9E]'} size={24} />
               )}
             </button>
           </div>
@@ -269,8 +314,10 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
         )}
       </header>
       
-      {/* Spacer for fixed header pages - can be used conditionally if needed */}
-      {theme === 'fixed' && <div className="h-14 md:h-16 lg:h-20"></div>}
+      {/* Header spacing element - only needed for pages without hero sections that overlay the header */}
+      {!isTransparent && (
+        <div className={`w-full ${isFixed ? 'h-14 md:h-16 lg:h-20' : 'h-14 md:h-16 lg:h-20'}`}></div>
+      )}
     </>
   );
 } 
