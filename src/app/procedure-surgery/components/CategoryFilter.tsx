@@ -90,20 +90,8 @@ export const CategoryFilter = ({
   const getCategoryColor = (category: CategoryItem) => {
     if (category.color) return category.color;
 
-    const baseColors = [
-      'from-blue-500 to-cyan-400',
-      'from-green-500 to-emerald-400',
-      'from-purple-500 to-indigo-400',
-      'from-orange-500 to-amber-400',
-      'from-rose-500 to-pink-400',
-      'from-teal-500 to-green-400',
-      'from-violet-500 to-purple-400',
-      'from-yellow-500 to-amber-400'
-    ];
-    
-    // Simple hash function for consistent color
-    const hash = category.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return baseColors[hash % baseColors.length];
+    // Use brand color shades for consistency
+    return 'from-[#8B5C9E] to-[#A174B5]';
   };
 
   return (
@@ -130,7 +118,7 @@ export const CategoryFilter = ({
           onClick={() => handleCategoryChange(null)}
           className={`flex-shrink-0 px-5 py-2.5 rounded-full transition-all duration-200 whitespace-nowrap ${
             activeCategory === null 
-              ? 'bg-gradient-to-r from-gray-700 to-gray-800 text-white shadow-md font-semibold'
+              ? 'bg-gradient-to-r from-[#8B5C9E] to-[#A174B5] text-white shadow-md font-semibold'
               : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
           }`}
         >

@@ -59,7 +59,7 @@ export const InteractiveHero = ({ categories, onCategorySelect }: InteractiveHer
   };
 
   return (
-    <div className="relative w-full h-[600px] bg-gradient-to-b from-blue-50 via-blue-100 to-white rounded-2xl overflow-hidden">
+    <div className="relative w-full h-[600px] bg-gradient-to-b from-purple-50 via-purple-100 to-white rounded-2xl overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-[url('/images/blue-grid.svg')] opacity-5"></div>
       
@@ -72,7 +72,7 @@ export const InteractiveHero = ({ categories, onCategorySelect }: InteractiveHer
             transition={{ duration: 0.6 }}
           >
             <span className="block">Specialized</span>
-            <span className="bg-gradient-to-r from-blue-600 to-cyan-500 text-transparent bg-clip-text">
+            <span className="bg-gradient-to-r from-[#8B5C9E] to-[#A174B5] text-transparent bg-clip-text">
               Surgical Procedures
             </span>
           </motion.h1>
@@ -93,7 +93,7 @@ export const InteractiveHero = ({ categories, onCategorySelect }: InteractiveHer
             transition={{ duration: 0.6, delay: 0.4 }}
           >
             <button 
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg transition-colors flex items-center space-x-2 font-medium"
+              className="px-6 py-3 bg-[#8B5C9E] hover:bg-[#7a4f8a] text-white rounded-lg shadow-lg transition-colors flex items-center space-x-2 font-medium"
               onClick={() => document.getElementById('procedures-section')?.scrollIntoView({ behavior: 'smooth' })}
             >
               <span>Explore All Procedures</span>
@@ -128,24 +128,24 @@ export const InteractiveHero = ({ categories, onCategorySelect }: InteractiveHer
               initial={{ scale: 0 }}
               animate={{ 
                 scale: hoveredRegion === region.id ? 1.2 : 1,
-                backgroundColor: hoveredRegion === region.id ? 'rgba(59, 130, 246, 0.6)' : 'rgba(59, 130, 246, 0.3)'
+                backgroundColor: hoveredRegion === region.id ? 'rgba(139, 92, 158, 0.6)' : 'rgba(139, 92, 158, 0.3)'
               }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              whileHover={{ scale: 1.2, backgroundColor: 'rgba(59, 130, 246, 0.6)' }}
+              whileHover={{ scale: 1.2, backgroundColor: 'rgba(139, 92, 158, 0.6)' }}
               onMouseEnter={() => setHoveredRegion(region.id)}
               onMouseLeave={() => setHoveredRegion(null)}
               onClick={() => handleCategorySelect(region.categoryId)}
             >
               <div className="w-4 h-4 md:w-6 md:h-6 rounded-full flex items-center justify-center relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 md:h-4 md:w-4 bg-blue-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A174B5] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 md:h-4 md:w-4 bg-[#8B5C9E]"></span>
                 
                 {/* Tooltip */}
                 <div className={`absolute -top-10 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-lg px-3 py-2 text-sm whitespace-nowrap z-10 transition-opacity duration-200 ${
                   hoveredRegion === region.id ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}>
                   <div className="font-medium text-gray-800">{region.name}</div>
-                  <div className="text-xs text-blue-600">{region.count} procedures</div>
+                  <div className="text-xs text-[#8B5C9E]">{region.count} procedures</div>
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white rotate-45"></div>
                 </div>
               </div>

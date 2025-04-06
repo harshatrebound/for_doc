@@ -74,7 +74,7 @@ export const ProcedureCard = ({
       
       {/* Content Container */}
       <div className="flex-grow p-5 flex flex-col">
-        <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+        <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-[#8B5C9E] transition-colors">
           {title}
         </h3>
         
@@ -86,21 +86,21 @@ export const ProcedureCard = ({
         <div className="flex flex-wrap gap-3 mb-4 text-sm text-gray-500">
           {procedureTime && (
             <div className="flex items-center">
-              <Clock className="w-4 h-4 mr-1 text-blue-500" />
+              <Clock className="w-4 h-4 mr-1 text-[#8B5C9E]" />
               <span>{procedureTime}</span>
             </div>
           )}
           
           {recoveryPeriod && (
             <div className="flex items-center">
-              <Calendar className="w-4 h-4 mr-1 text-blue-500" />
+              <Calendar className="w-4 h-4 mr-1 text-[#8B5C9E]" />
               <span>{recoveryPeriod}</span>
             </div>
           )}
           
           {inpatient !== undefined && (
             <div className="flex items-center">
-              <HeartPulse className="w-4 h-4 mr-1 text-blue-500" />
+              <HeartPulse className="w-4 h-4 mr-1 text-[#8B5C9E]" />
               <span>{inpatient ? 'Inpatient' : 'Outpatient'}</span>
             </div>
           )}
@@ -109,7 +109,7 @@ export const ProcedureCard = ({
         {/* Call to Action */}
         <Link 
           href={href} 
-          className="inline-flex items-center text-blue-600 font-medium hover:text-blue-800 transition-colors mt-auto"
+          className="inline-flex items-center text-[#8B5C9E] font-medium hover:text-[#7a4f8a] transition-colors mt-auto"
         >
           Learn More
           <ArrowRight className="ml-1 w-4 h-4 transition-transform group-hover:translate-x-1" />

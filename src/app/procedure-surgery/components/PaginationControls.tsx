@@ -109,7 +109,7 @@ export const PaginationControls = ({
           return isCurrentPage ? (
             <span
               key={pageNum}
-              className="px-3 py-2 rounded-md bg-blue-600 text-white font-medium"
+              className="px-3 py-2 rounded-md bg-[#8B5C9E] text-white font-medium"
             >
               {pageNum}
             </span>
