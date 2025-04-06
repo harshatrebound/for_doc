@@ -1,10 +1,10 @@
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
+// Use node runtime instead of edge
+export const runtime = 'nodejs';
 
-export async function GET() {
-  const logoUrl = 'https://fordoc-production.up.railway.app/logo.svg';
-
+// Use default export instead of named export
+export default async function OpengraphImage() {
   return new ImageResponse(
     (
       <div

@@ -1,0 +1,19 @@
+[1mdiff --git a/src/app/opengraph-image.tsx b/src/app/opengraph-image.tsx[m
+[1mindex bd76367..0d51685 100644[m
+[1m--- a/src/app/opengraph-image.tsx[m
+[1m+++ b/src/app/opengraph-image.tsx[m
+[36m@@ -1,10 +1,10 @@[m
+ import { ImageResponse } from 'next/og';[m
+ [m
+[31m-export const runtime = 'edge';[m
+[31m-[m
+[31m-export async function GET() {[m
+[31m-  const logoUrl = 'https://fordoc-production.up.railway.app/logo.svg';[m
+[32m+[m[32m// Use node runtime instead of edge[m
+[32m+[m[32mexport const runtime = 'nodejs';[m
+ [m
+[32m+[m[32m// Use default export instead of named export[m
+[32m+[m[32mexport default async function OpengraphImage() {[m
+   return new ImageResponse([m
+     ([m
+       <div[m
