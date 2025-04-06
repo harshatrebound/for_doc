@@ -4,10 +4,12 @@ import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import { ProcedureCard } from './components/ProcedureCard';
 import { CategoryFilter } from './components/CategoryFilter';
-import { InteractiveHero } from './components/InteractiveHero';
+import { InteractiveBodyMap } from './components/InteractiveBodyMap';
 import { PaginationControls } from './components/PaginationControls';
 import { getProceduresData, getProceduresByCategory } from './utils/csvParser';
 import { Metadata } from 'next';
+import HeroSection from '@/components/ui/HeroSection';
+import { ArrowDown } from 'lucide-react';
 
 // Replace static metadata with a function
 export async function generateMetadata(): Promise<Metadata> {
@@ -57,13 +59,31 @@ export default async function ProcedureSurgeryPage({
       
       <main>
         {/* Hero Section */}
-        <section className="pt-0">
-          <div className="max-w-7xl mx-auto">
-            <InteractiveHero 
-              categories={categories} 
-            />
-          </div>
-        </section>
+        <HeroSection
+          variant="light"
+          height="medium"
+          bgColor="#8B5C9E"
+          title={
+            <>
+              <span className="block text-gray-900">Specialized</span>
+              <span className="bg-gradient-to-r from-[#8B5C9E] to-[#A174B5] text-transparent bg-clip-text">
+                Surgical Procedures
+              </span>
+            </>
+          }
+          subtitle="Explore our comprehensive range of advanced surgical procedures designed to restore function and improve quality of life."
+          actions={
+            <button 
+              className="px-6 py-3 bg-[#8B5C9E] hover:bg-[#7a4f8a] text-white rounded-lg shadow-lg transition-colors flex items-center gap-2 font-medium"
+              onClick={() => document.getElementById('procedures-section')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              <span>Explore All Procedures</span>
+              <ArrowDown className="h-5 w-5" />
+            </button>
+          }
+        >
+          <InteractiveBodyMap categories={categories} />
+        </HeroSection>
         
         {/* Category Filter */}
         <section className="py-12 px-4 md:px-8 lg:px-12">

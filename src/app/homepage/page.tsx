@@ -11,6 +11,7 @@ import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import { cn } from '@/lib/utils';
 import { Metadata } from 'next';
+import HeroSection from '@/components/ui/HeroSection';
 
 const specialties = [
   {
@@ -163,167 +164,91 @@ export default function HomePage() {
     <div className="min-h-screen bg-white" ref={containerRef}>
       <SiteHeader theme="transparent" />
 
-      {/* Hero Section - Add more accessibility */}
-      <section className="relative min-h-[100vh] flex flex-col justify-between overflow-hidden">
-        {/* Enhanced Background with Parallax and Overlay Effects */}
-        <motion.div
-          style={{ y: prefersReducedMotion ? "0%" : backgroundY }}
-          className="absolute inset-0 z-0"
-        >
-          <Image
-            src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=2000&auto=format&fit=crop"
-            alt="Modern medical facility with professional equipment"
-            fill
-            className="object-cover scale-110"
-            priority
-            quality={90}
-            sizes="100vw"
-            placeholder="blur"
-            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzYwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiLz4="
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
-          {/* Added Dynamic Pattern Overlay */}
-          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-30 mix-blend-soft-light" />
-          {/* Added Animated Gradient Orbs - Reduced motion */}
-          {!prefersReducedMotion && (
-            <>
-              <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#8B5C9E]/20 rounded-full blur-3xl animate-float-slow" />
-              <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-[#B491C8]/20 rounded-full blur-3xl animate-float-medium" />
-            </>
-          )}
-        </motion.div>
-
-        {/* Enhanced Main Content - with better semantics */}
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pt-12 pb-32">
-          <div className="w-full max-w-6xl mx-auto">
-            <motion.div
-              {...animationProps}
-              className="text-center"
+      {/* Hero Section */}
+      <HeroSection
+        variant="image"
+        height="large"
+        bgImage="https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=2000&auto=format&fit=crop"
+        title={
+          <div className="space-y-8 mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] relative">
+              <span className="relative inline-block">
+                Your Wellness,
+                <div className="absolute -inset-1 bg-[#8B5C9E]/20 blur-xl animate-pulse" />
+              </span>
+              <br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#8B5C9E] via-[#B491C8] to-[#8B5C9E] animate-gradient">
+                Our Priority
+              </span>
+            </h1>
+          </div>
+        }
+        subtitle="Sports Orthopedics Institute: Excellence in Motion"
+        actions={
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+            <Button
+              size="lg"
+              className="group bg-white text-[#8B5C9E] hover:bg-gray-100 rounded-full px-8 sm:px-10 py-6 sm:py-7 text-lg font-medium transition-all duration-300 hover:scale-105 hover:shadow-xl w-full sm:w-auto relative overflow-hidden"
+              onClick={() => setIsBookingModalOpen(true)}
+              aria-label="Book an appointment with our specialists"
             >
-              {/* Enhanced Logo with Glow */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E]/0 via-[#8B5C9E]/10 to-[#8B5C9E]/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              <span className="relative flex items-center justify-center">
+                Book an Appointment
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+              </span>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="group border-2 border-white text-white bg-[#8B5C9E]/40 hover:bg-white/10 rounded-full px-8 sm:px-10 py-6 sm:py-7 text-lg font-medium transition-all duration-300 w-full sm:w-auto relative overflow-hidden"
+              aria-label="Learn more about our services"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              <Link href="#about-us" className="relative">Learn More</Link>
+            </Button>
+          </div>
+        }
+      >
+        {/* Stats Section - Add schema.org markup */}
+        <div className="w-full mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+            {[
+              { label: "Happy Patients", value: "2000+", itemProp: "healthcareMember" },
+              { label: "Expert Doctors", value: "15+", itemProp: "employee" },
+              { label: "Years Experience", value: "25+", itemProp: "foundingDate" }
+            ].map((stat, index) => (
               <motion.div
-                initial={prefersReducedMotion ? {} : { scale: 1.2, opacity: 0 }}
-                animate={prefersReducedMotion ? {} : { scale: 1, opacity: 1 }}
-                transition={{ duration: 1, ease: "easeOut" }}
-                className="mb-16 relative"
-              >
-                <div className="absolute inset-0 bg-[#8B5C9E]/20 blur-3xl animate-pulse" />
-                <Image
-                  src="/logo.png"
-                  alt="Sports Orthopedics Logo"
-                  width={140}
-                  height={140}
-                  className="mx-auto relative z-10 drop-shadow-2xl"
-                />
-              </motion.div>
-
-              {/* Enhanced Heading Group with better semantics */}
-              <div className="space-y-8 mb-12">
-                <motion.h1 
-                  initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-                  animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.8 }}
-                  className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] relative"
-                >
-                  <span className="relative inline-block">
-                    Your Wellness,
-                    <div className="absolute -inset-1 bg-[#8B5C9E]/20 blur-xl animate-pulse" />
-                  </span>
-                  <br />
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#8B5C9E] via-[#B491C8] to-[#8B5C9E] animate-gradient">
-                    Our Priority
-                  </span>
-                </motion.h1>
-                <motion.p 
-                  initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-                  animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.8 }}
-                  className="text-xl md:text-2xl text-gray-200 leading-relaxed max-w-3xl mx-auto"
-                >
-                  Sports Orthopedics Institute: Excellence in Motion
-                </motion.p>
-              </div>
-
-              {/* Enhanced Buttons with better accessibility */}
-              <motion.div 
+                key={stat.label}
                 initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
                 animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.8 }}
-                className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6"
+                transition={{ delay: 0.5 + index * 0.1 }}
+                className="relative group"
+                itemScope
+                itemType="https://schema.org/MedicalOrganization"
               >
-                <Button
-                  size="lg"
-                  className="group bg-white text-[#8B5C9E] hover:bg-gray-100 rounded-full px-8 sm:px-10 py-6 sm:py-7 text-lg font-medium transition-all duration-300 hover:scale-105 hover:shadow-xl w-full sm:w-auto relative overflow-hidden"
-                  onClick={() => setIsBookingModalOpen(true)}
-                  aria-label="Book an appointment with our specialists"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E]/0 via-[#8B5C9E]/10 to-[#8B5C9E]/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                  <span className="relative flex items-center justify-center">
-                    Book an Appointment
-                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
-                  </span>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="group border-2 border-white text-white bg-[#8B5C9E]/40 hover:bg-white/10 rounded-full px-8 sm:px-10 py-6 sm:py-7 text-lg font-medium transition-all duration-300 w-full sm:w-auto relative overflow-hidden"
-                  aria-label="Learn more about our services"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                  <Link href="#about-us" className="relative">Learn More</Link>
-                </Button>
-              </motion.div>
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Stats Section - Add schema.org markup */}
-        <div className="relative z-10 w-full">
-          <div className="absolute inset-0">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black" />
-            <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-30 mix-blend-soft-light" />
-          </div>
-          <div className="container mx-auto px-6 pb-24">
-            <div className="max-w-6xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-                {[
-                  { label: "Happy Patients", value: "2000+", itemProp: "healthcareMember" },
-                  { label: "Expert Doctors", value: "15+", itemProp: "employee" },
-                  { label: "Years Experience", value: "25+", itemProp: "foundingDate" }
-                ].map((stat, index) => (
-                  <motion.div
-                    key={stat.label}
-                    initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-                    animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 + index * 0.1 }}
-                    className="relative group"
-                    itemScope
-                    itemType="https://schema.org/MedicalOrganization"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E]/20 via-[#B491C8]/20 to-[#8B5C9E]/20 rounded-2xl blur-xl transform group-hover:scale-105 transition-transform duration-500" />
-                    <div className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/10 hover:border-white/20 transition-all duration-500">
-                      <div className="text-center">
-                        <div className="relative">
-                          <div className="absolute -inset-1 rounded-lg bg-gradient-to-r from-[#8B5C9E] via-[#B491C8] to-[#8B5C9E] opacity-20 blur group-hover:opacity-30 transition-opacity duration-500" />
-                          <p 
-                            className="relative text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-white via-white/90 to-white bg-clip-text text-transparent"
-                            itemProp={stat.itemProp}
-                          >
-                            {stat.value}
-                          </p>
-                        </div>
-                        <p className="text-base md:text-lg text-white/80 font-medium tracking-wide">
-                          {stat.label}
-                        </p>
-                      </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E]/20 via-[#B491C8]/20 to-[#8B5C9E]/20 rounded-2xl blur-xl transform group-hover:scale-105 transition-transform duration-500" />
+                <div className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/10 hover:border-white/20 transition-all duration-500">
+                  <div className="text-center">
+                    <div className="relative">
+                      <div className="absolute -inset-1 rounded-lg bg-gradient-to-r from-[#8B5C9E] via-[#B491C8] to-[#8B5C9E] opacity-20 blur group-hover:opacity-30 transition-opacity duration-500" />
+                      <p 
+                        className="relative text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-white via-white/90 to-white bg-clip-text text-transparent"
+                        itemProp={stat.itemProp}
+                      >
+                        {stat.value}
+                      </p>
                     </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
+                    <p className="text-base md:text-lg text-white/80 font-medium tracking-wide">
+                      {stat.label}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
-      </section>
+      </HeroSection>
 
       {/* Specialties Section */}
       <section className="py-32 bg-white relative overflow-hidden">
@@ -470,7 +395,7 @@ export default function HomePage() {
       </section>
 
       {/* About Us Section - Added for SEO */}
-      <section id="about-us" className="py-24 bg-white relative overflow-hidden scroll-mt-24">
+      <section id="about-us" className="py-24 bg-white relative overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">

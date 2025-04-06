@@ -8,6 +8,7 @@ import Papa from 'papaparse';
 import { Metadata } from 'next';
 import { BookOpen, Calendar, User, ChevronRight, ArrowRight } from 'lucide-react';
 import ClientImage from '@/app/components/ClientImage';
+import HeroSection from '@/components/ui/HeroSection';
 
 // Define Publication type
 interface Publication {
@@ -307,36 +308,21 @@ export default async function PublicationsPage() {
     <div className="min-h-screen bg-gray-50">
       <SiteHeader theme="transparent" />
       
-      {/* Hero Section with Academic Theme */}
-      <section className="relative py-20 pt-32 md:py-32 flex items-center justify-center text-center overflow-hidden">
-        {/* Background with abstract medical pattern */}
-        <div className="absolute inset-0 z-0">
-          <ClientImage
-            src={DEFAULT_IMAGE}
-            alt="Academic background"
-            fill
-            priority
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#8B5C9E]/90 to-[#392541]/95"></div>
-        </div>
-        
-        <div className="relative z-10 container mx-auto px-4 pt-6">
-          <div className="flex justify-center mb-6">
-            <span className="inline-block p-3 rounded-full bg-white/10 backdrop-blur-sm">
-              <BookOpen className="w-8 h-8 text-white" />
-            </span>
+      {/* Hero Section */}
+      <HeroSection
+        variant="image"
+        height="medium"
+        bgImage={DEFAULT_IMAGE}
+        title="Academic Publications"
+        subtitle="Scholarly articles and research published by our orthopedic specialists"
+        align="center"
+        actions={
+          <div className="inline-flex px-6 py-3 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white font-medium rounded-lg items-center gap-2 transition-colors">
+            <BookOpen className="w-5 h-5" />
+            <span>Browse Publications</span>
           </div>
-          
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 tracking-tight">
-            Academic Publications
-          </h1>
-          
-          <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-6">
-            Scholarly articles and research published by our orthopedic specialists
-          </p>
-        </div>
-      </section>
+        }
+      />
 
       {/* Main Content Area */}
       <main className="container mx-auto px-4 py-12 md:py-16">

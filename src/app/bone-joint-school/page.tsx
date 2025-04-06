@@ -10,6 +10,7 @@ import { HeroImage } from './components/HeroImage';
 import Papa from 'papaparse';
 import { ChevronLeft, ChevronRight, Layers, BookOpen } from 'lucide-react';
 import BookingButton from '@/components/BookingButton';
+import HeroSection from '@/components/ui/HeroSection';
 
 // Add proper metadata
 export const metadata: Metadata = {
@@ -282,24 +283,13 @@ export default async function BoneJointSchoolPage({
     <div className="min-h-screen bg-gray-50"> 
       <SiteHeader theme="transparent" />
       
-      {/* Enhanced Hero Section */}
-      <section 
-        className="relative h-[50vh] md:h-[65vh] flex items-center justify-center text-center text-white overflow-hidden"
-        style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}
-      >
-        <div className="absolute inset-0 z-0 bg-gray-800">
-          <HeroImage
-            src="/images_bone_joint/analyzing-spine-structure.webp"
-            alt="Medical knowledge resources"
-            className="object-cover opacity-70"
-          />
-          {/* Apply gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/60 to-black/80" /> 
-        </div>
-        
-        <div className="relative z-10 container mx-auto px-4 pt-16">
-          {/* Updated Heading Style */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] mb-6">
+      {/* Hero Section */}
+      <HeroSection
+        variant="image"
+        height="medium"
+        bgImage="/images_bone_joint/analyzing-spine-structure.webp"
+        title={
+          <>
             <span className="relative inline-block">
               Bone & Joint
               <div className="absolute -inset-1 bg-[#8B5C9E]/20 blur-xl animate-pulse"></div>
@@ -308,12 +298,10 @@ export default async function BoneJointSchoolPage({
             <span className="text-white">
               School
             </span>
-          </h1>
-          <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto leading-relaxed mb-8">
-            Explore comprehensive information on various orthopedic conditions and treatments.
-          </p>
-          
-          {/* Added CTA button in hero */}
+          </>
+        }
+        subtitle="Explore comprehensive information on various orthopedic conditions and treatments."
+        actions={
           <div className="flex flex-wrap gap-4 justify-center">
             <a 
               href="#topics" 
@@ -328,8 +316,8 @@ export default async function BoneJointSchoolPage({
               text="Book Consultation"
             />
           </div>
-        </div>
-      </section>
+        }
+      />
 
       {/* Main Content Area */}
       <main id="topics" className="container mx-auto px-4 py-12 md:py-16">
