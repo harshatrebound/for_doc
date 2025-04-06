@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import "../styles/globals.css";
 import { Toaster } from 'react-hot-toast';
+import { Suspense } from 'react';
+import Loading from './loading';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -77,7 +79,9 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <main className="min-h-screen">
-          {children}
+          <Suspense fallback={<Loading />}>
+            {children}
+          </Suspense>
         </main>
         <Toaster 
           position="top-right"

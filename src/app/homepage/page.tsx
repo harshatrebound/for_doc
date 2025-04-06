@@ -171,13 +171,12 @@ export default function HomePage() {
         bgImage="https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=2000&auto=format&fit=crop"
         title={
           <div className="space-y-8 mb-6">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] relative">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1]">
               <span className="relative inline-block">
                 Your Wellness,
-                <div className="absolute -inset-1 bg-[#8B5C9E]/20 blur-xl animate-pulse" />
               </span>
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#8B5C9E] via-[#B491C8] to-[#8B5C9E] animate-gradient">
+              <span className="text-white">
                 Our Priority
               </span>
             </h1>
@@ -227,19 +226,15 @@ export default function HomePage() {
                 itemScope
                 itemType="https://schema.org/MedicalOrganization"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E]/20 via-[#B491C8]/20 to-[#8B5C9E]/20 rounded-2xl blur-xl transform group-hover:scale-105 transition-transform duration-500" />
                 <div className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/10 hover:border-white/20 transition-all duration-500">
                   <div className="text-center">
-                    <div className="relative">
-                      <div className="absolute -inset-1 rounded-lg bg-gradient-to-r from-[#8B5C9E] via-[#B491C8] to-[#8B5C9E] opacity-20 blur group-hover:opacity-30 transition-opacity duration-500" />
-                      <p 
-                        className="relative text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-white via-white/90 to-white bg-clip-text text-transparent"
-                        itemProp={stat.itemProp}
-                      >
-                        {stat.value}
-                      </p>
-                    </div>
-                    <p className="text-base md:text-lg text-white/80 font-medium tracking-wide">
+                    <p 
+                      className="text-4xl md:text-5xl font-bold mb-3 text-white"
+                      itemProp={stat.itemProp}
+                    >
+                      {stat.value}
+                    </p>
+                    <p className="text-base md:text-lg text-white font-medium tracking-wide">
                       {stat.label}
                     </p>
                   </div>

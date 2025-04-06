@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter, usePathname } from 'next/navigation';
 import { Calendar, Menu, X, ChevronDown } from 'lucide-react';
 import BookingButton from '@/components/BookingButton';
 
@@ -15,6 +16,8 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,6 +27,12 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Close mobile menu and dropdowns when route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setActiveDropdown(null);
+  }, [pathname]);
 
   const isTransparent = theme === 'transparent' && !scrolled;
   const isLight = theme === 'light' || (theme === 'transparent' && scrolled);
@@ -58,6 +67,13 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
     }
   };
 
+  // Update your Link components to use the router for smoother transitions
+  const handleNavigation = (href: string) => {
+    setMobileMenuOpen(false);
+    setActiveDropdown(null);
+    router.push(href);
+  };
+
   return (
     <>
       <header 
@@ -72,7 +88,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center">
+            <button onClick={() => handleNavigation('/')} className="flex items-center">
               <div className="relative h-10 w-10 mr-3">
                 <Image
                   src="/logo.svg"
@@ -85,7 +101,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
               <span className={`font-bold text-xl ${isTransparent && !scrolled ? 'text-white' : 'text-[#8B5C9E]'}`}>
                 Sports Orthopedics
               </span>
-            </Link>
+            </button>
             
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center">
@@ -97,8 +113,8 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                 <ul className="flex items-center space-x-8">
                   {mainNavLinks.map((item) => (
                     <li key={item.name}>
-                      <Link 
-                        href={item.href}
+                      <button
+                        onClick={() => handleNavigation(item.href)}
                         className={`font-medium transition-colors duration-300 relative group ${
                           isTransparent && !scrolled 
                             ? 'text-white hover:text-white/80' 
@@ -109,7 +125,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                         <span className={`absolute bottom-0 left-0 w-0 h-0.5 ${
                           isTransparent && !scrolled ? 'bg-white' : 'bg-[#8B5C9E]'
                         } group-hover:w-full transition-all duration-300`}></span>
-                      </Link>
+                      </button>
                     </li>
                   ))}
                   
@@ -143,14 +159,13 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                     {activeDropdown === 'resources' && (
                       <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100">
                         {resourcesLinks.map((item) => (
-                          <Link
+                          <button
                             key={item.name}
-                            href={item.href}
-                            className="block px-4 py-2 text-gray-800 hover:bg-gray-100 hover:text-[#8B5C9E]"
-                            onClick={() => setActiveDropdown(null)}
+                            onClick={() => handleNavigation(item.href)}
+                            className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 hover:text-[#8B5C9E]"
                           >
                             {item.name}
-                          </Link>
+                          </button>
                         ))}
                       </div>
                     )}
@@ -186,14 +201,13 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                     {activeDropdown === 'media' && (
                       <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100">
                         {mediaLinks.map((item) => (
-                          <Link
+                          <button
                             key={item.name}
-                            href={item.href}
-                            className="block px-4 py-2 text-gray-800 hover:bg-gray-100 hover:text-[#8B5C9E]"
-                            onClick={() => setActiveDropdown(null)}
+                            onClick={() => handleNavigation(item.href)}
+                            className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 hover:text-[#8B5C9E]"
                           >
                             {item.name}
-                          </Link>
+                          </button>
                         ))}
                       </div>
                     )}
@@ -234,14 +248,16 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
               <nav className="flex flex-col space-y-2">
                 {/* Main Links */}
                 {mainNavLinks.map((item) => (
-                  <Link 
+                  <button
                     key={item.name}
-                    href={item.href}
+                    onClick={() => {
+                      handleNavigation(item.href);
+                      setMobileMenuOpen(false);
+                    }}
                     className="px-4 py-3 rounded-md font-medium text-gray-800 hover:bg-gray-100 hover:text-[#8B5C9E]"
-                    onClick={() => setMobileMenuOpen(false)}
                   >
                     {item.name}
-                  </Link>
+                  </button>
                 ))}
                 
                 {/* Resources Section */}
@@ -259,14 +275,16 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                   {activeDropdown === 'mobile-resources' && (
                     <div className="pl-4">
                       {resourcesLinks.map((item) => (
-                        <Link
+                        <button
                           key={item.name}
-                          href={item.href}
+                          onClick={() => {
+                            handleNavigation(item.href);
+                            setMobileMenuOpen(false);
+                          }}
                           className="block px-4 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-[#8B5C9E]"
-                          onClick={() => setMobileMenuOpen(false)}
                         >
                           {item.name}
-                        </Link>
+                        </button>
                       ))}
                     </div>
                   )}
@@ -287,14 +305,16 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                   {activeDropdown === 'mobile-media' && (
                     <div className="pl-4">
                       {mediaLinks.map((item) => (
-                        <Link
+                        <button
                           key={item.name}
-                          href={item.href}
+                          onClick={() => {
+                            handleNavigation(item.href);
+                            setMobileMenuOpen(false);
+                          }}
                           className="block px-4 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-[#8B5C9E]"
-                          onClick={() => setMobileMenuOpen(false)}
                         >
                           {item.name}
-                        </Link>
+                        </button>
                       ))}
                     </div>
                   )}
