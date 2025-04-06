@@ -44,6 +44,7 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
   const mediaLinks = [
     { name: 'Gallery', href: '/gallery' },
     { name: 'Blogs', href: '/blogs' },
+    { name: 'Contact', href: '/contact' },
   ];
 
   const handleDropdownToggle = (dropdown: string) => {

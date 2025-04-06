@@ -46,13 +46,14 @@ export default function SiteFooter(/*{ onBookAppointmentClick }: SiteFooterProps
             <ul className="space-y-4">
               {[
                 { name: 'Home', href: '/' },
-                { name: 'Surgeons & Staff', href: '/surgeons-staff' }, // Assuming path
-                { name: 'Procedures', href: '/procedure-surgery' }, // Assuming path
+                { name: 'Surgeons & Staff', href: '/surgeons-staff' },
+                { name: 'Procedures', href: '/procedure-surgery' },
                 { name: 'Bone & Joint School', href: '/bone-joint-school' },
-                { name: 'Clinical Videos', href: '/clinical-videos' }, // Assuming path
-                { name: 'Publications', href: '/publication' }, // Assuming path
-                { name: 'Gallery', href: '/gallery' }, // Assuming path
-                { name: 'Blogs', href: '/blogs' }, // Assuming path
+                { name: 'Clinical Videos', href: '/clinical-videos' },
+                { name: 'Publications', href: '/publications' },
+                { name: 'Gallery', href: '/gallery' },
+                { name: 'Blogs', href: '/blogs' },
+                { name: 'Contact', href: '/contact' },
                 { name: 'Book an Appointment', href: '#', action: handleBookAppointment }
               ].map((link) => (
                 <li key={link.name}>
@@ -120,16 +121,16 @@ export default function SiteFooter(/*{ onBookAppointmentClick }: SiteFooterProps
               
               {/* Social Media Links */}
               <div className="flex space-x-4 pt-4">
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
+                <a href="https://instagram.com/sports.orthopedics" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
                   <Instagram className="w-5 h-5 text-[#8B5C9E] group-hover:text-white transition-colors duration-300" />
                 </a>
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
+                <a href="https://facebook.com/SportsOrthopedicsInstitute" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
                   <Facebook className="w-5 h-5 text-[#8B5C9E] group-hover:text-white transition-colors duration-300" />
                 </a>
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
+                <a href="https://twitter.com/SportsOrthoInst" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
                   <Twitter className="w-5 h-5 text-[#8B5C9E] group-hover:text-white transition-colors duration-300" />
                 </a>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
+                <a href="https://linkedin.com/company/sports-orthopedics-institute" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
                   <Linkedin className="w-5 h-5 text-[#8B5C9E] group-hover:text-white transition-colors duration-300" />
                 </a>
               </div>
