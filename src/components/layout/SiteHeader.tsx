@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Calendar, Menu, X } from 'lucide-react';
+import { Calendar, Menu, X, ChevronDown } from 'lucide-react';
 import BookingButton from '@/components/BookingButton';
 
 interface SiteHeaderProps {
@@ -13,6 +13,7 @@ interface SiteHeaderProps {
 export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,17 +26,33 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
 
   const isLight = theme === 'light';
 
-  // Navigation links
-  const navLinks = [
+  // Main navigation links - reduced to essential items
+  const mainNavLinks = [
     { name: 'Home', href: '/' },
     { name: 'Surgeons & Staff', href: '/surgeons-staff' },
     { name: 'Procedures', href: '/procedure-surgery' },
+  ];
+
+  // Resources dropdown items
+  const resourcesLinks = [
     { name: 'Bone & Joint School', href: '/bone-joint-school' },
     { name: 'Clinical Videos', href: '/clinical-videos' },
     { name: 'Publications', href: '/publications' },
-    { name: 'Gallery', href: '/gallery' },
-    { name: 'Blogs', href: '/blogs' }
   ];
+  
+  // Media dropdown items
+  const mediaLinks = [
+    { name: 'Gallery', href: '/gallery' },
+    { name: 'Blogs', href: '/blogs' },
+  ];
+
+  const handleDropdownToggle = (dropdown: string) => {
+    if (activeDropdown === dropdown) {
+      setActiveDropdown(null);
+    } else {
+      setActiveDropdown(dropdown);
+    }
+  };
 
   return (
     <header 
@@ -64,14 +81,14 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
           </Link>
           
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-6">
-            <nav className={`px-8 py-3 rounded-full transition-all duration-300 ${
+          <div className="hidden lg:flex items-center">
+            <nav className={`px-10 py-3 rounded-full transition-all duration-300 ${
               isLight || scrolled 
                 ? 'bg-white/95 backdrop-blur-md shadow-sm' 
                 : 'bg-white/10 backdrop-blur-md border border-white/20'
             }`}>
-              <ul className="flex items-center space-x-6">
-                {navLinks.map((item) => (
+              <ul className="flex items-center space-x-10">
+                {mainNavLinks.map((item) => (
                   <li key={item.name}>
                     <Link 
                       href={item.href}
@@ -86,12 +103,74 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
                     </Link>
                   </li>
                 ))}
+                
+                {/* Resources Dropdown */}
+                <li className="relative">
+                  <button
+                    onClick={() => handleDropdownToggle('resources')}
+                    className={`font-medium transition-colors duration-300 flex items-center group ${
+                      isLight || scrolled 
+                        ? 'text-gray-800 hover:text-[#8B5C9E]' 
+                        : 'text-white hover:text-white/80'
+                    }`}
+                  >
+                    Resources
+                    <ChevronDown className="ml-1 w-4 h-4" />
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#8B5C9E] group-hover:w-full transition-all duration-300"></span>
+                  </button>
+                  
+                  {activeDropdown === 'resources' && (
+                    <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 z-50">
+                      {resourcesLinks.map((item) => (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          className="block px-4 py-2 text-gray-800 hover:bg-gray-100 hover:text-[#8B5C9E]"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </li>
+                
+                {/* Media Dropdown */}
+                <li className="relative">
+                  <button
+                    onClick={() => handleDropdownToggle('media')}
+                    className={`font-medium transition-colors duration-300 flex items-center group ${
+                      isLight || scrolled 
+                        ? 'text-gray-800 hover:text-[#8B5C9E]' 
+                        : 'text-white hover:text-white/80'
+                    }`}
+                  >
+                    Media
+                    <ChevronDown className="ml-1 w-4 h-4" />
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#8B5C9E] group-hover:w-full transition-all duration-300"></span>
+                  </button>
+                  
+                  {activeDropdown === 'media' && (
+                    <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 z-50">
+                      {mediaLinks.map((item) => (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          className="block px-4 py-2 text-gray-800 hover:bg-gray-100 hover:text-[#8B5C9E]"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </li>
               </ul>
             </nav>
             
-            {/* Book an Appointment Button */}
+            {/* Book an Appointment Button - slightly increased spacing */}
             <BookingButton 
-              className={`px-5 py-3 rounded-full font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center ${
+              className={`ml-6 px-6 py-3 rounded-full font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center ${
                 isLight || scrolled
                   ? 'bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]'
                   : 'bg-white text-[#8B5C9E] hover:bg-white/90'
@@ -115,18 +194,19 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
         </div>
       </div>
       
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation - reorganized with expandable sections */}
       {mobileMenuOpen && (
         <div className={`lg:hidden ${
           isLight || scrolled ? 'bg-white' : 'bg-black/90 backdrop-blur-md'
         }`}>
           <div className="container mx-auto px-4 py-4">
-            <nav className="flex flex-col space-y-4">
-              {navLinks.map((item) => (
+            <nav className="flex flex-col space-y-2">
+              {/* Main Links */}
+              {mainNavLinks.map((item) => (
                 <Link 
                   key={item.name}
                   href={item.href}
-                  className={`px-4 py-2 rounded-md font-medium ${
+                  className={`px-4 py-3 rounded-md font-medium ${
                     isLight || scrolled 
                       ? 'text-gray-800 hover:bg-gray-100 hover:text-[#8B5C9E]' 
                       : 'text-white hover:bg-white/10'
@@ -136,6 +216,80 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
                   {item.name}
                 </Link>
               ))}
+              
+              {/* Resources Section */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+                <button
+                  onClick={() => handleDropdownToggle('mobile-resources')}
+                  className={`w-full flex justify-between items-center px-4 py-3 rounded-md font-medium ${
+                    isLight || scrolled 
+                      ? 'text-gray-800 hover:bg-gray-100' 
+                      : 'text-white hover:bg-white/10'
+                  }`}
+                >
+                  <span>Resources</span>
+                  <ChevronDown className={`w-5 h-5 transition-transform ${
+                    activeDropdown === 'mobile-resources' ? 'transform rotate-180' : ''
+                  }`} />
+                </button>
+                
+                {activeDropdown === 'mobile-resources' && (
+                  <div className="pl-4">
+                    {resourcesLinks.map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className={`block px-4 py-2 rounded-md ${
+                          isLight || scrolled 
+                            ? 'text-gray-600 hover:bg-gray-100 hover:text-[#8B5C9E]' 
+                            : 'text-gray-300 hover:bg-white/10'
+                        }`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* Media Section */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
+                <button
+                  onClick={() => handleDropdownToggle('mobile-media')}
+                  className={`w-full flex justify-between items-center px-4 py-3 rounded-md font-medium ${
+                    isLight || scrolled 
+                      ? 'text-gray-800 hover:bg-gray-100' 
+                      : 'text-white hover:bg-white/10'
+                  }`}
+                >
+                  <span>Media</span>
+                  <ChevronDown className={`w-5 h-5 transition-transform ${
+                    activeDropdown === 'mobile-media' ? 'transform rotate-180' : ''
+                  }`} />
+                </button>
+                
+                {activeDropdown === 'mobile-media' && (
+                  <div className="pl-4">
+                    {mediaLinks.map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className={`block px-4 py-2 rounded-md ${
+                          isLight || scrolled 
+                            ? 'text-gray-600 hover:bg-gray-100 hover:text-[#8B5C9E]' 
+                            : 'text-gray-300 hover:bg-white/10'
+                        }`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* Book Appointment Button */}
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                 <BookingButton 
                   className={`w-full py-3 px-6 rounded-md font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center justify-center ${
