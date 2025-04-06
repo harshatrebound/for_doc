@@ -196,9 +196,7 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
       
       {/* Mobile Navigation - reorganized with expandable sections */}
       {mobileMenuOpen && (
-        <div className={`lg:hidden ${
-          isLight || scrolled ? 'bg-white' : 'bg-black/90 backdrop-blur-md'
-        }`}>
+        <div className="lg:hidden bg-white">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col space-y-2">
               {/* Main Links */}
@@ -206,11 +204,7 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
                 <Link 
                   key={item.name}
                   href={item.href}
-                  className={`px-4 py-3 rounded-md font-medium ${
-                    isLight || scrolled 
-                      ? 'text-gray-800 hover:bg-gray-100 hover:text-[#8B5C9E]' 
-                      : 'text-white hover:bg-white/10'
-                  }`}
+                  className="px-4 py-3 rounded-md font-medium text-gray-800 hover:bg-gray-100 hover:text-[#8B5C9E]"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.name}
@@ -218,14 +212,10 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
               ))}
               
               {/* Resources Section */}
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+              <div className="border-t border-gray-200 pt-2 mt-2">
                 <button
                   onClick={() => handleDropdownToggle('mobile-resources')}
-                  className={`w-full flex justify-between items-center px-4 py-3 rounded-md font-medium ${
-                    isLight || scrolled 
-                      ? 'text-gray-800 hover:bg-gray-100' 
-                      : 'text-white hover:bg-white/10'
-                  }`}
+                  className="w-full flex justify-between items-center px-4 py-3 rounded-md font-medium text-gray-800 hover:bg-gray-100"
                 >
                   <span>Resources</span>
                   <ChevronDown className={`w-5 h-5 transition-transform ${
@@ -239,11 +229,7 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
                       <Link
                         key={item.name}
                         href={item.href}
-                        className={`block px-4 py-2 rounded-md ${
-                          isLight || scrolled 
-                            ? 'text-gray-600 hover:bg-gray-100 hover:text-[#8B5C9E]' 
-                            : 'text-gray-300 hover:bg-white/10'
-                        }`}
+                        className="block px-4 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-[#8B5C9E]"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         {item.name}
@@ -254,14 +240,10 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
               </div>
               
               {/* Media Section */}
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
+              <div className="border-t border-gray-200 pt-2">
                 <button
                   onClick={() => handleDropdownToggle('mobile-media')}
-                  className={`w-full flex justify-between items-center px-4 py-3 rounded-md font-medium ${
-                    isLight || scrolled 
-                      ? 'text-gray-800 hover:bg-gray-100' 
-                      : 'text-white hover:bg-white/10'
-                  }`}
+                  className="w-full flex justify-between items-center px-4 py-3 rounded-md font-medium text-gray-800 hover:bg-gray-100"
                 >
                   <span>Media</span>
                   <ChevronDown className={`w-5 h-5 transition-transform ${
@@ -275,11 +257,7 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
                       <Link
                         key={item.name}
                         href={item.href}
-                        className={`block px-4 py-2 rounded-md ${
-                          isLight || scrolled 
-                            ? 'text-gray-600 hover:bg-gray-100 hover:text-[#8B5C9E]' 
-                            : 'text-gray-300 hover:bg-white/10'
-                        }`}
+                        className="block px-4 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-[#8B5C9E]"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         {item.name}
@@ -290,13 +268,9 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
               </div>
               
               {/* Book Appointment Button */}
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="pt-4 border-t border-gray-200">
                 <BookingButton 
-                  className={`w-full py-3 px-6 rounded-md font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center justify-center ${
-                    isLight || scrolled
-                      ? 'bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]'
-                      : 'bg-white text-[#8B5C9E] hover:bg-white/90'
-                  }`}
+                  className="w-full py-3 px-6 rounded-md font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center justify-center bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]"
                   icon={<Calendar className="w-5 h-5 mr-2" />}
                   text="Book an Appointment"
                 />
@@ -305,6 +279,9 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
           </div>
         </div>
       )}
+      
+      {/* Add extra spacer div to create consistent space between header and content */}
+      <div className="h-16 md:h-20 lg:h-24"></div>
     </header>
   );
 } 
