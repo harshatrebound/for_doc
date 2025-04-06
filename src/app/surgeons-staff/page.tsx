@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import path from 'path';
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import csv from 'csv-parser';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -9,6 +9,7 @@ import SiteFooter from '@/components/layout/SiteFooter';
 import { StaffCard } from '@/app/surgeons-staff/components/StaffCard';
 import { UserPlus, Users, Award, Phone } from 'lucide-react';
 import BookingButton from '@/components/BookingButton';
+import { Readable } from 'stream';
 
 export const metadata: Metadata = {
   title: 'Surgeons & Staff | Sports Orthopedics',
@@ -48,11 +49,35 @@ interface ProcessedStaff {
 
 function parseContentBlocks(contentBlocksJSON: string): any[] {
   try {
-    return JSON.parse(contentBlocksJSON);
+    if (!contentBlocksJSON) {
+      console.warn('ContentBlocksJSON is empty');
+      return [];
+    }
+
+    // Clean up the JSON string
+    const cleanedJSON = contentBlocksJSON.trim();
+    if (cleanedJSON === '[]' || cleanedJSON === '') {
+      console.warn('ContentBlocksJSON is an empty array or empty string');
+      return [];
+    }
+
+    // Try to parse the JSON
+    const parsed = JSON.parse(cleanedJSON);
+    if (!Array.isArray(parsed)) {
+      console.error('ContentBlocksJSON did not parse to an array:', parsed);
+      return [];
+    }
+
+    return parsed;
   } catch (error: any) {
-    console.error('Error parsing content blocks JSON:', error);
+    console.error('Error parsing content blocks JSON:', error.message);
+    console.error('ContentBlocksJSON string:', contentBlocksJSON?.substring(0, 200) + '...');
     return [];
   }
+}
+
+function stripHtml(html: string): string {
+  return html?.replace(/<[^>]*>/g, '') || '';
 }
 
 function extractImageUrl(contentBlocks: any[]): string {
@@ -61,36 +86,67 @@ function extractImageUrl(contentBlocks: any[]): string {
 }
 
 function extractPosition(contentBlocks: any[]): string {
-  const headingBlock = contentBlocks.find(block => 
-    block.type === 'heading' && block.level === 3);
-  return headingBlock?.text || '';
-}
-
-function stripHtml(html: string): string {
-  return html?.replace(/<[^>]*>?/gm, '') || '';
+  const positionBlock = contentBlocks.find(block => 
+    (block.type === 'heading' && block.level === 3) ||
+    (block.type === 'paragraph' && block.text?.includes('Consultant'))
+  );
+  return stripHtml(positionBlock?.text || '');
 }
 
 function extractQualifications(contentBlocks: any[]): string {
-  const paragraphBlock = contentBlocks.find(block => 
+  const qualBlock = contentBlocks.find(block => 
     block.type === 'paragraph' && 
     (block.text?.includes('MBBS') || 
      block.text?.includes('MS') || 
-     block.text?.includes('MSc')));
+     block.text?.includes('MSc') ||
+     block.text?.includes('DNB')));
   
-  return stripHtml(paragraphBlock?.text || '');
+  return stripHtml(qualBlock?.text || '');
 }
 
 async function getStaffData(): Promise<StaffMember[]> {
-  return new Promise((resolve, reject) => {
+  try {
     const filePath = path.join(process.cwd(), 'docs', 'surgeons_staff_cms.csv');
-    const results: StaffMember[] = [];
+    
+    // Check if file exists
+    try {
+      await fs.stat(filePath);
+    } catch (error) {
+      console.error(`CSV file not found at ${filePath}`);
+      return [];
+    }
 
-    fs.createReadStream(filePath)
-      .pipe(csv())
-      .on('data', (data: StaffMember) => results.push(data))
-      .on('end', () => resolve(results))
-      .on('error', (error) => reject(error));
-  });
+    const fileContent = await fs.readFile(filePath, 'utf-8');
+    
+    // Log the first few characters of the file content for debugging
+    console.log('CSV file content preview:', fileContent.slice(0, 200) + '...');
+
+    return new Promise((resolve, reject) => {
+      const results: StaffMember[] = [];
+      const stream = Readable.from(fileContent);
+      
+      stream
+        .pipe(csv())
+        .on('data', (data: StaffMember) => {
+          if (data.Slug && data.Title) {
+            results.push(data);
+          } else {
+            console.warn('Skipping invalid staff data row:', data);
+          }
+        })
+        .on('end', () => {
+          console.log(`Successfully parsed ${results.length} staff members from CSV`);
+          resolve(results);
+        })
+        .on('error', (error) => {
+          console.error('Error parsing CSV:', error);
+          reject(error);
+        });
+    });
+  } catch (error) {
+    console.error('Error reading staff data:', error);
+    return [];
+  }
 }
 
 export default async function SurgeonsStaffPage() {
@@ -98,13 +154,30 @@ export default async function SurgeonsStaffPage() {
 
   const processStaffData = (staff: StaffMember): ProcessedStaff | null => {
     try {
-      if (!staff.ContentBlocksJSON) return null;
+      if (!staff.ContentBlocksJSON) {
+        console.warn(`No ContentBlocksJSON for staff member ${staff.Slug}`);
+        return null;
+      }
       
       const contentBlocks = parseContentBlocks(staff.ContentBlocksJSON);
+      if (!contentBlocks || contentBlocks.length === 0) {
+        console.warn(`No valid content blocks for staff member ${staff.Slug}`);
+        return null;
+      }
+
       const imageUrl = extractImageUrl(contentBlocks);
       const position = extractPosition(contentBlocks);
       const qualifications = extractQualifications(contentBlocks);
       const name = staff.Title.split('|')[0].trim();
+      
+      // Log the processed data for debugging
+      console.log(`Processed staff member ${staff.Slug}:`, {
+        name,
+        position,
+        qualifications,
+        imageUrl: imageUrl.substring(0, 50) + '...',
+        hasContentBlocks: contentBlocks.length
+      });
       
       return {
         slug: staff.Slug,
@@ -117,6 +190,7 @@ export default async function SurgeonsStaffPage() {
       };
     } catch (error) {
       console.error(`Error processing staff member ${staff.Slug}:`, error);
+      console.error('Staff data:', JSON.stringify(staff, null, 2));
       return null;
     }
   };
@@ -126,21 +200,31 @@ export default async function SurgeonsStaffPage() {
     .map(processStaffData)
     .filter((staff): staff is ProcessedStaff => staff !== null);
 
+  // Log the number of staff members processed
+  console.log(`Processed ${processedStaff.length} staff members out of ${staffData.length} total`);
+
   // Group staff by categories
   const surgeons = processedStaff.filter(staff => 
-    staff.position?.includes('Consultant') || 
-    staff.position?.includes('Chief') || 
-    staff.position?.includes('Dr.'));
+    staff.position?.toLowerCase().includes('consultant') || 
+    staff.position?.toLowerCase().includes('chief') || 
+    staff.position?.toLowerCase().includes('dr.'));
 
   const specialists = processedStaff.filter(staff => 
-    staff.position?.includes('Psychologist') || 
-    staff.position?.includes('Physiotherapist') || 
-    staff.position?.includes('MPT') ||
-    staff.position?.includes('Therapist'));
+    staff.position?.toLowerCase().includes('psychologist') || 
+    staff.position?.toLowerCase().includes('physiotherapist') || 
+    staff.position?.toLowerCase().includes('mpt') ||
+    staff.position?.toLowerCase().includes('therapist'));
 
   const supportStaff = processedStaff.filter(staff => 
     !surgeons.includes(staff) && 
     !specialists.includes(staff));
+
+  // Log the categorization results
+  console.log('Staff categorization:', {
+    surgeons: surgeons.length,
+    specialists: specialists.length,
+    supportStaff: supportStaff.length
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -66,7 +66,7 @@ async function getPublications(): Promise<string[]> {
 // Get all staff/surgeon profiles from CSV
 async function getStaffProfiles(): Promise<string[]> {
   try {
-    const csvFilePath = path.join(process.cwd(), 'docs', 'surgeon_staff_cms.csv');
+    const csvFilePath = path.join(process.cwd(), 'docs', 'surgeons_staff_cms.csv');
     const fileContent = await fs.readFile(csvFilePath, 'utf-8');
     const parsedCsv = Papa.parse<any>(fileContent, {
       header: true,
@@ -77,7 +77,7 @@ async function getStaffProfiles(): Promise<string[]> {
       .filter(row => row.Slug && row.PageType === 'surgeon-staff')
       .map(row => row.Slug);
   } catch (error) {
-    console.error("Error reading surgeon_staff_cms.csv:", error);
+    console.error("Error reading surgeons_staff_cms.csv:", error);
     return [];
   }
 }
