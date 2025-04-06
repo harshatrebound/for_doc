@@ -58,7 +58,7 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'py-3 bg-white/95 shadow-md' : 'py-5 bg-transparent'
+        scrolled ? 'py-3 bg-white/95 shadow-md' : 'py-5 bg-white/80 backdrop-blur-sm'
       }`}
     >
       <div className="container mx-auto px-4">
@@ -74,9 +74,7 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
                 className="object-contain"
               />
             </div>
-            <span className={`font-bold text-xl ${
-              isLight || scrolled ? 'text-[#8B5C9E]' : 'text-white'
-            }`}>
+            <span className={`font-bold text-xl text-[#8B5C9E]`}>
               Sports Orthopedics
             </span>
           </Link>
@@ -86,18 +84,14 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
             <nav className={`px-10 py-3 rounded-full transition-all duration-300 ${
               isLight || scrolled 
                 ? 'bg-white/95 backdrop-blur-md shadow-sm' 
-                : 'bg-white/10 backdrop-blur-md border border-white/20'
+                : 'bg-white/90 backdrop-blur-md shadow-sm'
             }`}>
               <ul className="flex items-center space-x-10">
                 {mainNavLinks.map((item) => (
                   <li key={item.name}>
                     <Link 
                       href={item.href}
-                      className={`font-medium transition-colors duration-300 relative group ${
-                        isLight || scrolled 
-                          ? 'text-gray-800 hover:text-[#8B5C9E]' 
-                          : 'text-white hover:text-white/80'
-                      }`}
+                      className={`font-medium transition-colors duration-300 relative group text-gray-800 hover:text-[#8B5C9E]`}
                     >
                       {item.name}
                       <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#8B5C9E] group-hover:w-full transition-all duration-300"></span>
@@ -109,14 +103,10 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
                 <li className="relative">
                   <button
                     onClick={() => handleDropdownToggle('resources')}
-                    className={`font-medium transition-colors duration-300 flex items-center group ${
-                      isLight || scrolled 
-                        ? 'text-gray-800 hover:text-[#8B5C9E]' 
-                        : 'text-white hover:text-white/80'
-                    }`}
+                    className={`font-medium transition-colors duration-300 flex items-center group text-gray-800 hover:text-[#8B5C9E]`}
                   >
                     Resources
-                    <ChevronDown className="ml-1 w-4 h-4" />
+                    <ChevronDown className="ml-2 w-5 h-5" />
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#8B5C9E] group-hover:w-full transition-all duration-300"></span>
                   </button>
                   
@@ -140,14 +130,10 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
                 <li className="relative">
                   <button
                     onClick={() => handleDropdownToggle('media')}
-                    className={`font-medium transition-colors duration-300 flex items-center group ${
-                      isLight || scrolled 
-                        ? 'text-gray-800 hover:text-[#8B5C9E]' 
-                        : 'text-white hover:text-white/80'
-                    }`}
+                    className={`font-medium transition-colors duration-300 flex items-center group text-gray-800 hover:text-[#8B5C9E]`}
                   >
                     Media
-                    <ChevronDown className="ml-1 w-4 h-4" />
+                    <ChevronDown className="ml-2 w-5 h-5" />
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#8B5C9E] group-hover:w-full transition-all duration-300"></span>
                   </button>
                   
@@ -171,11 +157,7 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
             
             {/* Book an Appointment Button - slightly increased spacing */}
             <BookingButton 
-              className={`ml-6 px-6 py-3 rounded-full font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center ${
-                isLight || scrolled
-                  ? 'bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]'
-                  : 'bg-white text-[#8B5C9E] hover:bg-white/90'
-              }`}
+              className={`ml-6 px-6 py-3 rounded-full font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]`}
               icon={<Calendar className="w-5 h-5 mr-2" />}
               text="Book an Appointment"
             />
@@ -187,9 +169,9 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
-              <X className={isLight || scrolled ? 'text-[#8B5C9E]' : 'text-white'} size={24} />
+              <X className="text-[#8B5C9E]" size={24} />
             ) : (
-              <Menu className={isLight || scrolled ? 'text-[#8B5C9E]' : 'text-white'} size={24} />
+              <Menu className="text-[#8B5C9E]" size={24} />
             )}
           </button>
         </div>
