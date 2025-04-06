@@ -58,7 +58,7 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'py-3 bg-white/95 shadow-md' : 'py-5 bg-white/80 backdrop-blur-sm'
+        scrolled ? 'py-3 bg-white shadow-md' : 'py-6 bg-white shadow'
       }`}
     >
       <div className="container mx-auto px-4">
@@ -74,24 +74,20 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
                 className="object-contain"
               />
             </div>
-            <span className={`font-bold text-xl text-[#8B5C9E]`}>
+            <span className="font-bold text-xl text-[#8B5C9E]">
               Sports Orthopedics
             </span>
           </Link>
           
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center">
-            <nav className={`px-10 py-3 rounded-full transition-all duration-300 ${
-              isLight || scrolled 
-                ? 'bg-white/95 backdrop-blur-md shadow-sm' 
-                : 'bg-white/90 backdrop-blur-md shadow-sm'
-            }`}>
+            <nav className="px-10 py-3 rounded-full transition-all duration-300 bg-gray-50 shadow-sm">
               <ul className="flex items-center space-x-10">
                 {mainNavLinks.map((item) => (
                   <li key={item.name}>
                     <Link 
                       href={item.href}
-                      className={`font-medium transition-colors duration-300 relative group text-gray-800 hover:text-[#8B5C9E]`}
+                      className="font-medium transition-colors duration-300 relative group text-gray-800 hover:text-[#8B5C9E]"
                     >
                       {item.name}
                       <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#8B5C9E] group-hover:w-full transition-all duration-300"></span>
@@ -103,15 +99,19 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
                 <li className="relative">
                   <button
                     onClick={() => handleDropdownToggle('resources')}
-                    className={`font-medium transition-colors duration-300 flex items-center group text-gray-800 hover:text-[#8B5C9E]`}
+                    className="font-medium transition-colors duration-300 flex items-center group text-gray-800 hover:text-[#8B5C9E]"
+                    aria-expanded={activeDropdown === 'resources'}
+                    aria-haspopup="true"
                   >
                     Resources
-                    <ChevronDown className="ml-2 w-5 h-5" />
+                    <span className="flex items-center justify-center ml-2 w-5 h-5 bg-gray-100 rounded-full group-hover:bg-[#8B5C9E]/10">
+                      <ChevronDown className="w-3.5 h-3.5 text-[#8B5C9E]" />
+                    </span>
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#8B5C9E] group-hover:w-full transition-all duration-300"></span>
                   </button>
                   
                   {activeDropdown === 'resources' && (
-                    <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 z-50">
+                    <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100">
                       {resourcesLinks.map((item) => (
                         <Link
                           key={item.name}
@@ -130,15 +130,19 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
                 <li className="relative">
                   <button
                     onClick={() => handleDropdownToggle('media')}
-                    className={`font-medium transition-colors duration-300 flex items-center group text-gray-800 hover:text-[#8B5C9E]`}
+                    className="font-medium transition-colors duration-300 flex items-center group text-gray-800 hover:text-[#8B5C9E]"
+                    aria-expanded={activeDropdown === 'media'}
+                    aria-haspopup="true"
                   >
                     Media
-                    <ChevronDown className="ml-2 w-5 h-5" />
+                    <span className="flex items-center justify-center ml-2 w-5 h-5 bg-gray-100 rounded-full group-hover:bg-[#8B5C9E]/10">
+                      <ChevronDown className="w-3.5 h-3.5 text-[#8B5C9E]" />
+                    </span>
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#8B5C9E] group-hover:w-full transition-all duration-300"></span>
                   </button>
                   
                   {activeDropdown === 'media' && (
-                    <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 z-50">
+                    <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100">
                       {mediaLinks.map((item) => (
                         <Link
                           key={item.name}
@@ -155,9 +159,9 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
               </ul>
             </nav>
             
-            {/* Book an Appointment Button - slightly increased spacing */}
+            {/* Book an Appointment Button */}
             <BookingButton 
-              className={`ml-6 px-6 py-3 rounded-full font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]`}
+              className="ml-6 px-6 py-3 rounded-full font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]"
               icon={<Calendar className="w-5 h-5 mr-2" />}
               text="Book an Appointment"
             />
@@ -179,7 +183,7 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
       
       {/* Mobile Navigation - reorganized with expandable sections */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white">
+        <div className="lg:hidden bg-white border-t border-gray-100 mt-2">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col space-y-2">
               {/* Main Links */}
@@ -264,7 +268,7 @@ export default function SiteHeader({ theme = 'default' }: SiteHeaderProps) {
       )}
       
       {/* Add extra spacer div to create consistent space between header and content */}
-      <div className="h-16 md:h-20 lg:h-24"></div>
+      <div className="h-20 md:h-24 lg:h-28"></div>
     </header>
   );
 } 
