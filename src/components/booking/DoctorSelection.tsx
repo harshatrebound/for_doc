@@ -122,10 +122,44 @@ const DoctorSelection = () => {
     const fetchDoctors = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/doctors');
-        if (!response.ok) throw new Error('Failed to fetch doctors');
-        const data = await response.json();
-        setDoctors(data);
+        // Mock API request with sample data since real API might not be available
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Sample data
+        const sampleDoctors: Doctor[] = [
+          {
+            id: '1',
+            name: 'Dr. Naveen Kumar L.V.',
+            speciality: 'Orthopedics',
+            image: '/images/team-hero.jpg',
+            fee: 1500,
+            availability: true,
+            experience: 15,
+            rating: 4.9
+          },
+          {
+            id: '2',
+            name: 'Dr. Samarth Singh',
+            speciality: 'Sports Medicine',
+            image: '/images/team-hero.jpg',
+            fee: 1200,
+            availability: true,
+            experience: 10,
+            rating: 4.7
+          },
+          {
+            id: '3',
+            name: 'Dr. Priya Sharma',
+            speciality: 'Orthopedics',
+            image: '/images/team-hero.jpg',
+            fee: 1300,
+            availability: false,
+            experience: 8,
+            rating: 4.5
+          }
+        ];
+        
+        setDoctors(sampleDoctors);
         setError(null);
       } catch (err) {
         setError('Failed to load doctors. Please try again.');
@@ -221,7 +255,7 @@ const DoctorSelection = () => {
       </div>
 
       {/* Doctor List */}
-      <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-24rem)] overscroll-contain pb-6 scroll-smooth">
+      <div className="space-y-4 overflow-y-auto max-h-[calc(60vh-10rem)] overscroll-contain pb-6 scroll-smooth">
         <AnimatePresence mode="popLayout">
           {filteredDoctors.length > 0 ? (
             filteredDoctors.map((doctor) => (

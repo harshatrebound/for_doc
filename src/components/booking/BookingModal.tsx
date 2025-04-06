@@ -87,7 +87,7 @@ const BookingModalContent = ({ isOpen, onClose }: BookingModalProps) => {
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
 
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden">
+        <Dialog.Panel className="relative w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-xl overflow-hidden">
           {/* Close button */}
           {state.currentStep !== 4 && (
             <button
@@ -98,7 +98,7 @@ const BookingModalContent = ({ isOpen, onClose }: BookingModalProps) => {
             </button>
           )}
 
-          <div className="flex flex-col h-[85vh]">
+          <div className="flex flex-col max-h-[90vh]">
             <div className="flex-1 overflow-y-auto">
               <AnimatePresence mode="wait">
                 <motion.div
