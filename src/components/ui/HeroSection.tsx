@@ -36,9 +36,9 @@ export default function HeroSection({
 }: HeroSectionProps) {
   // Determine height class based on prop
   const heightClass = {
-    small: 'h-[30vh] md:h-[40vh]',
-    medium: 'h-[40vh] md:h-[50vh]',
-    large: 'h-[50vh] md:h-[70vh]',
+    small: 'min-h-[50vh] md:min-h-[60vh]',
+    medium: 'min-h-[60vh] md:min-h-[70vh]',
+    large: 'min-h-[70vh] md:min-h-[80vh]',
   }[height];
 
   // Determine text alignment
@@ -154,7 +154,7 @@ export default function HeroSection({
       
       <motion.div 
         className={cn(
-          "relative z-10 container mx-auto px-4 pt-12 flex flex-col justify-center", 
+          "relative z-10 container mx-auto px-4 pt-24 md:pt-32 flex flex-col justify-center", 
           alignClass
         )}
         initial="hidden"

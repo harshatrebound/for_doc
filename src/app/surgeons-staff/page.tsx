@@ -147,7 +147,7 @@ export default async function SurgeonsStaffPage() {
       <SiteHeader theme="light" />
       
       {/* Hero Section */}
-      <section className="relative h-[50vh] md:h-[60vh] flex items-center justify-center text-center text-white overflow-hidden">
+      <section className="relative min-h-[60vh] md:min-h-[70vh] flex items-center justify-center text-center text-white overflow-hidden">
         <div className="absolute inset-0 z-0 bg-gray-800">
           <Image 
             src="/images/team-hero.jpg" 
@@ -160,7 +160,7 @@ export default async function SurgeonsStaffPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-[#8B5C9E]/60 via-[#8B5C9E]/70 to-[#8B5C9E]/80" />
         </div>
         
-        <div className="relative z-10 container mx-auto px-4">
+        <div className="relative z-10 container mx-auto px-4 pt-24 md:pt-32">
           {/* Heading */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] mb-6">
             <span className="relative inline-block">

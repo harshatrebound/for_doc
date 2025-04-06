@@ -36,7 +36,7 @@ export default function GalleryPage() {
       <SiteHeader theme="light" />
       
       {/* Hero Section */}
-      <section className="relative h-[50vh] flex flex-col justify-center overflow-hidden">
+      <section className="relative min-h-[60vh] md:min-h-[70vh] flex flex-col justify-center overflow-hidden">
         <motion.div
           style={{ y: backgroundY }}
           className="absolute inset-0 z-0"
@@ -54,7 +54,7 @@ export default function GalleryPage() {
           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-30 mix-blend-soft-light" />
         </motion.div>
 
-        <div className="relative z-10 container mx-auto px-4">
+        <div className="relative z-10 container mx-auto px-4 pt-24 md:pt-32">
           <div className="max-w-4xl mx-auto text-center">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}

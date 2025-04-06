@@ -12,7 +12,7 @@ interface HeroSectionProps {
 export function HeroSection({ title, description, imageSrc }: HeroSectionProps) {
   return (
     <section 
-      className="relative h-[50vh] md:h-[60vh] flex items-center justify-center text-center text-white overflow-hidden"
+      className="relative min-h-[60vh] md:min-h-[70vh] flex items-center justify-center text-center text-white overflow-hidden"
       style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}
     >
       <div className="absolute inset-0 z-0 bg-gray-800">
@@ -27,7 +27,7 @@ export function HeroSection({ title, description, imageSrc }: HeroSectionProps) 
         </div>
       </div>
       
-      <div className="relative z-10 container mx-auto px-4">
+      <div className="relative z-10 container mx-auto px-4 pt-24 md:pt-32">
         {/* Heading Style */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] mb-6">
           <span className="relative inline-block">

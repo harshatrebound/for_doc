@@ -16,9 +16,9 @@ export default function ContactPage() {
     <div className="min-h-screen bg-white">
       <SiteHeader theme="light" />
       
-      <main className="pt-24 pb-16">
+      <main className="pt-24 md:pt-32 pb-16">
         {/* Hero Section */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 py-16">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Contact Us</h1>
