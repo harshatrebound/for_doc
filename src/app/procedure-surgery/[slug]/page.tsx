@@ -1,6 +1,5 @@
-'use client';
+'use server';
 
-import { useState, useEffect } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,45 +7,15 @@ import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import { getProcedureBySlug } from '../utils/csvParser';
 import { ContentBlockRenderer } from '../components/ContentBlockRenderer';
-import BookingModal from '@/components/booking/BookingModal';
+import BookingSection from '../components/BookingSection';
 // Metadata is now handled in the separate metadata.ts file
 
 interface ProcedurePageProps {
   params: { slug: string };
 }
 
-export default function ProcedurePage({ params }: ProcedurePageProps) {
-  const [procedure, setProcedure] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  
-  // Fetch the procedure data on the client side
-  useEffect(() => {
-    async function loadProcedure() {
-      try {
-        const data = await getProcedureBySlug(params.slug);
-        if (!data) {
-          notFound();
-        }
-        setProcedure(data);
-      } catch (error) {
-        console.error('Error loading procedure:', error);
-        notFound();
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-    loadProcedure();
-  }, [params.slug]); // Add params.slug as a dependency
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-[#8B5C9E]">Loading...</div>
-      </div>
-    );
-  }
+export default async function ProcedurePage({ params }: ProcedurePageProps) {
+  const procedure = await getProcedureBySlug(params.slug);
   
   if (!procedure) {
     notFound();
@@ -144,43 +113,13 @@ export default function ProcedurePage({ params }: ProcedurePageProps) {
             
             {/* Sidebar */}
             <div className="w-full lg:w-1/3">
-              <div className="bg-gray-50 rounded-lg p-6 sticky top-24">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Schedule a Consultation</h3>
-                <p className="text-gray-600 mb-6">
-                  Would you like to learn more about this procedure or schedule a consultation with our specialists?
-                </p>
-                <div className="space-y-4">
-                  <button
-                    onClick={() => setIsBookingModalOpen(true)}
-                    className="block w-full py-3 px-4 bg-[#8B5C9E] hover:bg-[#7a4f8a] text-white font-medium rounded-lg text-center transition-colors"
-                  >
-                    Book an Appointment
-                  </button>
-                  <Link
-                    href="/contact"
-                    className="block w-full py-3 px-4 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-medium rounded-lg text-center transition-colors"
-                  >
-                    Contact Us
-                  </Link>
-                </div>
-                
-                <div className="mt-8 pt-6 border-t border-gray-200">
-                  <h4 className="font-medium text-gray-900 mb-3">Related Procedures</h4>
-                  <p className="text-gray-500 text-sm italic mb-2">Coming soon</p>
-                </div>
-              </div>
+              <BookingSection />
             </div>
           </div>
         </div>
       </main>
       
       <SiteFooter />
-      
-      {/* Booking Modal */}
-      <BookingModal 
-        isOpen={isBookingModalOpen} 
-        onClose={() => setIsBookingModalOpen(false)} 
-      />
     </div>
   );
 } 
