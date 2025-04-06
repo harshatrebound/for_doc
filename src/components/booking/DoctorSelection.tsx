@@ -122,48 +122,45 @@ const DoctorSelection = () => {
     const fetchDoctors = async () => {
       try {
         setIsLoading(true);
-        // Mock API request with sample data since real API might not be available
-        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Sample data
-        const sampleDoctors: Doctor[] = [
+        // Fetch doctors from the API
+        const response = await fetch('/api/doctors');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch doctors');
+        }
+        
+        const data = await response.json();
+        setDoctors(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching doctors:', err);
+        
+        // Fallback to database values if API fails
+        setDoctors([
           {
-            id: '1',
-            name: 'Dr. Naveen Kumar L.V.',
-            speciality: 'Orthopedics',
+            id: 'dr-sameer',
+            name: 'Dr. Sameer',
+            speciality: 'Orthopedic Surgeon',
             image: '/images/team-hero.jpg',
-            fee: 1500,
+            fee: 800,
             availability: true,
             experience: 15,
             rating: 4.9
           },
           {
-            id: '2',
-            name: 'Dr. Samarth Singh',
-            speciality: 'Sports Medicine',
+            id: 'other-doctors',
+            name: 'Other Doctors',
+            speciality: 'Sports Orthopedic Doctors',
             image: '/images/team-hero.jpg',
-            fee: 1200,
+            fee: 1000,
             availability: true,
             experience: 10,
             rating: 4.7
-          },
-          {
-            id: '3',
-            name: 'Dr. Priya Sharma',
-            speciality: 'Orthopedics',
-            image: '/images/team-hero.jpg',
-            fee: 1300,
-            availability: false,
-            experience: 8,
-            rating: 4.5
           }
-        ];
+        ]);
         
-        setDoctors(sampleDoctors);
-        setError(null);
-      } catch (err) {
-        setError('Failed to load doctors. Please try again.');
-        console.error('Error fetching doctors:', err);
+        setError('Using backup doctor data. Some information may not be up-to-date.');
       } finally {
         setIsLoading(false);
       }

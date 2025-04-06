@@ -3,51 +3,40 @@ import { getDoctors, createDoctor } from '@/lib/db';
 import type { Doctor } from '@/types/booking';
 import { doctorSchema } from '@/lib/middleware/validateRequest';
 import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
 
-const mockDoctors: Doctor[] = [
-  {
-    id: 'dr-sameer',
-    name: 'Dr. Sameer Kumar',
-    speciality: 'Cardiologist',
-    image: '/doctors/doctor-1.jpg',
-    fee: 1500,
-    availability: true
-  },
-  {
-    id: 'dr-priya',
-    name: 'Dr. Priya Sharma',
-    speciality: 'Dermatologist',
-    image: '/doctors/doctor-2.jpg',
-    fee: 1200,
-    availability: true
-  },
-  {
-    id: 'dr-rahul',
-    name: 'Dr. Rahul Verma',
-    speciality: 'Pediatrician',
-    image: '/doctors/doctor-3.jpg',
-    fee: 1000,
-    availability: true
-  },
-  {
-    id: 'dr-anita',
-    name: 'Dr. Anita Desai',
-    speciality: 'Gynecologist',
-    image: '/doctors/doctor-4.jpg',
-    fee: 1800,
-    availability: true
-  }
-];
+// Removed mock data as we'll use actual database data
 
 export async function GET() {
   try {
-    // For development, return mock data
-    if (process.env.NODE_ENV === 'development') {
-      return NextResponse.json(mockDoctors);
-    }
+    // Fetch doctors from the database
+    const dbDoctors = await prisma.doctor.findMany({
+      include: {
+        schedules: true
+      },
+      orderBy: {
+        name: 'asc'
+      }
+    });
 
-    // For production, fetch from database
-    const doctors = await getDoctors();
+    // Transform data to include availability and other required fields
+    const doctors = dbDoctors.map(doctor => {
+      // Check if doctor has any active schedules to determine availability
+      const hasActiveSchedules = doctor.schedules.some(schedule => schedule.isActive);
+      
+      return {
+        id: doctor.id,
+        name: doctor.name,
+        speciality: doctor.speciality,
+        fee: doctor.fee,
+        image: doctor.image || '/images/team-hero.jpg', // Default image if none provided
+        availability: hasActiveSchedules,
+        // Add default values for any missing fields required by the frontend
+        experience: 5, // Default experience value
+        rating: 4.5    // Default rating value
+      };
+    });
+
     return NextResponse.json(doctors);
   } catch (error) {
     console.error('Error fetching doctors:', error);
@@ -68,7 +57,7 @@ export async function POST(request: Request) {
     // Create doctor in database
     const newDoctor = await createDoctor({
       ...validatedData,
-      image: validatedData.image || '/images/default-doctor.jpg'
+      image: validatedData.image || '/images/team-hero.jpg'
     });
 
     return NextResponse.json(newDoctor, { status: 201 });
