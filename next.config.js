@@ -32,6 +32,11 @@ const nextConfig = {
       {
         protocol: 'http',
         hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: 'sportsorthopedics.in',
+        pathname: '/wp-content/uploads/**',
       }
     ],
   },
@@ -135,6 +140,19 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+
+  async rewrites() {
+    return [
+      {
+        source: '/posts',
+        destination: '/blogs',
+      },
+      {
+        source: '/posts/:path*',
+        destination: '/:path*',
+      }
+    ]
+  }
 }
 
 module.exports = nextConfig 

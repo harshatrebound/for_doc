@@ -1,15 +1,12 @@
 ---
-description: 
+description: To get latest info about what we are doing
 globs: 
-alwaysApply: true
+alwaysApply: false
 ---
-We are optimizing /admin for Mobile based web app.
-
-You can use Postgres MCP as needed to understand the data. 
 
 Yu are required to stirctly stick to brand colors. Be aware that most of our application is already built. 
 
-We are ony optimizing all screens for mobile.
+We are optimizing all screens for mobile.
 
 You should not tolerate cookie cutter designs, we need apple level aesthetics and figma standards in designing.
 
@@ -17,4 +14,4 @@ Do one unit test for all features in most simplistic fashion.
 
 If not aware of all files and folders, archietcture, app flow and tech stack. Feel free to check all files by scanning or grepping. 
 
-You are building a world class backend application for appointment booking management for doctors. Which shall be handled by Layman.
+You are building a world class backend and front end website for appointment booking management for doctors. Which shall be handled by Layman.

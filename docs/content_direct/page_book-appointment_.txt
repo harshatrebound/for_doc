@@ -1,0 +1,257 @@
+---
+URL: https://sportsorthopedics.in/book-appointment/
+Type: page
+Title: Book an Appointment | Sports Orthopedics
+Scraped: 2025-04-05T17:46:25.171Z
+---
+
+{{ sidebar_steps.tab_name }}
+{{ is_error_msg }}
+Select Category
+{{cat_data.category_name}}
+Select Service
+{{ service_details.bookingpress_service_name }}
+Duration:
+{{ service_details.bookingpress_service_duration_val }} {{ service_details.bookingpress_service_duration_label }}
+Price:
+{{ service_details.bookingpress_service_price }}
+Advance Options
+See Less
+{{service_extra_title}}
+{{ extra_service_error_msg }}
+{{ service_extra_details.bookingpress_extra_service_name }}
+{{ service_extra_details.bookingpress_extra_formatted_price }}
+{{ service_extra_details.bookingpress_extra_service_duration }} {{ service_extra_details.bookingpress_extra_service_duration_unit }}
+View More
+View Less
+{{ n }}
+{{ service_extra_details.bookingpress_service_description }}
+Load More
+Load Less
+{{bring_anyone_title}}
+{{ n }} {{number_of_person_title}}
+Go Back
+Next: {{ bookingpress_sidebar_step_data[bookingpress_sidebar_step_data[bookingpress_current_tab].next_tab_name].tab_name }}
+{{service_extra_title}}
+{{ extra_service_error_msg }}
+{{ service_extra_details.bookingpress_extra_service_name }}
+{{ service_extra_details.bookingpress_extra_formatted_price }}
+{{ service_extra_details.bookingpress_extra_service_duration }}
+{{ service_extra_details.bookingpress_extra_service_duration_unit }}
+{{ service_extra_details.bookingpress_service_description }}
+{{bring_anyone_title}}
+{{ n }} {{number_of_person_title}}
+{{cancel_button_title}}
+{{continue_button_title}}
+{{ is_error_msg }}
+Date & Time
+{{day.label}}
+{{v_calendar_attributes_current[day.id]}}
+{{v_calendar_default_label}} {{slot_left_text}}
+{{day.label}}
+{{v_calendar_attributes_current[day.id]}}
+{{v_calendar_default_label}} {{slot_left_text}}
+Time Slot
+There is no time slots available
+Morning
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
+Afternoon
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
+Evening
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
+Night
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
++1 day
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
++1 day
+Date & Time
+{{day.label}}
+{{v_calendar_attributes_current[day.id]}}
+{{v_calendar_default_label}} {{slot_left_text}}
+{{day.label}}
+{{v_calendar_attributes_current[day.id]}}
+{{v_calendar_default_label}} {{slot_left_text}}
+{{ appointment_step_form_data.selected_date | bookingpress_format_date }}
+{{app.bookingpress_current_datetime | bookingpress_format_date}}
+Time Slot
+There is no time slots available
+Morning
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
+Afternoon
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
+Evening
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
+Night
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
++1 day
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
+{{time_details.formatted_start_end_time}}
+{{ time_details.max_capacity }} {{slot_left_text}}
++1 day
+Go Back
+Next: {{ bookingpress_sidebar_step_data[bookingpress_sidebar_step_data[bookingpress_current_tab].next_tab_name].tab_name }}
+{{ is_error_msg }}
+Basic Details
+{{customer_form_fields_data.label}}
+This user is already exists and password can't be entered
+{{chk_data.label}}
+{{ fsinner_data.label }}
+This user is already exists and password can't be entered
+{{chk_data.label}}
+{{customer_form_fields_data.label}}
+{{ fsinner_data.label }}
+This user is already exists and password can't be entered
+{{chk_data.label}}
+{{ fsinner_data.label }}
+This user is already exists and password can't be entered
+{{chk_data.label}}
+Go Back
+Next: {{ bookingpress_sidebar_step_data[bookingpress_sidebar_step_data[bookingpress_current_tab].next_tab_name].tab_name }}
+{{ is_error_msg }}
+Summary
+Your appointment booking summary
+Customer
+{{appointment_step_form_data.form_fields.customer_name }}
+{{ appointment_step_form_data.form_fields.customer_firstname }} {{ appointment_step_form_data.form_fields.customer_lastname }}
+{{ appointment_step_form_data.form_fields.customer_email }}
+Service
+{{ appointment_step_form_data.selected_service_name}}
+{{ cart_details.bookingpress_service_name}}
+{{extras_details.bookingpress_extra_name }}
+{{extras_details.bookingpress_extra_price}}
+{{extras_details.bookingpress_extra_duration}}
+{{extras_details.bookingpress_selected_qty}}
+{{appointment_step_form_data.bookingpress_selected_extra_service_count}} Extras
+Date & Time
+{{ appointment_step_form_data.customer_selected_end_date | bookingpress_format_date }}, {{appointment_step_form_data.selected_formatted_start_end_time}}
+{{ appointment_step_form_data.selected_date | bookingpress_format_date }}, {{appointment_step_form_data.selected_formatted_start_end_time}}
+{{ appointment_step_form_data.customer_selected_end_date || bookingpress_format_date }}
+{{ appointment_step_form_data.selected_date | bookingpress_format_date }}
+{{ appointment_step_form_data.selected_date | bookingpress_format_date }} - {{appointment_step_form_data.selected_end_date | bookingpress_format_date}}
+{{ cart_details.bookingpress_selected_end_date | bookingpress_format_date }}, {{cart_details.formatted_start_end_time}}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}, {{cart_details.formatted_start_end_time}}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }} - {{ cart_details.bookingpress_selected_end_date | bookingpress_format_date }}
+{{ cart_details.bookingpress_selected_end_date | bookingpress_format_date }}, {{ cart_details.formatted_start_time }} to {{ cart_details.formatted_end_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}, {{ cart_details.formatted_start_time }} to {{ cart_details.formatted_end_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}
+{{ cart_details.bookingpress_selected_end_date | bookingpress_format_date }}, {{ cart_details.formatted_start_time }} - {{ cart_details.formatted_end_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}, {{ cart_details.formatted_start_time }} - {{ cart_details.formatted_end_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}
+{{ cart_details.bookingpress_selected_end_date | bookingpress_format_date }}, {{ cart_details.formatted_start_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}, {{ cart_details.formatted_start_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}
+{{ cart_details.bookingpress_selected_end_date | bookingpress_format_date }}, {{ cart_details.formatted_start_time }} - {{ cart_details.formatted_end_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}, {{ cart_details.formatted_start_time }} - {{ cart_details.formatted_end_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}
+Appointment Details
+{{ appointment_step_form_data.selected_service_name}}
+{{extras_details.bookingpress_extra_name }}
+{{extras_details.bookingpress_extra_price}}
+{{extras_details.bookingpress_extra_duration}}
+{{extras_details.bookingpress_selected_qty}}
+{{appointment_step_form_data.bookingpress_selected_extra_service_count}} Extras
+{{ appointment_step_form_data.selected_date | bookingpress_format_date }}, {{ appointment_step_form_data.selected_formatted_start_end_time }}
+{{ appointment_step_form_data.selected_date | bookingpress_format_date }}
+{{ appointment_step_form_data.selected_date | bookingpress_format_date }} - {{ appointment_step_form_data.selected_end_date | bookingpress_format_date }}
+{{ cart_details.bookingpress_service_name}}
+{{ cart_details.bookingpress_selected_end_date | bookingpress_format_date }}, {{ cart_details.formatted_start_end_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}, {{ cart_details.formatted_start_end_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }} - {{ cart_details.bookingpress_selected_end_date | bookingpress_format_date }}
+{{ cart_details.bookingpress_selected_end_date | bookingpress_format_date }}, {{ cart_details.formatted_start_time }} to {{ cart_details.formatted_end_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}, {{ cart_details.formatted_start_time }} to {{ cart_details.formatted_end_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}
+{{ cart_details.bookingpress_selected_end_date | bookingpress_format_date }}, {{ cart_details.formatted_start_time }} - {{ cart_details.formatted_end_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}, {{ cart_details.formatted_start_time }} - {{ cart_details.formatted_end_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}
+{{ cart_details.bookingpress_selected_end_date | bookingpress_format_date }}, {{ cart_details.formatted_start_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}, {{ cart_details.formatted_start_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}
+{{subtotal_text}}
+{{ appointment_step_form_data.selected_service_price }}
+{{tax_title}}
+Tax
++{{ appointment_step_form_data.tax_amount }}
+{{couon_applied_title}}
+{{ appointment_step_form_data.coupon_code }}
+-{{ appointment_step_form_data.coupon_discount_amount_with_currecny }}
+{{coupon_code_title}}
+{{ coupon_code_msg }}
+{{ coupon_code_msg }}
+{{coupon_apply_button_label}}
+Applied
+{{ appointment_step_form_data.included_tax_label }}
+{{ appointment_step_form_data.total_payable_amount_with_currency }}
+{{ appointment_step_form_data.selected_service_price }}
+{{deposit_heading_title}}
+{{deposit_title}}
+{{full_payment_title}}
+{{deposit_paying_amount_title}}
+{{ appointment_step_form_data.bookingpress_deposit_amt }}
+{{ appointment_step_form_data.deposit_payment_amount_percentage }}% ( {{ appointment_step_form_data.bookingpress_deposit_amt }} )
+{{deposit_remaining_amount_title}} {{ appointment_step_form_data.included_tax_label }}
+{{ appointment_step_form_data.included_tax_label }}
+{{ appointment_step_form_data.bookingpress_deposit_due_amt }}
+{{ appointment_step_form_data.total_payable_amount_with_currency }}
+{{subtotal_text}}
+{{ appointment_step_form_data.bookingpress_cart_total_with_currency }}
+{{tax_title}}
+Tax
++{{ appointment_step_form_data.tax_amount }}
+{{couon_applied_title}}
+{{ appointment_step_form_data.coupon_code }}
+-{{ appointment_step_form_data.coupon_discount_amount_with_currecny }}
+{{coupon_code_title}}
+{{ coupon_code_msg }}
+{{ coupon_code_msg }}
+{{coupon_apply_button_label}}
+Applied
+{{ appointment_step_form_data.included_tax_label }}
+{{ appointment_step_form_data.total_payable_amount_with_currency }}
+{{deposit_heading_title}}
+{{deposit_title}}
+{{full_payment_title}}
+{{deposit_paying_amount_title}}
+{{ appointment_step_form_data.bookingpress_deposit_total_with_currency }}
+( {{ appointment_step_form_data.bookingpress_deposit_total_with_currency }} )
+{{deposit_remaining_amount_title}}
+{{ appointment_step_form_data.included_tax_label }}
+{{ appointment_step_form_data.included_tax_label }}
+{{ appointment_step_form_data.bookingpress_deposit_due_amount_total_with_currency }}
+{{ appointment_step_form_data.total_payable_amount_with_currency }}
+{{ appointment_step_form_data.total_payable_amount_with_currency }}
+There is no payment method available.
+Select Payment Method
+Pay Locally
+PayPal
+{{card_details_text}}
+Go Back
+Test Button
+{{ is_error_msg }}
+{{staffmember_heading_title}}
+{{any_staff_title}}
+{{ staffmember_details.bookingpress_staffmember_firstname }} {{ staffmember_details.bookingpress_staffmember_lastname }}
+{{ staffmember_details.bookingpress_staffmember_email }}
+{{ staffmember_details.bookingpress_staffmember_phone }}
+Go Back
+Next: {{ bookingpress_sidebar_step_data[bookingpress_sidebar_step_data[bookingpress_current_tab].next_tab_name].tab_name }}
+No categories and services added!

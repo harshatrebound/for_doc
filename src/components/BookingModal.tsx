@@ -19,7 +19,12 @@ interface Doctor {
   available: boolean;
 }
 
-const StepIndicator = () => (
+interface BookingModalProps {
+  onClose?: () => void;
+  procedureTitle?: string;
+}
+
+const StepIndicator = ({ onClose, title }: { onClose?: () => void, title?: string }) => (
   <motion.div 
     initial={{ opacity: 0, y: -20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -35,12 +40,15 @@ const StepIndicator = () => (
         </motion.div>
         <div className="flex flex-col">
           <span className="text-sm text-[#8B5C9E] font-medium">Step 1 of 5</span>
-          <h2 className="text-xl font-semibold text-gray-900">Select Doctor</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {title ? `Schedule: ${title}` : 'Select Doctor'}
+          </h2>
         </div>
       </div>
       <motion.button 
         whileTap={{ scale: 0.95 }}
         className="rounded-full p-2 hover:bg-gray-100 transition-colors"
+        onClick={onClose}
       >
         <X className="w-6 h-6 text-gray-600" />
       </motion.button>
@@ -151,8 +159,14 @@ const DoctorCard = ({ doctor }: { doctor: Doctor }) => (
   </motion.div>
 );
 
-export const BookingModal = () => {
+export const BookingModal = ({ onClose, procedureTitle }: BookingModalProps) => {
   const [selectedDoctor, setSelectedDoctor] = React.useState<string | null>(null);
+
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose?.();
+    }
+  };
 
   return (
     <motion.div
@@ -160,6 +174,7 @@ export const BookingModal = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-sm"
+      onClick={handleBackdropClick}
     >
       <motion.div
         initial={{ y: '100%' }}
@@ -168,7 +183,7 @@ export const BookingModal = () => {
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         className="relative w-full sm:w-[480px] max-h-[90vh] bg-white rounded-t-2xl sm:rounded-2xl overflow-hidden"
       >
-        <StepIndicator />
+        <StepIndicator onClose={onClose} title={procedureTitle} />
         
         <div className="p-4 space-y-4 overflow-y-auto max-h-[calc(90vh-180px)]">
           <SearchBar />

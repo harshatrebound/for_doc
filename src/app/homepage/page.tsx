@@ -1,71 +1,81 @@
 'use client';
 
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Calendar, Activity, Heart, Users, Phone, Mail, MapPin, ArrowRight, Star, Plus } from 'lucide-react';
+import { Calendar, Activity, Heart, Users, Phone, Mail, MapPin, ArrowRight, Star, Plus, Menu, X, Instagram, Facebook, Twitter, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import BookingModal from '@/components/booking/BookingModal';
+import SiteHeader from '@/components/layout/SiteHeader';
+import SiteFooter from '@/components/layout/SiteFooter';
+import { cn } from '@/lib/utils';
+import { Metadata } from 'next';
 
 const specialties = [
   {
     title: 'Knee',
-    description: 'Knee joint, Ligaments, Cartilage, Muscles & Bones around.',
+    description: 'We provide comprehensive specialized care for injuries and conditions affecting the knee joint, ligaments, cartilage, muscles & bones around.',
     icon: Activity,
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1200&auto=format&fit=crop',
+    image: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/male-physiotherapist-checking-woman-s-knee-mobility.webp',
+    href: '/bone-joint-school/knee-pain/'
   },
   {
     title: 'Shoulder',
-    description: 'Shoulder joint, Ligaments, Cartilage, Muscles & Bones around.',
+    description: 'We provide comprehensive specialized care for injuries and conditions affecting the shoulder joint, ligaments, cartilage, muscles & bones around.',
     icon: Activity,
-    image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1200&auto=format&fit=crop',
+    image: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/male-physiotherapist-checking-woman-s-shoulder.webp',
+    href: '/bone-joint-school/shoulder-pain/'
   },
   {
     title: 'Ankle',
-    description: 'Ankle Joint, Ligaments, Cartilage, Muscles & Bones around.',
+    description: 'We provide comprehensive specialized care for injuries and conditions affecting the ankle joint, ligaments, cartilage, muscles & bones around.',
     icon: Activity,
-    image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?q=80&w=1200&auto=format&fit=crop',
+    image: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/man-suction-session.webp',
+    href: '/bone-joint-school/ankle-pain/'
   },
   {
     title: 'Hip',
-    description: 'Hip Joint, Ligaments, Cartilage, Muscles and Bones around.',
+    description: 'We provide comprehensive specialized care for injuries and conditions affecting the hip joint, ligaments, cartilage, muscles and bones around.',
     icon: Activity,
-    image: 'https://images.unsplash.com/photo-1571019613576-2b22c76fd955?q=80&w=1200&auto=format&fit=crop',
+    image: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/young-attractive-model-brown-sweater-standing-white-wall.webp',
+    href: '/bone-joint-school/hip-pain/'
   },
   {
     title: 'Elbow',
-    description: 'Elbow Joint, Ligaments, Cartilage, Muscles and Bones around.',
+    description: 'We provide comprehensive specialized care for injuries and conditions affecting the elbow joint, ligaments, cartilage, muscles and bones around.',
     icon: Activity,
-    image: 'https://images.unsplash.com/photo-1612776572997-76cc42e058c3?q=80&w=1200&auto=format&fit=crop',
+    image: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/upset-brunette-young-woman-injured-arm-sport-training-touches-her-wrist-isolated-white-wall.webp',
+    href: '/bone-joint-school/elbow-pain/'
   },
   {
     title: 'Wrist',
-    description: 'Wrist Joint, Ligaments, Cartilage, Muscles & Bones around.',
+    description: 'We provide comprehensive specialized care for injuries and conditions affecting the wrist joint, ligaments, cartilage, muscles & bones around.',
     icon: Activity,
-    image: 'https://images.unsplash.com/photo-1584515933487-779824d29309?q=80&w=1200&auto=format&fit=crop',
+    image: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/serious-brunette-young-woman-with-ponytail-massages-her-arthritic-hand.webp',
+    href: '/bone-joint-school/wrist-pain/'
   },
 ];
 
 const features = [
   {
     title: 'Putting you first',
-    description: 'We treat all our patients equally and humanely.',
+    description: 'We treat all our patients equally and humanely with individual care and attention.',
     icon: Heart,
   },
   {
     title: 'Vast Pool of Experience',
-    description: 'We have extensive experience treating patients across multiple regions.',
+    description: 'We have extensive experience treating patients across multiple regions and are continually updating our knowledge through participation in global conferences and training.',
     icon: Users,
   },
   {
     title: 'Accurate Diagnosis',
-    description: 'We strive to achieve the correct diagnosis with minimal investigations.',
+    description: 'We strive to achieve the correct diagnosis with minimal investigations to ensure effective treatment planning.',
     icon: Activity,
   },
   {
     title: 'Interactive Session',
-    description: 'We believe in empowering our patients with clear information about their condition.',
+    description: 'We believe in empowering our patients with clear information about their condition and treatment options, making them active participants in their healthcare journey.',
     icon: Calendar,
   },
 ];
@@ -87,9 +97,40 @@ const testimonials = [
   }
 ];
 
+// Lazy loading components for better performance
+const LazyImage = ({ src, alt, ...props }: any) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  return (
+    <div className="relative overflow-hidden" {...props}>
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-gray-100 animate-pulse" />
+      )}
+      <Image 
+        src={src} 
+        alt={alt}
+        onLoad={() => setIsLoaded(true)}
+        className={cn(
+          "transition-opacity duration-500",
+          isLoaded ? "opacity-100" : "opacity-0"
+        )}
+        {...props}
+      />
+    </div>
+  );
+};
+
 export default function HomePage() {
   const containerRef = useRef(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  
+  // Fix hydration issues with useEffect
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
@@ -98,67 +139,91 @@ export default function HomePage() {
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
   const textY = useTransform(scrollYProgress, [0, 1], ["0%", "200%"]);
 
+  // Optimize FAQ section with accordion state
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  
+  const toggleFaq = (index: number) => {
+    setOpenFaqIndex(openFaqIndex === index ? null : index);
+  };
+  
+  // Skip animation if reduced motion is preferred
+  const prefersReducedMotion = mounted && typeof window !== 'undefined' 
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+    : false;
+    
+  const animationProps = prefersReducedMotion 
+    ? { initial: {}, animate: {}, transition: {} }
+    : {
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+      };
+
   return (
     <div className="min-h-screen bg-white" ref={containerRef}>
-      {/* Hero Section */}
+      <SiteHeader />
+
+      {/* Hero Section - Add more accessibility */}
       <section className="relative min-h-[100vh] flex flex-col justify-between overflow-hidden">
         {/* Enhanced Background with Parallax and Overlay Effects */}
         <motion.div
-          style={{ y: backgroundY }}
+          style={{ y: prefersReducedMotion ? "0%" : backgroundY }}
           className="absolute inset-0 z-0"
         >
           <Image
             src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=2000&auto=format&fit=crop"
-            alt="Modern medical facility"
+            alt="Modern medical facility with professional equipment"
             fill
             className="object-cover scale-110"
             priority
-            quality={100}
+            quality={90}
+            sizes="100vw"
+            placeholder="blur"
+            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzYwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiLz4="
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
           {/* Added Dynamic Pattern Overlay */}
           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-30 mix-blend-soft-light" />
-          {/* Added Animated Gradient Orbs */}
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#8B5C9E]/20 rounded-full blur-3xl animate-float-slow" />
-          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-[#B491C8]/20 rounded-full blur-3xl animate-float-medium" />
+          {/* Added Animated Gradient Orbs - Reduced motion */}
+          {!prefersReducedMotion && (
+            <>
+              <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#8B5C9E]/20 rounded-full blur-3xl animate-float-slow" />
+              <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-[#B491C8]/20 rounded-full blur-3xl animate-float-medium" />
+            </>
+          )}
         </motion.div>
 
-        {/* Top Navigation Space */}
-        <div className="h-24" />
-
-        {/* Enhanced Main Content */}
+        {/* Enhanced Main Content - with better semantics */}
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pt-12 pb-32">
           <div className="w-full max-w-6xl mx-auto">
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              {...animationProps}
               className="text-center"
             >
               {/* Enhanced Logo with Glow */}
               <motion.div
-                initial={{ scale: 1.2, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
+                initial={prefersReducedMotion ? {} : { scale: 1.2, opacity: 0 }}
+                animate={prefersReducedMotion ? {} : { scale: 1, opacity: 1 }}
                 transition={{ duration: 1, ease: "easeOut" }}
                 className="mb-16 relative"
               >
                 <div className="absolute inset-0 bg-[#8B5C9E]/20 blur-3xl animate-pulse" />
                 <Image
                   src="/logo.png"
-                  alt="Logo"
+                  alt="Sports Orthopedics Logo"
                   width={140}
                   height={140}
                   className="mx-auto relative z-10 drop-shadow-2xl"
                 />
               </motion.div>
 
-              {/* Enhanced Heading Group */}
+              {/* Enhanced Heading Group with better semantics */}
               <div className="space-y-8 mb-12">
                 <motion.h1 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+                  animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.8 }}
-                  className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white tracking-tight leading-[1.1] relative"
+                  className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] relative"
                 >
                   <span className="relative inline-block">
                     Your Wellness,
@@ -170,19 +235,19 @@ export default function HomePage() {
                   </span>
                 </motion.h1>
                 <motion.p 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+                  animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.8 }}
                   className="text-xl md:text-2xl text-gray-200 leading-relaxed max-w-3xl mx-auto"
                 >
-                  Excellence in orthopedic care, sports medicine, and rehabilitation
+                  Sports Orthopedics Institute: Excellence in Motion
                 </motion.p>
               </div>
 
-              {/* Enhanced Buttons */}
+              {/* Enhanced Buttons with better accessibility */}
               <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+                animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.8 }}
                 className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6"
               >
@@ -190,6 +255,7 @@ export default function HomePage() {
                   size="lg"
                   className="group bg-white text-[#8B5C9E] hover:bg-gray-100 rounded-full px-8 sm:px-10 py-6 sm:py-7 text-lg font-medium transition-all duration-300 hover:scale-105 hover:shadow-xl w-full sm:w-auto relative overflow-hidden"
                   onClick={() => setIsBookingModalOpen(true)}
+                  aria-label="Book an appointment with our specialists"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E]/0 via-[#8B5C9E]/10 to-[#8B5C9E]/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                   <span className="relative flex items-center justify-center">
@@ -201,16 +267,17 @@ export default function HomePage() {
                   size="lg"
                   variant="outline"
                   className="group border-2 border-white text-white bg-[#8B5C9E]/40 hover:bg-white/10 rounded-full px-8 sm:px-10 py-6 sm:py-7 text-lg font-medium transition-all duration-300 w-full sm:w-auto relative overflow-hidden"
+                  aria-label="Learn more about our services"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                  <span className="relative">Learn More</span>
+                  <Link href="#about-us" className="relative">Learn More</Link>
                 </Button>
               </motion.div>
             </motion.div>
           </div>
         </div>
 
-        {/* Enhanced Stats Section */}
+        {/* Stats Section - Add schema.org markup */}
         <div className="relative z-10 w-full">
           <div className="absolute inset-0">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black" />
@@ -220,23 +287,28 @@ export default function HomePage() {
             <div className="max-w-6xl mx-auto">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
                 {[
-                  { label: "Happy Patients", value: "2000+" },
-                  { label: "Expert Doctors", value: "15+" },
-                  { label: "Years Experience", value: "25+" }
+                  { label: "Happy Patients", value: "2000+", itemProp: "healthcareMember" },
+                  { label: "Expert Doctors", value: "15+", itemProp: "employee" },
+                  { label: "Years Experience", value: "25+", itemProp: "foundingDate" }
                 ].map((stat, index) => (
                   <motion.div
                     key={stat.label}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+                    animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 + index * 0.1 }}
                     className="relative group"
+                    itemScope
+                    itemType="https://schema.org/MedicalOrganization"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E]/20 via-[#B491C8]/20 to-[#8B5C9E]/20 rounded-2xl blur-xl transform group-hover:scale-105 transition-transform duration-500" />
                     <div className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/10 hover:border-white/20 transition-all duration-500">
                       <div className="text-center">
                         <div className="relative">
                           <div className="absolute -inset-1 rounded-lg bg-gradient-to-r from-[#8B5C9E] via-[#B491C8] to-[#8B5C9E] opacity-20 blur group-hover:opacity-30 transition-opacity duration-500" />
-                          <p className="relative text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-white via-white/90 to-white bg-clip-text text-transparent">
+                          <p 
+                            className="relative text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-white via-white/90 to-white bg-clip-text text-transparent"
+                            itemProp={stat.itemProp}
+                          >
                             {stat.value}
                           </p>
                         </div>
@@ -314,7 +386,7 @@ export default function HomePage() {
                 <div className="relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden">
                   {/* Image Container with Enhanced Effects */}
                   <div className="relative h-64 w-full">
-                    <Image
+                    <LazyImage
                       src={specialty.image}
                       alt={specialty.title}
                       fill
@@ -361,8 +433,10 @@ export default function HomePage() {
                         variant="outline"
                         className="bg-transparent border-[#8B5C9E] text-[#8B5C9E] hover:bg-[#8B5C9E]/5 rounded-full transition-all duration-300 group-hover:scale-105"
                       >
+                        <Link href={specialty.href} className="flex items-center">
                         Learn More
                         <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                        </Link>
                       </Button>
                       
                       {/* Hover Effect Indicator */}
@@ -395,258 +469,169 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Enhanced Features Section */}
-      <section className="py-32 bg-gray-50 relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#8B5C9E]/5 to-transparent" />
-          {/* Added Animated Shapes */}
-          <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-[#8B5C9E]/10 rounded-full blur-3xl animate-float-slow" />
-          <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-[#B491C8]/10 rounded-full blur-3xl animate-float-medium" />
-        </div>
-        <div className="container relative mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-20 relative"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="inline-block mb-4 relative"
-            >
-              <div className="absolute inset-0 bg-[#8B5C9E]/20 blur-xl animate-pulse" />
-              <span className="relative bg-[#8B5C9E]/10 text-[#8B5C9E] px-6 py-3 rounded-full text-sm font-medium border border-[#8B5C9E]/20 backdrop-blur-sm">
-                Why Choose Us
-              </span>
-            </motion.div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 relative">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-[#8B5C9E] to-gray-900">
-                Our Commitment to Excellence
-              </span>
-              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-[#8B5C9E]/10 rounded-full blur-2xl animate-pulse" />
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              We provide tailored care to help patients regain mobility and confidence
-            </p>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.6 }}
-                viewport={{ once: true }}
-                className="group hover:translate-y-[-10px] transition-all duration-300"
-              >
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E] to-[#B491C8] rounded-3xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
-                  <div className="relative bg-white rounded-2xl p-8 shadow-lg border border-gray-100/20 backdrop-blur-sm">
-                    <div className="relative mb-6 group-hover:scale-110 transition-transform duration-300">
-                      <div className="absolute inset-0 bg-[#8B5C9E]/20 rounded-full blur-xl animate-pulse" />
-                      <div className="relative inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#8B5C9E]/10 text-[#8B5C9E]">
-                        <feature.icon className="w-10 h-10" />
-                      </div>
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-[#8B5C9E] transition-colors duration-300">
-                      {feature.title}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">{feature.description}</p>
-                    {/* Added Corner Accent */}
-                    <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                      <div className="absolute top-0 right-0 w-24 h-1 bg-gradient-to-r from-[#8B5C9E]/0 via-[#8B5C9E]/30 to-[#8B5C9E]/0 transform rotate-45 translate-x-[2rem] group-hover:translate-x-[-5rem] transition-transform duration-1000" />
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Enhanced Testimonials Section */}
-      <section className="py-32 bg-white relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[url('/dots.svg')] opacity-5" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#8B5C9E]/5 to-transparent" />
-          {/* Added Animated Shapes */}
-          <div className="absolute top-1/3 right-1/3 w-72 h-72 bg-[#8B5C9E]/10 rounded-full blur-3xl animate-float-slow" />
-          <div className="absolute bottom-1/3 left-1/3 w-96 h-96 bg-[#B491C8]/10 rounded-full blur-3xl animate-float-medium" />
-        </div>
-        
+      {/* About Us Section - Added for SEO */}
+      <section id="about-us" className="py-24 bg-white relative overflow-hidden scroll-mt-24">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-20 relative"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="inline-block mb-4 relative"
-            >
-              <div className="absolute inset-0 bg-[#8B5C9E]/20 blur-xl animate-pulse" />
-              <span className="relative bg-[#8B5C9E]/10 text-[#8B5C9E] px-6 py-3 rounded-full text-sm font-medium border border-[#8B5C9E]/20 backdrop-blur-sm">
-                Testimonials
-              </span>
-            </motion.div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 relative">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-[#8B5C9E] to-gray-900">
-                What Our Patients Say
-              </span>
-              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-[#8B5C9E]/10 rounded-full blur-2xl animate-pulse" />
-            </h2>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.6 }}
-                viewport={{ once: true }}
-                className="group relative"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E]/20 to-[#B491C8]/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
-                  <div className="flex items-center mb-6">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-[#8B5C9E]/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      <Image
-                        src={testimonial.image}
-                        alt={testimonial.name}
-                        width={60}
-                        height={60}
-                        className="rounded-full relative z-10"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="ml-4">
-                      <h4 className="text-lg font-semibold text-gray-900">{testimonial.name}</h4>
-                      <p className="text-gray-600">{testimonial.role}</p>
-                    </div>
-                    <div className="ml-auto flex">
-                      {Array(testimonial.rating).fill(0).map((_, i) => (
-                        <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-gray-600 leading-relaxed italic relative">
-                    <span className="absolute -top-2 -left-2 text-4xl text-[#8B5C9E]/20">"</span>
-                    {testimonial.comment}
-                    <span className="absolute -bottom-2 -right-2 text-4xl text-[#8B5C9E]/20">"</span>
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <span className="inline-block bg-[#8B5C9E]/10 text-[#8B5C9E] px-4 py-2 rounded-full text-sm font-medium mb-6">
+                  About Sports Orthopedics
+                </span>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                  Dedicated to Excellence in Orthopedic Care
+                </h2>
+                <div className="text-gray-600 space-y-4">
+                  <p>
+                    At Sports Orthopedics, we are committed to providing exceptional orthopedic care with a focus on sports medicine and rehabilitation. Our team of skilled specialists combines years of experience with cutting-edge techniques to deliver personalized treatment plans.
                   </p>
-                  {/* Added Corner Accent */}
-                  <div className="absolute bottom-0 right-0 w-16 h-16 overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <div className="absolute bottom-0 right-0 w-24 h-1 bg-gradient-to-r from-[#8B5C9E]/0 via-[#8B5C9E]/30 to-[#8B5C9E]/0 transform -rotate-45 translate-x-[2rem] group-hover:translate-x-[-5rem] transition-transform duration-1000" />
-                  </div>
+                  <p>
+                    Whether you're recovering from an injury, managing chronic pain, or seeking to improve your mobility and performance, our comprehensive approach addresses your specific needs and goals.
+                  </p>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Enhanced Contact Section */}
-      <section className="relative py-20 md:py-32 overflow-hidden bg-gray-50">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1579684453423-f84349ef60b0?q=80&w=2000&auto=format&fit=crop"
-            alt="Medical facility interior"
-            fill
-            className="object-cover opacity-10"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-gray-50 via-transparent to-gray-50" />
-          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />
-          <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-[#8B5C9E]/10 rounded-full blur-3xl animate-float-slow" />
-          <div className="absolute bottom-1/4 left-1/4 w-72 h-72 bg-[#B491C8]/10 rounded-full blur-3xl animate-float-medium" />
-        </div>
-        
-        <div className="container relative mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E]/20 to-[#B491C8]/20 rounded-2xl blur-xl" />
-              <div className="relative bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl p-6 sm:p-8 md:p-12 border border-white/20">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
-                  viewport={{ once: true }}
-                  className="text-center mb-8 md:mb-12"
-                >
-                  <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    whileInView={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className="inline-block mb-4 relative"
+                <div className="mt-8">
+                  <Link
+                    href="/bone-joint-school"
+                    className="inline-flex items-center text-[#8B5C9E] font-medium hover:underline"
                   >
-                    <div className="absolute inset-0 bg-[#8B5C9E]/20 blur-xl animate-pulse" />
-                    <span className="relative bg-[#8B5C9E]/10 text-[#8B5C9E] px-6 py-3 rounded-full text-sm font-medium border border-[#8B5C9E]/20 backdrop-blur-sm">
-                      Contact Us
-                    </span>
-                  </motion.div>
-                  <h2 className="text-3xl md:text-4xl font-bold mb-4 relative">
-                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-[#8B5C9E] to-gray-900">
-                      Get in Touch
-                    </span>
-                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-[#8B5C9E]/10 rounded-full blur-2xl animate-pulse" />
-                  </h2>
-                  <p className="text-lg md:text-xl text-gray-600">Connect with our expert team</p>
-                </motion.div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {[
-                    { icon: Phone, label: "Call Us", value: "+91 6364538660" },
-                    { icon: Mail, label: "Email Us", value: "contact@example.com" },
-                    { icon: MapPin, label: "Visit Us", value: "HSR Layout, Bengaluru" }
-                  ].map((contact, index) => (
-                    <motion.div
-                      key={contact.label}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1, duration: 0.6 }}
-                      viewport={{ once: true }}
-                      className="group hover:translate-y-[-5px] transition-all duration-300"
-                    >
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E]/20 to-[#B491C8]/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        <div className="relative bg-white/60 backdrop-blur-lg rounded-xl p-4 border border-white/20">
-                          <div className="flex items-center space-x-3">
-                            <div className="relative flex-shrink-0">
-                              <div className="absolute inset-0 bg-[#8B5C9E]/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                              <div className="relative p-3 rounded-full bg-[#8B5C9E]/10 text-[#8B5C9E] group-hover:scale-110 transition-transform duration-300">
-                                <contact.icon className="w-6 h-6" />
-                              </div>
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm text-gray-600 mb-1">{contact.label}</p>
-                              <p className="text-base font-semibold text-gray-900 group-hover:text-[#8B5C9E] transition-colors duration-300 truncate">
-                                {contact.value}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                    Learn more about our approach
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </Link>
                 </div>
+              </div>
+              <div className="relative">
+                <div className="absolute -inset-4 bg-[#8B5C9E]/5 rounded-2xl blur-xl" />
+                <div className="relative aspect-square rounded-2xl overflow-hidden">
+                  <LazyImage
+                    src="https://images.unsplash.com/photo-1666214280557-f1b5022eb634?q=80&w=1500&auto=format&fit=crop"
+                    alt="Medical professionals discussing a patient case"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </div>
+                <div className="absolute -bottom-6 -right-6 w-48 h-48 bg-[#8B5C9E]/10 rounded-full blur-3xl" />
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Add FAQ section for SEO benefits */}
+      <section className="py-24 bg-gray-50 relative overflow-hidden">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-16">
+              <span className="inline-block bg-[#8B5C9E]/10 text-[#8B5C9E] px-4 py-2 rounded-full text-sm font-medium mb-4">
+                Frequently Asked Questions
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Common Questions About Our Services
+              </h2>
+              <p className="text-gray-600">
+                Find answers to the most common questions about our orthopedic treatments and procedures
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              {[
+                {
+                  question: "How do I schedule an appointment?",
+                  answer: "You can schedule an appointment by using our online booking system, calling our office directly, or sending us an email. Our staff will help you find the most convenient time for your visit."
+                },
+                {
+                  question: "What insurance plans do you accept?",
+                  answer: "We accept most major insurance plans including Medicare and private health insurance. Please contact our office to verify if your specific plan is accepted."
+                },
+                {
+                  question: "How should I prepare for my first appointment?",
+                  answer: "Please bring your insurance card, a form of identification, a list of current medications, and any relevant medical records or imaging from previous providers. Wearing comfortable clothing that allows easy examination of the affected area is also recommended."
+                },
+                {
+                  question: "What types of conditions do you treat?",
+                  answer: "We treat a wide range of orthopedic conditions including sports injuries, joint pain, fractures, arthritis, spine disorders, and more. Our specialists are experienced in treating conditions affecting all major joints and muscles."
+                },
+                {
+                  question: "Do you offer non-surgical treatments?",
+                  answer: "Yes, we offer many non-surgical treatment options including physical therapy, medication management, injections, and minimally invasive procedures. Our goal is to explore all appropriate conservative options before considering surgery."
+                }
+              ].map((faq, index) => (
+                <div 
+                  key={index}
+                  className="border border-gray-200 rounded-lg bg-white overflow-hidden"
+                >
+                  <button
+                    className="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-[#8B5C9E]/50"
+                    onClick={() => toggleFaq(index)}
+                    aria-expanded={openFaqIndex === index}
+                    aria-controls={`faq-answer-${index}`}
+                  >
+                    <span className="font-medium text-gray-900">{faq.question}</span>
+                    <span className={`transform transition-transform ${openFaqIndex === index ? 'rotate-45' : 'rotate-0'}`}>
+                      <Plus className="w-5 h-5 text-[#8B5C9E]" />
+                    </span>
+                  </button>
+                  <div
+                    id={`faq-answer-${index}`}
+                    className={`px-6 overflow-hidden transition-all duration-300 ${
+                      openFaqIndex === index ? 'max-h-96 py-4' : 'max-h-0 py-0'
+                    }`}
+                  >
+                    <p className="text-gray-600">{faq.answer}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-12 text-center">
+              <p className="text-gray-600 mb-6">
+                Don't see your question here? Contact us directly for more information.
+              </p>
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center px-6 py-3 bg-[#8B5C9E] hover:bg-[#7a4f8a] text-white font-medium rounded-lg transition-colors"
+              >
+                Contact Us
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action Section */}
+      <section className="py-16 bg-[#8B5C9E] relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 mix-blend-soft-light" />
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+              Ready to Start Your Recovery Journey?
+            </h2>
+            <p className="text-xl text-white/80 mb-8">
+              Schedule an appointment with our specialists and take the first step towards better mobility and comfort.
+            </p>
+            <Button
+              size="lg"
+              className="group bg-white text-[#8B5C9E] hover:bg-gray-100 rounded-full px-8 py-6 text-lg font-medium transition-all duration-300 hover:scale-105 hover:shadow-xl"
+              onClick={() => setIsBookingModalOpen(true)}
+              aria-label="Book an appointment now"
+            >
+              <span className="relative flex items-center justify-center">
+                Book an Appointment Now
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+              </span>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <SiteFooter />
+
       {/* Booking Modal */}
-      <BookingModal isOpen={isBookingModalOpen} onClose={() => setIsBookingModalOpen(false)} />
+      <BookingModal 
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+      />
     </div>
   );
 } 

@@ -1,0 +1,42 @@
+<svg width="300" height="500" viewBox="0 0 300 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Head -->
+  <circle cx="150" cy="60" r="40" fill="none" stroke="#0284c7" stroke-width="2"/>
+  
+  <!-- Neck -->
+  <line x1="150" y1="100" x2="150" y2="130" stroke="#0284c7" stroke-width="2"/>
+  
+  <!-- Shoulders -->
+  <line x1="150" y1="130" x2="100" y2="150" stroke="#0284c7" stroke-width="2"/>
+  <line x1="150" y1="130" x2="200" y2="150" stroke="#0284c7" stroke-width="2"/>
+  
+  <!-- Arms -->
+  <line x1="100" y1="150" x2="80" y2="220" stroke="#0284c7" stroke-width="2"/>
+  <line x1="200" y1="150" x2="220" y2="220" stroke="#0284c7" stroke-width="2"/>
+  
+  <!-- Forearms -->
+  <line x1="80" y1="220" x2="60" y2="280" stroke="#0284c7" stroke-width="2"/>
+  <line x1="220" y1="220" x2="240" y2="280" stroke="#0284c7" stroke-width="2"/>
+  
+  <!-- Hands -->
+  <circle cx="60" cy="290" r="10" fill="none" stroke="#0284c7" stroke-width="2"/>
+  <circle cx="240" cy="290" r="10" fill="none" stroke="#0284c7" stroke-width="2"/>
+  
+  <!-- Torso -->
+  <path d="M150,130 C180,180 180,200 170,250 C160,300 140,300 130,250 C120,200 120,180 150,130" fill="none" stroke="#0284c7" stroke-width="2"/>
+  
+  <!-- Hips -->
+  <path d="M130,250 C120,270 110,280 100,290" fill="none" stroke="#0284c7" stroke-width="2"/>
+  <path d="M170,250 C180,270 190,280 200,290" fill="none" stroke="#0284c7" stroke-width="2"/>
+  
+  <!-- Legs -->
+  <line x1="100" y1="290" x2="90" y2="380" stroke="#0284c7" stroke-width="2"/>
+  <line x1="200" y1="290" x2="210" y2="380" stroke="#0284c7" stroke-width="2"/>
+  
+  <!-- Calves -->
+  <line x1="90" y1="380" x2="100" y2="460" stroke="#0284c7" stroke-width="2"/>
+  <line x1="210" y1="380" x2="200" y2="460" stroke="#0284c7" stroke-width="2"/>
+  
+  <!-- Feet -->
+  <path d="M100,460 L80,470 L100,475" fill="none" stroke="#0284c7" stroke-width="2"/>
+  <path d="M200,460 L220,470 L200,475" fill="none" stroke="#0284c7" stroke-width="2"/>
+</svg> 

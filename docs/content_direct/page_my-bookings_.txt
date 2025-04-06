@@ -1,0 +1,245 @@
+---
+URL: https://sportsorthopedics.in/my-bookings/
+Type: page
+Title: My Bookings | Sports Orthopedics
+Scraped: 2025-04-05T17:46:13.482Z
+---
+
+{{ mybooking_title_text }}
+{{ bookingpress_user_fullname }}
+My Appointments
+Edit Account
+Change Password
+Logout
+{{ bookingpress_user_fullname }}
+{{ bookingpress_user_email }}
+My Appointments
+Edit Account
+Change Password
+Logout
+{{ is_error_msg }}
+{{ is_success_msg }}
+{{ mybooking_title_text }}
+{{apply_button_title}}
+No Appointments found!
+Booking ID: #{{ scope.row.bookingpress_booking_id }}
+{{ scope.row.bookingpress_service_name }}
+{{ scope.row.bookingpress_appointment_status_label }}
+Date:
+{{ scope.row.bookingpress_appointment_formatted_date }} - {{ scope.row.bookingpress_appointment_formatted_end_date }}
+{{ scope.row.bookingpress_appointment_formatted_date }}
+Time:
+{{ scope.row.bookingpress_appointment_formatted_start_time }} - {{ scope.row.bookingpress_appointment_formatted_end_time }}
+Staff:
+{{ scope.row.staff_first_name }} {{ scope.row.staff_last_name }}
+No. of Person:
+{{ scope.row.selected_extra_members }}
+Extras
+{{ extra_details.extra_service_name }}
+x {{ extra_details.extra_service_selected_qty }}
+({{ extra_details.extra_service_duration }})
+{{ extra_details.extra_service_total_price_with_currency }}
+{{guest_custom_fields_repeter.repeater_label}}
+{{guest_custom_fields_repeter.repeater_label}} {{guest_custom_fields.guest_no}}
+Payment Details:
+Payment Method:
+{{ scope.row.bookingpress_payment_method_label }}
+paid by admin
+Status:
+{{ scope.row.bookingpress_payment_status_label }}
+Deposit:
+{{ scope.row.deposit_amt_with_currency }}
+Tax:
++{{ scope.row.tax_amt_with_currency }}
+Coupon:
+-{{ scope.row.coupon_discount_amt_with_currency }}
+Total Amount {{ scope.row.bookingpress_included_tax_label }} :
+{{ scope.row.total_amt_with_currency }}
+Reschedule
+Book Again
+Cancel Appointment
+Cancel Appointment
+#{{ scope.row.bookingpress_booking_id }}
+{{ scope.row.bookingpress_appointment_formatted_date }}
+{{ scope.row.bookingpress_appointment_formatted_date }} {{ scope.row.bookingpress_appointment_formatted_start_time }}
+- {{ scope.row.bookingpress_appointment_formatted_end_date }}
+{{ scope.row.formatted_time }}
+{{ scope.row.bookingpress_service_duration_val }} {{ scope.row.bookingpress_service_duration_label }}
+{{ scope.row.bookingpress_appointment_status_label }}
+{{ scope.row.staff_first_name }} {{ scope.row.staff_last_name }}
+-
+{{ scope.row.deposit_amt_with_currency }}
+{{ scope.row.total_amt_with_currency }}
+of {{ scope.row.total_amt_with_currency }}
+Reschedule Appointment
+To reschedule your appointment, select an available date time from the calendar
+Date
+Time
+{{ appointment_time.formatted_start_end_time}}
+{{ appointment_time.formatted_start_end_time}}
+{{ appointment_time.formatted_start_end_time}}
+{{ appointment_time.formatted_start_end_time}}
+(Next Day)
+Cancel
+Update
+Booking ID: #{{ scope.row.bookingpress_booking_id }}
+{{ scope.row.bookingpress_service_name }}
+{{ scope.row.bookingpress_appointment_status_label }}
+Date:
+{{ scope.row.bookingpress_appointment_formatted_date }} - {{ scope.row.bookingpress_appointment_formatted_end_date }}
+{{ scope.row.bookingpress_appointment_formatted_date }}
+Time:
+{{ scope.row.bookingpress_appointment_formatted_start_time }}
+{{ scope.row.bookingpress_appointment_formatted_end_time }}
+Staff:
+{{ scope.row.staff_first_name }} {{ scope.row.staff_last_name }}
+No. of Person:
+{{ scope.row.selected_extra_members }}
+Extras
+{{ extra_details.extra_service_name }}
+x {{ extra_details.extra_service_selected_qty }}
+({{ extra_details.extra_service_duration }})
+{{ extra_details.extra_service_total_price_with_currency }}
+{{guest_custom_fields_repeter.repeater_label}}
+{{guest_custom_fields_repeter.repeater_label}} {{guest_custom_fields.guest_no}}
+Payment Details:
+Payment Method:
+{{ scope.row.bookingpress_payment_method_label }}
+paid by admin
+Status:
+{{ scope.row.bookingpress_payment_status_label }}
+Deposit:
+{{ scope.row.deposit_amt_with_currency }}
+Tax:
++{{ scope.row.tax_amt_with_currency }}
+Coupon:
+-{{ scope.row.coupon_discount_amt_with_currency }}
+Total Amount:
+{{ scope.row.total_amt_with_currency }}
+Reschedule
+Book Again
+Cancel Appointment
+Cancel Appointment
+#{{ scope.row.bookingpress_booking_id }}
+{{ scope.row.bookingpress_appointment_formatted_date }}
+{{ scope.row.bookingpress_appointment_formatted_date }} {{ scope.row.bookingpress_appointment_formatted_start_time }}
+- {{ scope.row.bookingpress_appointment_formatted_end_date }}
+{{ scope.row.formatted_time }}
+{{ scope.row.bookingpress_service_duration_val }} {{ scope.row.bookingpress_service_duration_label }}
+Reschedule Appointment
+To reschedule your appointment, select an available date time from the calendar
+Date
+Time
+{{ appointment_time.formatted_start_end_time}}
+{{ appointment_time.formatted_start_end_time}}
+{{ appointment_time.formatted_start_end_time}}
+{{ appointment_time.formatted_start_end_time}}
+(Next Day)
+Cancel
+Update
+{{ scope.row.bookingpress_appointment_status_label }}
+{{ scope.row.bookingpress_service_name }}
+{{ scope.row.bookingpress_appointment_formatted_date }}
+{{ scope.row.bookingpress_appointment_formatted_date }} {{ scope.row.bookingpress_appointment_formatted_start_time }}
+- {{ scope.row.bookingpress_appointment_formatted_end_date }}
+{{ scope.row.formatted_time }}
+{{ scope.row.bookingpress_service_duration_val }} {{ scope.row.bookingpress_service_duration_label }}
+Booking ID: #{{ scope.row.bookingpress_booking_id }}
+{{ scope.row.bookingpress_service_name }}
+{{ scope.row.bookingpress_appointment_status_label }}
+Date:
+{{ scope.row.bookingpress_appointment_formatted_date }} - {{ scope.row.bookingpress_appointment_formatted_end_date }}
+{{ scope.row.bookingpress_appointment_formatted_date }}
+Duration:
+{{ scope.row.formatted_time }}
+{{ scope.row.bookingpress_service_duration_val }} {{ scope.row.bookingpress_service_duration_label }}
+Staff:
+{{ scope.row.staff_first_name }} {{ scope.row.staff_last_name }}
+No. of Person:
+{{ scope.row.selected_extra_members }}
+Extras
+{{ extra_details.extra_service_name }}
+x {{ extra_details.extra_service_selected_qty }}
+({{ extra_details.extra_service_duration }})
+{{ extra_details.extra_service_total_price_with_currency }}
+{{guest_custom_fields_repeter.repeater_label}}
+{{guest_custom_fields_repeter.repeater_label}} {{guest_custom_fields.guest_no}}
+Payment Details:
+Payment Method:
+{{ scope.row.bookingpress_payment_method_label }}
+paid by admin
+Status:
+{{ scope.row.bookingpress_payment_status_label }}
+Deposit:
+{{ scope.row.deposit_amt_with_currency }}
+Tax:
++{{ scope.row.tax_amt_with_currency }}
+Coupon:
+-{{ scope.row.coupon_discount_amt_with_currency }}
+Total Amount:
+{{ scope.row.total_amt_with_currency }}
+Reschedule
+Book Again
+Cancel Appointment
+Reschedule Appointment
+To reschedule your appointment, select an available date time from the calendar
+Date
+Time
+{{ appointment_time.formatted_start_end_time}}
+{{ appointment_time.formatted_start_end_time}}
+{{ appointment_time.formatted_start_end_time}}
+{{ appointment_time.formatted_start_end_time}}
+(Next Day)
+Cancel
+Update
+Are you sure you want to cancel the appointment?
+No
+Yes
+Refund policy message
+Paid Amount
+{{refund_confirm_form.default_refund_amount}}
+Refund Amount
+{{refund_confirm_form.refund_amount}}
+{{refund_confirm_form.refund_error_msg}}
+Close
+Apply
+{{refund_confirm_form.refund_error_msg}}
+Sorry to see you go. Please Confirm
+All your data will be erased
+canceldelete
+{{ is_error_msg }}
+{{ is_success_msg }}
+My Profile
+{{ customer_form_fields_data.label }}
+{{chk_data.label}}
+Update Profile
+Delete Your Account
+This will delete your all data & appointments from bookingpress
+Delete Account
+{{ is_error_msg }}
+{{ is_success_msg }}
+Change Password
+Enter Current Password
+Enter New Password
+Confirm Password
+Update Password
+Refund policy message
+Paid Amount
+{{refund_confirm_form.default_refund_amount}}
+Refund Amount
+{{refund_confirm_form.refund_amount}}
+{{refund_confirm_form.refund_error_msg}}
+Cancel
+Apply
+{{ is_error_msg }}
+{{ is_success_msg }}
+Please Login
+Username
+Password
+Remember Me
+LOGIN
+Lost Your Password
+Forgot Password
+Username OR Email Address
+Submit
+Sign In

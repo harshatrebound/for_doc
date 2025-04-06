@@ -1,0 +1,55 @@
+---
+URL: https://sportsorthopedics.in/bookingpress-complete-payment/
+Type: page
+Title: Complete Payment | Sports Orthopedics
+Scraped: 2025-04-05T17:46:11.749Z
+---
+
+{{ is_complete_payment_error_msg }}
+Summary
+Your appointment booking summary
+Customer
+{{appointment_step_form_data.form_fields.customer_name }}
+{{ appointment_step_form_data.form_fields.customer_firstname }} {{ appointment_step_form_data.form_fields.customer_lastname }}
+{{ appointment_step_form_data.form_fields.customer_email }}
+Service
+{{ appointment_step_form_data.selected_service_name}}
+{{ cart_details.bookingpress_service_name}}
+Date & Time
+{{ appointment_step_form_data.formatted_selected_date | bookingpress_format_date }}, {{ appointment_step_form_data.selected_formatted_start_end_time }}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}, {{ cart_details.bookingpress_selected_start_end_time }}
+Appointment Details
+{{ appointment_step_form_data.selected_service_name}}
+{{ appointment_step_form_data.selected_date | bookingpress_format_date }}, {{ appointment_step_form_data.selected_formatted_start_end_time }}
+{{ cart_details.bookingpress_service_name}}
+{{ cart_details.bookingpress_selected_date | bookingpress_format_date }}, {{ cart_details.bookingpress_selected_start_end_time }}
+{{subtotal_text}}
+{{ appointment_step_form_data.selected_service_price }}
+{{tax_title}}
+Tax
++{{ bookingpress_appointment_tax_display }}
+{{couon_applied_title}}
+{{ appointment_step_form_data.coupon_code }}
+{{ coupon_discounted_amount }}
+{{coupon_code_title}}
+{{ coupon_code_msg }}
+{{ coupon_code_msg }}
+{{coupon_apply_button_label}}
+Applied
+Total Amount Payable
+{{ appointment_step_form_data.included_tax_label }}
+{{ appointment_step_form_data.total_payable_amount_with_currency }}
+{{ appointment_step_form_data.selected_service_price }}
+{{deposit_heading_title}}
+Deposit Paid
+{{ appointment_step_form_data.bookingpress_deposit_amt }}
+Total Amount Payable {{ appointment_step_form_data.included_tax_label }}
+{{ appointment_step_form_data.total_payable_amount_with_currency }}
+There is no payment method available.
+Select Payment Method
+PayPal
+{{card_details_text}}
+Test Button
+Make Payment
+{{ complete_payment_success_msg }}
+{{ payment_already_paid_msg }}

@@ -1,0 +1,20 @@
+---
+URL: https://sportsorthopedics.in/gallery/
+Type: page
+Title: Our Gallery | Sports Orthopedics Bangalore
+Scraped: 2025-04-05T17:46:19.092Z
+---
+
+Gallery
+<img decoding="async" data-tf-not-load src="https://sportsorthopedics.in/wp-content/uploads/2025/01/e92dc3_77f1ef2502d34edfa2fe4616566e7e74mv2-500x400.webp" width="500" height="400" class="wp-post-image wp-image-968" title="Wrightington Gold Medal" alt="Dr Naveen kumar lv awards">
+<img decoding="async" data-tf-not-load src="https://sportsorthopedics.in/wp-content/uploads/2025/01/e92dc3_6696aec0f22f4dfd9c633f32502b68bdmv2-500x400.webp" width="500" height="400" class="wp-post-image wp-image-969" title="Hall of Fame - Wurzburg, Germany" alt="gallery sport orthopedics">
+<img decoding="async" data-tf-not-load src="https://sportsorthopedics.in/wp-content/uploads/2025/01/e92dc3_7946ee43445d4c558b8dcb107a43d323mv2-1-500x400.webp" width="500" height="400" class="wp-post-image wp-image-970" title="Hall of Fame - Wrightington Hospital, UK" alt="wrightington hospital gold medal Dr naveen kumar">
+<img decoding="async" data-tf-not-load src="https://sportsorthopedics.in/wp-content/uploads/2025/01/e92dc3_87de18bfc485471aac3665738c0f648fmv2-500x400.webp" width="500" height="400" class="wp-post-image wp-image-971" title="Depuy Meet the Masters Faculty" alt="Dr. Naveen Kumar LV at depuy synthes">
+<img decoding="async" data-tf-not-load src="https://sportsorthopedics.in/wp-content/uploads/2025/01/e92dc3_12b5d2f3ceb944b39669b2ce68c46ba9mv2-500x400.webp" width="500" height="400" class="wp-post-image wp-image-972" title="Faculty - Arthrex Arthrolab" alt="Dr. Naveen Kumar LV at artholab">
+<img decoding="async" data-tf-not-load src="https://sportsorthopedics.in/wp-content/uploads/2025/01/e92dc3_921a16f1853c4f5f87c96297ffcfb2a6mv2-500x400.webp" width="500" height="400" class="wp-post-image wp-image-973" title="APJ Abdul Kalam Health Award" alt="APJ Abdul kalam health award 2024">
+<img decoding="async" data-tf-not-load src="https://sportsorthopedics.in/wp-content/uploads/2025/01/e92dc3_f0d246b99c9d46b3943ce3d1c9455861mv2-500x400.webp" width="500" height="400" class="wp-post-image wp-image-974" title="SICOT Presentation, Rome, Italy" alt="Dr. Naveen Kumar at SICOT">
+<img decoding="async" data-tf-not-load src="https://sportsorthopedics.in/wp-content/uploads/2025/01/e92dc3_f3e6d79c7d1d4df18e1cd7dfb010ff39mv2-500x400.webp" width="500" height="400" class="wp-post-image wp-image-975" title="BLDEA&#039;s Medical College CME Memento" alt="Dr. Naveen Kumar LV Awards">
+<img decoding="async" data-tf-not-load src="https://sportsorthopedics.in/wp-content/uploads/2025/01/e92dc3_7d4b9e3cc44849cba5727aae2e28e655mv2-500x400.webp" width="500" height="400" class="wp-post-image wp-image-976" title="BLDEA CME, Bijapur" alt="Dr Naveen awards">
+<img decoding="async" data-tf-not-load src="https://sportsorthopedics.in/wp-content/uploads/2025/01/e92dc3_33c319703b8b4a4a8765da013f17c29emv2-500x400.webp" width="500" height="400" class="wp-post-image wp-image-977" title="Presentation at Klinikum rechts der Isar, Munich" alt="Dr Naveen awards">
+<img decoding="async" data-tf-not-load src="https://sportsorthopedics.in/wp-content/uploads/2025/01/e92dc3_be636dff2fd140aa9231af677562fb3cmv2-500x400.webp" width="500" height="400" class="wp-post-image wp-image-978" title="British Hip Society Presentation" alt="Dr Naveen awards">
+<img decoding="async" data-tf-not-load src="https://sportsorthopedics.in/wp-content/uploads/2025/01/e92dc3_1abcb4e794374ab19a31a237c277ced6mv2-500x400.webp" width="500" height="400" class="wp-post-image wp-image-979" title="FRCS Convocation Ceremony, London" alt="Dr Naveen awards">
