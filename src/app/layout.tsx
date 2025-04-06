@@ -11,8 +11,57 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Doctor Booking App",
-  description: "Book appointments with doctors online",
+  title: {
+    default: "Sports Orthopedics Institute | Excellence in Motion",
+    template: "%s | Sports Orthopedics Institute"
+  },
+  description: "Sports Orthopedics Institute offers specialized orthopedic care for sports injuries, joint reconstruction, and comprehensive treatment of musculoskeletal conditions.",
+  keywords: ["orthopedics", "sports medicine", "joint reconstruction", "bone", "joint", "surgery", "knee", "shoulder", "hip", "treatment"],
+  authors: [{ name: "Sports Orthopedics Institute", url: "https://fordoc-production.up.railway.app" }],
+  creator: "Sports Orthopedics Institute",
+  publisher: "Sports Orthopedics Institute",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL("https://fordoc-production.up.railway.app"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Sports Orthopedics Institute | Excellence in Motion",
+    description: "Specialized orthopedic care for sports injuries, joint reconstruction, and treatment of musculoskeletal conditions.",
+    url: "https://fordoc-production.up.railway.app",
+    siteName: "Sports Orthopedics Institute",
+    locale: "en_US",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Sports Orthopedics Institute",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Sports Orthopedics Institute | Excellence in Motion",
+    description: "Specialized orthopedic care for sports injuries, joint reconstruction, and treatment of musculoskeletal conditions.",
+    images: ["/og-image.jpg"],
+  },
+  icons: {
+    icon: [
+      { url: "/logo.svg" }
+    ],
+    shortcut: { url: "/logo.svg" },
+    apple: { url: "/logo.svg" }
+  },
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#8B5C9E" },
+  ],
 };
 
 export default function RootLayout({
@@ -24,6 +73,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <link rel="icon" href="/logo.svg" type="image/svg+xml" />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <main className="min-h-screen">
