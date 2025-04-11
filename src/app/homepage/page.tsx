@@ -166,87 +166,86 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <HeroSection
-        variant="image"
+        variant="color"
         height="large"
-        bgImage="https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=2000&auto=format&fit=crop"
+        bgColor="#2E3A59"
         title={
-          <div className="space-y-8 mb-6">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1]">
-              <span className="relative inline-block">
-                Your Wellness,
-              </span>
-              <br />
-              <span className="text-white">
-                Our Priority
-              </span>
+          <div className="max-w-5xl mx-auto">
+            <div className="inline-block bg-[#8B5C9E]/20 text-white px-4 py-1 rounded-lg text-sm font-medium mb-6 backdrop-blur-sm border border-[#8B5C9E]/30">
+              SPECIALIZED ORTHOPEDIC CARE
+            </div>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] mb-4">
+              <span className="block">Expert Care for</span>
+              <span className="block mt-2">Joint & Bone Health</span>
             </h1>
+            <p className="mt-6 text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed font-light">
+              Comprehensive orthopedic evaluation and treatment from board-certified specialists dedicated to restoring your mobility and comfort.
+            </p>
           </div>
         }
-        subtitle="Sports Orthopedics Institute: Excellence in Motion"
         actions={
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-8">
             <Button
               size="lg"
-              className="group bg-white text-[#8B5C9E] hover:bg-gray-100 rounded-full px-8 sm:px-10 py-6 sm:py-7 text-lg font-medium transition-all duration-300 hover:scale-105 hover:shadow-xl w-full sm:w-auto relative overflow-hidden"
+              className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white rounded-md px-8 sm:px-10 py-6 sm:py-6 text-lg font-medium transition-all duration-300 hover:shadow-lg w-full sm:w-auto"
               onClick={() => setIsBookingModalOpen(true)}
               aria-label="Book an appointment with our specialists"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-[#8B5C9E]/0 via-[#8B5C9E]/10 to-[#8B5C9E]/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              <span className="relative flex items-center justify-center">
-                Book an Appointment
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+              <span className="flex items-center justify-center">
+                Request a Consultation
+                <ArrowRight className="ml-2 w-5 h-5" />
               </span>
             </Button>
             <Button
               size="lg"
               variant="outline"
-              className="group border-2 border-white text-white bg-[#8B5C9E]/40 hover:bg-white/10 rounded-full px-8 sm:px-10 py-6 sm:py-7 text-lg font-medium transition-all duration-300 w-full sm:w-auto relative overflow-hidden"
+              className="border-2 border-white text-white bg-transparent hover:bg-white/10 rounded-md px-8 sm:px-10 py-6 sm:py-6 text-lg font-medium transition-all duration-300 w-full sm:w-auto"
               aria-label="Learn more about our services"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              <Link href="#about-us" className="relative">Learn More</Link>
+              <Link href="#specialties" className="flex items-center">
+                Explore Our Expertise
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Link>
             </Button>
           </div>
         }
       >
-        {/* Stats Section - Add schema.org markup */}
-        <div className="w-full mt-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-            {[
-              { label: "Happy Patients", value: "2000+", itemProp: "healthcareMember" },
-              { label: "Expert Doctors", value: "15+", itemProp: "employee" },
-              { label: "Years Experience", value: "25+", itemProp: "foundingDate" }
-            ].map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-                animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + index * 0.1 }}
-                className="relative group"
-                itemScope
-                itemType="https://schema.org/MedicalOrganization"
-              >
-                <div className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/10 hover:border-white/20 transition-all duration-500">
-                  <div className="text-center">
-                    <p 
-                      className="text-4xl md:text-5xl font-bold mb-3 text-white"
-                      itemProp={stat.itemProp}
-                    >
-                      {stat.value}
-                    </p>
-                    <p className="text-base md:text-lg text-white font-medium tracking-wide">
-                      {stat.label}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+        {/* Professional Trust Indicators */}
+        <div className="w-full mt-16 relative">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+          
+          <div className="pt-8 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-4">
+            <div className="bg-[#2E3A59] backdrop-blur-sm border border-[#3D4A6B] rounded-lg p-6 flex flex-col items-center transition-all duration-300">
+              <div className="w-16 h-16 rounded-full bg-[#8B5C9E]/40 flex items-center justify-center mb-4">
+                <Activity className="w-8 h-8 text-white" />
+              </div>
+              <p className="text-3xl font-bold text-white mb-1">2,000+</p>
+              <p className="text-sm text-white/80 uppercase tracking-wider font-medium">Successful Procedures</p>
+            </div>
+            
+            <div className="bg-[#2E3A59] backdrop-blur-sm border border-[#3D4A6B] rounded-lg p-6 flex flex-col items-center transition-all duration-300">
+              <div className="w-16 h-16 rounded-full bg-[#8B5C9E]/40 flex items-center justify-center mb-4">
+                <Calendar className="w-8 h-8 text-white" />
+              </div>
+              <p className="text-3xl font-bold text-white mb-1">25+</p>
+              <p className="text-sm text-white/80 uppercase tracking-wider font-medium">Years of Experience</p>
+            </div>
+            
+            <div className="bg-[#2E3A59] backdrop-blur-sm border border-[#3D4A6B] rounded-lg p-6 flex flex-col items-center transition-all duration-300">
+              <div className="w-16 h-16 rounded-full bg-[#8B5C9E]/40 flex items-center justify-center mb-4">
+                <Users className="w-8 h-8 text-white" />
+              </div>
+              <p className="text-3xl font-bold text-white mb-1">15+</p>
+              <p className="text-sm text-white/80 uppercase tracking-wider font-medium">Board-Certified Specialists</p>
+            </div>
           </div>
+          
+          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
         </div>
       </HeroSection>
 
       {/* Specialties Section */}
-      <section className="py-32 bg-white relative overflow-hidden">
+      <section id="specialties" className="py-24 bg-white relative overflow-hidden">
         {/* Enhanced Background Elements */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />

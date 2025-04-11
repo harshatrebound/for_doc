@@ -6,10 +6,12 @@ import { ProcedureCard } from './components/ProcedureCard';
 import { CategoryFilter } from './components/CategoryFilter';
 import { InteractiveBodyMap } from './components/InteractiveBodyMap';
 import { PaginationControls } from './components/PaginationControls';
+import { ScrollToProceduresButton } from './components/ScrollToProceduresButton';
 import { getProceduresData, getProceduresByCategory } from './utils/csvParser';
 import { Metadata } from 'next';
 import HeroSection from '@/components/ui/HeroSection';
-import { ArrowDown } from 'lucide-react';
+import { ArrowDown, ArrowRight, Calendar } from 'lucide-react';
+import BookingButton from '@/components/BookingButton';
 
 // Replace static metadata with a function
 export async function generateMetadata(): Promise<Metadata> {
@@ -58,31 +60,45 @@ export default async function ProcedureSurgeryPage({
       <SiteHeader theme="transparent" />
       
       <main>
-        {/* Hero Section */}
+        {/* Hero Section - Match homepage style */}
         <HeroSection
-          variant="light"
+          className="pt-24"
+          variant="color"   // Change variant to color
           height="medium"
-          bgColor="#8B5C9E"
+          bgColor="#2E3A59" 
           title={
-            <>
-              <span className="block text-gray-900">Specialized</span>
-              <span className="bg-gradient-to-r from-[#8B5C9E] to-[#A174B5] text-transparent bg-clip-text">
-                Surgical Procedures
-              </span>
-            </>
+            // Add Badge
+            <div className="max-w-5xl mx-auto">
+              <div className="inline-block bg-[#8B5C9E]/20 text-white px-4 py-1 rounded-lg text-sm font-medium mb-6 backdrop-blur-sm border border-[#8B5C9E]/30">
+                ADVANCED SURGICAL OPTIONS
+              </div>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] mb-4">
+                <span className="block">Specialized</span>
+                <span className="block mt-2">Surgical Procedures</span>
+              </h1>
+            </div>
           }
-          subtitle="Explore our comprehensive range of advanced surgical procedures designed to restore function and improve quality of life."
+          subtitle={
+            <span className="text-white/90">
+              Explore our comprehensive range of advanced surgical procedures designed to restore function and improve quality of life.
+            </span>
+          }
           actions={
-            <button 
-              className="px-6 py-3 bg-[#8B5C9E] hover:bg-[#7a4f8a] text-white rounded-lg shadow-lg transition-colors flex items-center gap-2 font-medium"
-              onClick={() => document.getElementById('procedures-section')?.scrollIntoView({ behavior: 'smooth' })}
-            >
-              <span>Explore All Procedures</span>
-              <ArrowDown className="h-5 w-5" />
-            </button>
+            // Add flex container for buttons
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-8">
+              {/* Primary Action: Booking Button */}
+              <BookingButton 
+                className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white rounded-lg px-8 sm:px-10 py-3 text-base font-medium transition-all duration-300 hover:shadow-lg w-full sm:w-auto"
+                icon={null}
+                text="Request Consultation"
+              />
+              {/* Secondary Action: Scroll Button */}
+              <ScrollToProceduresButton />
+            </div>
           }
         >
-          <InteractiveBodyMap categories={categories} />
+          {/* Use default color for body map */}
+          <InteractiveBodyMap categories={categories} /> 
         </HeroSection>
         
         {/* Category Filter */}

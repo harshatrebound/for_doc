@@ -9,6 +9,7 @@ import { CategoryItem } from './CategoryFilter';
 interface InteractiveBodyMapProps {
   categories: CategoryItem[];
   onCategorySelect?: (categoryId: string | null) => void;
+  color?: string;
 }
 
 // Define body regions and their positions
@@ -23,7 +24,7 @@ const bodyRegions = [
   { id: 'foot_ankle', name: 'Foot & Ankle', x: 40, y: 85 },
 ];
 
-export const InteractiveBodyMap = ({ categories, onCategorySelect }: InteractiveBodyMapProps) => {
+export const InteractiveBodyMap = ({ categories, onCategorySelect, color = '#8B5C9E' }: InteractiveBodyMapProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
@@ -67,6 +68,7 @@ export const InteractiveBodyMap = ({ categories, onCategorySelect }: Interactive
           alt="Interactive human body" 
           fill
           className="object-contain"
+          style={{ filter: `grayscale(100%) brightness(1000%) sepia(100%) hue-rotate(${color === 'white' ? '0deg' : '280deg'}) saturate(0%)` }}
         />
         
         {/* Clickable hotspots */}
@@ -81,17 +83,17 @@ export const InteractiveBodyMap = ({ categories, onCategorySelect }: Interactive
             initial={{ scale: 0 }}
             animate={{ 
               scale: hoveredRegion === region.id ? 1.2 : 1,
-              backgroundColor: hoveredRegion === region.id ? 'rgba(139, 92, 158, 0.6)' : 'rgba(139, 92, 158, 0.3)'
+              backgroundColor: hoveredRegion === region.id ? (color === 'white' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(139, 92, 158, 0.6)') : (color === 'white' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(139, 92, 158, 0.3)')
             }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            whileHover={{ scale: 1.2, backgroundColor: 'rgba(139, 92, 158, 0.6)' }}
+            whileHover={{ scale: 1.2, backgroundColor: color === 'white' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(139, 92, 158, 0.6)' }}
             onMouseEnter={() => setHoveredRegion(region.id)}
             onMouseLeave={() => setHoveredRegion(null)}
             onClick={() => handleCategorySelect(region.categoryId)}
           >
             <div className="w-4 h-4 md:w-6 md:h-6 rounded-full flex items-center justify-center relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A174B5] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 md:h-4 md:w-4 bg-[#8B5C9E]"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: color === 'white' ? 'rgba(255,255,255,0.7)' : '#A174B5' }}></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 md:h-4 md:w-4" style={{ backgroundColor: color === 'white' ? 'white' : '#8B5C9E' }}></span>
               
               {/* Tooltip */}
               <div className={`absolute -top-10 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-lg px-3 py-2 text-sm whitespace-nowrap z-10 transition-opacity duration-200 ${

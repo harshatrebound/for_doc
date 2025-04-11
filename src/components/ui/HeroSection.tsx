@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -25,15 +25,22 @@ export default function HeroSection({
   title,
   subtitle,
   bgImage,
-  bgColor = '#8B5C9E',
+  bgColor = '#2E3A59',
   variant = 'gradient',
   height = 'medium',
   align = 'center',
   actions,
-  overlayOpacity = 0.6,
+  overlayOpacity = 0.7,
   className,
   children,
 }: HeroSectionProps) {
+  // Keep track of mounted state for client-side effects
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Determine height class based on prop
   const heightClass = {
     small: 'min-h-[50vh] md:min-h-[60vh]',
@@ -78,60 +85,82 @@ export default function HeroSection({
     }
   };
 
+  // Skip animation if reduced motion is preferred
+  const prefersReducedMotion = mounted && typeof window !== 'undefined' 
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+    : false;
+
   // Render the appropriate background based on variant
   const renderBackground = () => {
     switch (variant) {
       case 'image':
         return (
-          <div className="absolute inset-0 z-0 bg-gray-800">
-            <Image
-              src={bgImage || '/images/default-hero.jpg'}
-              alt="Background"
-              fill
-              priority
-              className="object-cover"
-            />
-            <div 
-              className="absolute inset-0" 
-              style={{ 
-                background: `linear-gradient(to bottom, ${hexToRgba(bgColor, 0.7)} 0%, ${hexToRgba(bgColor, overlayOpacity)} 60%, ${hexToRgba(bgColor, 0.8)} 100%)`
-              }}
-            />
+          <div className="absolute inset-0 z-0 bg-[#2E3A59]">
+            <div className="relative w-full h-full">
+              <Image
+                src={bgImage || '/images/default-hero.jpg'}
+                alt="Background"
+                fill
+                priority
+                className="object-cover"
+                sizes="100vw"
+                quality={90}
+              />
+              <div className="absolute inset-0 bg-[#2E3A59]/50" />
+              <div 
+                className="absolute inset-0" 
+                style={{ 
+                  background: `linear-gradient(to bottom, ${hexToRgba(bgColor, 0.6)} 0%, ${hexToRgba(bgColor, overlayOpacity)} 60%, ${hexToRgba(bgColor, 0.8)} 100%)`
+                }}
+              />
+              <div className="absolute inset-0 mix-blend-overlay bg-gradient-to-br from-black/10 to-transparent" />
+              <div className="absolute inset-0 bg-[url('/images/blue-grid.svg')] opacity-10 mix-blend-overlay" />
+            </div>
           </div>
         );
       
       case 'gradient':
         return (
-          <div 
-            className="absolute inset-0 z-0" 
-            style={{ 
-              background: `linear-gradient(135deg, ${bgColor} 0%, ${hexToRgba(bgColor, 0.7)} 100%)`
-            }}
-          >
-            <div className="absolute inset-0 bg-[url('/images/blue-grid.svg')] opacity-5"></div>
+          <div className="absolute inset-0 z-0 overflow-hidden">
+            <div
+              className="absolute inset-0" 
+              style={{ 
+                background: `radial-gradient(circle at 30% 30%, ${bgColor} 0%, ${hexToRgba(bgColor, 0.8)} 70%, ${hexToRgba(bgColor, 0.6)} 100%)`
+              }}
+            />
+            <div className="absolute inset-0 bg-[url('/images/blue-grid.svg')] opacity-10 mix-blend-overlay"></div>
+            
+            {/* Purple accent color */}
+            <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-[#8B5C9E]/20 blur-3xl rounded-full transform translate-x-1/4 -translate-y-1/4"></div>
+            <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-[#8B5C9E]/20 blur-3xl rounded-full transform -translate-x-1/4 translate-y-1/4"></div>
           </div>
         );
       
       case 'light':
         return (
-          <div className="absolute inset-0 z-0 bg-gradient-to-b from-gray-50 to-white">
-            <div className="absolute inset-0 bg-[url('/images/blue-grid.svg')] opacity-5"></div>
+          <div className="absolute inset-0 z-0 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white"></div>
+            <div className="absolute inset-0 bg-[url('/images/blue-grid.svg')] opacity-10"></div>
             <div 
-              className="absolute top-0 left-0 right-0 h-1/3 opacity-10"
+              className="absolute top-0 left-0 right-0 h-1/2 opacity-15"
               style={{ 
                 background: `linear-gradient(to bottom, ${bgColor} 0%, transparent 100%)`
               }}
             />
+            <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-[#8B5C9E]/10 blur-3xl rounded-full transform translate-x-1/4 -translate-y-1/4"></div>
           </div>
         );
       
       case 'color':
         return (
-          <div 
-            className="absolute inset-0 z-0" 
-            style={{ backgroundColor: bgColor }}
-          >
-            <div className="absolute inset-0 bg-[url('/images/blue-grid.svg')] opacity-5"></div>
+          <div className="absolute inset-0 z-0 overflow-hidden">
+            <div 
+              className="absolute inset-0" 
+              style={{ backgroundColor: bgColor }}
+            />
+            <div className="absolute inset-0 bg-[url('/images/blue-grid.svg')] opacity-10 mix-blend-overlay"></div>
+            <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-[#8B5C9E]/20 blur-3xl rounded-full"></div>
+            <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-[#8B5C9E]/20 blur-3xl rounded-full"></div>
           </div>
         );
       
@@ -157,8 +186,8 @@ export default function HeroSection({
           "relative z-10 container mx-auto px-4 pt-24 md:pt-32 flex flex-col justify-center", 
           alignClass
         )}
-        initial="hidden"
-        animate="visible"
+        initial={prefersReducedMotion ? undefined : "hidden"}
+        animate={prefersReducedMotion ? undefined : "visible"}
         variants={containerAnimation}
       >
         {typeof title === 'string' ? (
@@ -168,7 +197,7 @@ export default function HeroSection({
           >
             <span className="relative inline-block">
               {title}
-              <div className="absolute -inset-1 bg-[#8B5C9E]/20 blur-xl animate-pulse opacity-70"></div>
+              <div className="absolute -inset-1 bg-[#8B5C9E]/20 blur-lg animate-pulse-slow opacity-70"></div>
             </span>
           </motion.h1>
         ) : (
@@ -180,7 +209,7 @@ export default function HeroSection({
         {subtitle && (
           typeof subtitle === 'string' ? (
             <motion.p 
-              className="text-lg md:text-xl max-w-3xl mx-auto leading-relaxed mb-8"
+              className="text-lg md:text-xl max-w-3xl mx-auto leading-relaxed mb-8 drop-shadow-md"
               variants={itemAnimation}
             >
               {subtitle}

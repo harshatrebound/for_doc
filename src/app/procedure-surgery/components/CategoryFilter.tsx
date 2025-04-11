@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export interface CategoryItem {
   id: string;
@@ -28,6 +29,7 @@ export const CategoryFilter = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Add scroll indicator logic
   useEffect(() => {
@@ -94,68 +96,125 @@ export const CategoryFilter = ({
     return 'from-[#8B5C9E] to-[#A174B5]';
   };
 
+  const handleMobileCategoryChange = (categoryId: string | null) => {
+    handleCategoryChange(categoryId);
+    setIsDropdownOpen(false);
+  };
+
+  const getActiveCategoryName = () => {
+    if (activeCategory === null) return 'All Procedures';
+    const category = categories.find(c => c.id === activeCategory);
+    return category ? category.name : 'Select Category';
+  };
+
   return (
     <div className="relative w-full">
-      {/* Left scroll button */}
-      {showLeftArrow && (
-        <button 
-          onClick={() => scroll('left')}
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full shadow-md p-2 hover:bg-gray-50 transition-colors"
-          aria-label="Scroll left"
-        >
-          <ChevronLeft className="h-6 w-6 text-gray-600" />
-        </button>
-      )}
-
-      {/* Scrollable container */}
-      <div 
-        ref={scrollContainerRef}
-        className="flex overflow-x-auto py-4 px-1 space-x-3 no-scrollbar hide-scrollbar"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {/* All categories option */}
+      {/* Mobile Dropdown - Hidden on larger screens */}
+      <div className="md:hidden relative">
         <button
-          onClick={() => handleCategoryChange(null)}
-          className={`flex-shrink-0 px-5 py-2.5 rounded-full transition-all duration-200 whitespace-nowrap ${
-            activeCategory === null 
-              ? 'bg-gradient-to-r from-[#8B5C9E] to-[#A174B5] text-white shadow-md font-semibold'
-              : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-          }`}
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          className="w-full flex items-center justify-between px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 font-medium"
         >
-          All Procedures
+          <span>{getActiveCategoryName()}</span>
+          <ChevronDown 
+            className={`w-5 h-5 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
+          />
         </button>
+        <AnimatePresence>
+          {isDropdownOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg z-20 border border-gray-100 overflow-hidden"
+            >
+              <button
+                onClick={() => handleMobileCategoryChange(null)}
+                className={`block w-full text-left px-4 py-3 transition-colors duration-150 ${activeCategory === null ? 'bg-[#8B5C9E] text-white font-semibold' : 'text-gray-700 hover:bg-gray-100'}`}
+              >
+                All Procedures
+              </button>
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => handleMobileCategoryChange(category.id)}
+                  className={`block w-full text-left px-4 py-3 transition-colors duration-150 ${activeCategory === category.id ? 'bg-[#8B5C9E] text-white font-semibold' : 'text-gray-700 hover:bg-gray-100'}`}
+                >
+                  {category.name}
+                  {category.count > 0 && (
+                    <span className="ml-2 text-xs opacity-70">({category.count})</span>
+                  )}
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-        {/* Category buttons */}
-        {categories.map((category) => (
+      {/* Desktop Horizontal Scroll - Hidden on smaller screens */}
+      <div className="hidden md:block relative">
+        {/* Left scroll button */}
+        {showLeftArrow && (
+          <button 
+            onClick={() => scroll('left')}
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full shadow-md p-2 hover:bg-gray-50 transition-colors"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="h-6 w-6 text-gray-600" />
+          </button>
+        )}
+
+        {/* Scrollable container */}
+        <div 
+          ref={scrollContainerRef}
+          className="flex overflow-x-auto py-4 px-1 space-x-3 no-scrollbar hide-scrollbar"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {/* All categories option */}
           <button
-            key={category.id}
-            onClick={() => handleCategoryChange(category.id)}
+            onClick={() => handleCategoryChange(null)}
             className={`flex-shrink-0 px-5 py-2.5 rounded-full transition-all duration-200 whitespace-nowrap ${
-              activeCategory === category.id
-                ? `bg-gradient-to-r ${getCategoryColor(category)} text-white shadow-md font-semibold`
+              activeCategory === null 
+                ? 'bg-gradient-to-r from-[#8B5C9E] to-[#A174B5] text-white shadow-md font-semibold'
                 : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
             }`}
           >
-            {category.name}
-            {category.count > 0 && (
-              <span className="ml-2 bg-white bg-opacity-30 px-2 py-0.5 rounded-full text-xs">
-                {category.count}
-              </span>
-            )}
+            All Procedures
           </button>
-        ))}
-      </div>
 
-      {/* Right scroll button */}
-      {showRightArrow && (
-        <button 
-          onClick={() => scroll('right')}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full shadow-md p-2 hover:bg-gray-50 transition-colors"
-          aria-label="Scroll right"
-        >
-          <ChevronRight className="h-6 w-6 text-gray-600" />
-        </button>
-      )}
+          {/* Category buttons */}
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => handleCategoryChange(category.id)}
+              className={`flex-shrink-0 px-5 py-2.5 rounded-full transition-all duration-200 whitespace-nowrap ${
+                activeCategory === category.id
+                  ? `bg-gradient-to-r ${getCategoryColor(category)} text-white shadow-md font-semibold`
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              }`}
+            >
+              {category.name}
+              {category.count > 0 && (
+                <span className="ml-2 bg-white bg-opacity-30 px-2 py-0.5 rounded-full text-xs">
+                  {category.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Right scroll button */}
+        {showRightArrow && (
+          <button 
+            onClick={() => scroll('right')}
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full shadow-md p-2 hover:bg-gray-50 transition-colors"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="h-6 w-6 text-gray-600" />
+          </button>
+        )}
+      </div>
     </div>
   );
 }; 

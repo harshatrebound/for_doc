@@ -9,6 +9,9 @@ import { Metadata } from 'next';
 import { BookOpen, Calendar, User, ChevronRight, ArrowRight } from 'lucide-react';
 import ClientImage from '@/app/components/ClientImage';
 import HeroSection from '@/components/ui/HeroSection';
+import { Button } from '@/components/ui/button';
+import BookingButton from '@/components/BookingButton';
+import { ScrollToContentButton } from './components/ScrollToContentButton';
 
 // Define Publication type
 interface Publication {
@@ -306,26 +309,45 @@ export default async function PublicationsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <SiteHeader theme="transparent" />
+      {/* Use transparent header for image background */}
+      <SiteHeader theme="transparent" /> 
       
-      {/* Hero Section */}
+      {/* Hero Section - Styled like homepage */}
       <HeroSection
-        variant="image"
+        className="pt-24 pb-16" // Add top and bottom padding for balance
+        variant="color" // Change to color to remove background image 
         height="medium"
-        bgImage={DEFAULT_IMAGE}
-        title="Academic Publications"
-        subtitle="Scholarly articles and research published by our orthopedic specialists"
-        align="center"
+        // bgImage={DEFAULT_IMAGE} // Remove background image
+        bgColor="#2E3A59" // Dark background color
+        // overlayOpacity={0.7} // Remove this as we're not using an image
+        title={
+          <div className="max-w-5xl mx-auto">
+            {/* Badge */}
+            <div className="inline-block bg-[#8B5C9E]/20 text-white px-4 py-1 rounded-lg text-sm font-medium mb-6 backdrop-blur-sm border border-[#8B5C9E]/30">
+              ACADEMIC RESEARCH
+            </div>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] mb-4">
+              <span className="block">Publications &</span>
+              <span className="block mt-2">Research Articles</span>
+            </h1>
+            <p className="mt-6 text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed font-light">
+              Explore scholarly articles and research published by our orthopedic specialists.
+            </p>
+          </div>
+        }
         actions={
-          <div className="inline-flex px-6 py-3 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white font-medium rounded-lg items-center gap-2 transition-colors">
-            <BookOpen className="w-5 h-5" />
-            <span>Browse Publications</span>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-6 mb-0"> {/* Reduce top margin, ensure no bottom margin */}
+            {/* Secondary Action: Use ScrollToContentButton */}
+            <ScrollToContentButton 
+              targetId="publications-content"
+              buttonText="Browse Publications"
+            />
           </div>
         }
       />
 
       {/* Main Content Area */}
-      <main className="container mx-auto px-4 py-12 md:py-16">
+      <main id="publications-content" className="container mx-auto px-4 py-12 md:py-16">
         {/* Featured Articles from ContentBlocks */}
         {mainPageContentBlocks.length > 0 && (
           <div className="mb-16">

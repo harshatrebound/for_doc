@@ -570,17 +570,6 @@ export default async function BoneJointTopicPage({ params }: Props) {
             </div>
           </div>
         </div>
-        
-        {/* Bottom CTA - Mobile only */}
-        <div className="mt-12 lg:hidden bg-[#8B5C9E]/10 rounded-lg p-6">
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">Ready to get treatment?</h3>
-          <p className="text-gray-700 mb-4">Schedule an appointment with our specialists.</p>
-          <BookingButton 
-            size="lg" 
-            variant="default" 
-            fullWidth
-          />
-        </div>
       </main>
 
       <SiteFooter />

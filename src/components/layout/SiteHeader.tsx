@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
@@ -13,20 +13,81 @@ interface SiteHeaderProps {
 }
 
 export default function SiteHeader({ theme = 'default', className = '' }: SiteHeaderProps) {
+  const [scrollY, setScrollY] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const headerRef = useRef<HTMLElement>(null);
+  const isMobile = useRef(false);
 
+  // Set initial mobile state and attach event listener for window resize
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+    const checkMobile = () => {
+      isMobile.current = window.innerWidth < 1024;
     };
     
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Enhanced scroll handler with throttling for better performance
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+    
+    const handleScroll = () => {
+      lastScrollY = window.scrollY;
+      setScrollY(lastScrollY);
+      
+      if (isMobile.current) {
+        // Use a lower threshold for mobile devices
+        setScrolled(lastScrollY > 10);
+      } else {
+        // Use a higher threshold for desktop
+        setScrolled(lastScrollY > 20);
+      }
+      
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          updateHeaderOpacity(lastScrollY);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    
+    const updateHeaderOpacity = (currentScrollY: number) => {
+      if (!headerRef.current) return;
+      
+      // Calculate opacity based on scroll position
+      let opacity = 0;
+      const maxScroll = isMobile.current ? 80 : 150;
+      
+      if (theme === 'transparent') {
+        // Start with a slight base opacity on mobile for better visibility
+        const baseOpacity = isMobile.current ? 0.2 : 0;
+        opacity = Math.min(baseOpacity + (currentScrollY / maxScroll), 1);
+      } else {
+        opacity = 1; // Non-transparent headers are always solid
+      }
+      
+      // Apply the calculated opacity to the header background
+      headerRef.current.style.setProperty('--header-bg-opacity', opacity.toString());
+      
+      // Dynamically adjust the blur effect
+      const blurValue = Math.min(Math.round(opacity * 10), 8);
+      headerRef.current.style.setProperty('--header-blur', `${blurValue}px`);
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initialize values on mount
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [theme]);
 
   // Close mobile menu and dropdowns when route changes
   useEffect(() => {
@@ -34,7 +95,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
     setActiveDropdown(null);
   }, [pathname]);
 
-  const isTransparent = theme === 'transparent' && !scrolled;
+  const isTransparent = theme === 'transparent';
   const isLight = theme === 'light' || (theme === 'transparent' && scrolled);
   const isFixed = theme === 'fixed';
 
@@ -74,22 +135,42 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
     router.push(href);
   };
 
+  // Helper function to get text and icon colors based on scroll position
+  const getTextColor = (baseScrolled = scrolled) => {
+    if (isTransparent && !baseScrolled) {
+      return 'text-white';
+    }
+    if (isTransparent && scrollY < 150) {
+      // Gradual text color transition between white and purple
+      return scrollY > 100 ? 'text-[#8B5C9E]' : 'text-white';
+    }
+    return 'text-[#8B5C9E]';
+  };
+
   return (
     <>
       <header 
+        ref={headerRef}
         className={`w-full z-50 transition-all duration-300 ${
           isFixed ? 'fixed top-0 left-0 right-0' : 'absolute top-0 left-0 right-0'
         } ${
-          scrolled 
-            ? 'py-3 bg-white shadow-md' 
-            : `py-4 ${isTransparent ? 'bg-transparent' : 'bg-white shadow-sm'}`
+          mobileMenuOpen ? 'bg-white' : isTransparent ? 'bg-opacity-var backdrop-blur-var' : 'bg-white'
         } ${className}`}
+        style={{
+          // CSS variables will be set via JS for dynamic opacity and blur
+          '--header-bg-opacity': '0',
+          '--header-blur': '0px',
+          height: scrolled ? 'var(--header-height-scrolled, 64px)' : 'var(--header-height, 80px)',
+          backgroundColor: isTransparent ? 'rgba(46, 58, 89, var(--header-bg-opacity))' : '',
+          backdropFilter: isTransparent ? 'blur(var(--header-blur))' : '',
+          boxShadow: scrolled ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
+        } as React.CSSProperties}
       >
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-4 h-full">
+          <div className="flex items-center justify-between h-full">
             {/* Logo */}
             <button onClick={() => handleNavigation('/')} className="flex items-center">
-              <div className="relative h-10 w-10 mr-3">
+              <div className="relative h-10 w-10 mr-3 transition-all duration-300">
                 <Image
                   src="/logo.svg"
                   alt="Sports Orthopedics Logo"
@@ -98,7 +179,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                   className="object-contain"
                 />
               </div>
-              <span className={`font-bold text-xl ${isTransparent && !scrolled ? 'text-white' : 'text-[#8B5C9E]'}`}>
+              <span className={`font-bold text-xl transition-colors duration-300 ${getTextColor()}`}>
                 Sports Orthopedics
               </span>
             </button>
@@ -108,11 +189,11 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
               <nav className={`px-8 py-2 rounded-full transition-all duration-300 ${
                 isTransparent && !scrolled 
                   ? 'bg-white/10 backdrop-blur-sm' 
-                  : 'bg-gray-50'
+                  : scrollY > 50 ? 'bg-white/80 backdrop-blur-sm' : 'bg-gray-50'
               }`}>
-                <ul className="flex items-center space-x-8">
+                <ul className="flex items-center">
                   {mainNavLinks.map((item) => (
-                    <li key={item.name}>
+                    <li key={item.name} className="mr-8">
                       <button
                         onClick={() => handleNavigation(item.href)}
                         className={`font-medium transition-colors duration-300 relative group ${
@@ -130,7 +211,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                   ))}
                   
                   {/* Resources Dropdown */}
-                  <li className="relative">
+                  <li className="relative mr-8">
                     <button
                       onClick={() => handleDropdownToggle('resources')}
                       className={`font-medium transition-colors duration-300 flex items-center group ${
@@ -218,7 +299,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
               {/* Book an Appointment Button */}
               <BookingButton 
                 className={`ml-6 px-6 py-3 rounded-full font-medium transition-colors duration-300 shadow-sm hover:shadow-md flex items-center ${
-                  isTransparent && !scrolled
+                  isTransparent && scrollY < 50
                     ? 'bg-white text-[#8B5C9E] hover:bg-white/90'
                     : 'bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]'
                 }`}
@@ -227,23 +308,26 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
               />
             </div>
             
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button - larger target area */}
             <button 
-              className="lg:hidden p-2 rounded-md focus:outline-none"
+              className="lg:hidden p-3 rounded-md transition-colors duration-300"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
               {mobileMenuOpen ? (
-                <X className={isTransparent && !scrolled ? 'text-white' : 'text-[#8B5C9E]'} size={24} />
+                <X className={`transition-colors duration-300 ${
+                  mobileMenuOpen ? 'text-[#8B5C9E]' : getTextColor()
+                }`} size={24} />
               ) : (
-                <Menu className={isTransparent && !scrolled ? 'text-white' : 'text-[#8B5C9E]'} size={24} />
+                <Menu className={`transition-colors duration-300 ${getTextColor()}`} size={24} />
               )}
             </button>
           </div>
         </div>
         
-        {/* Mobile Navigation - reorganized with expandable sections */}
+        {/* Mobile Navigation - sliding drawer style for better UX */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-gray-100 mt-2">
+          <div className="lg:hidden bg-white border-t border-gray-100 shadow-lg overflow-hidden transition-all duration-300">
             <div className="container mx-auto px-4 py-4">
               <nav className="flex flex-col space-y-2">
                 {/* Main Links */}
@@ -254,7 +338,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                       handleNavigation(item.href);
                       setMobileMenuOpen(false);
                     }}
-                    className="px-4 py-3 rounded-md font-medium text-gray-800 hover:bg-gray-100 hover:text-[#8B5C9E]"
+                    className="px-4 py-3 rounded-md font-medium text-gray-800 hover:bg-gray-100 hover:text-[#8B5C9E] transition-colors duration-200 text-left"
                   >
                     {item.name}
                   </button>
@@ -264,16 +348,16 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                 <div className="border-t border-gray-200 pt-2 mt-2">
                   <button
                     onClick={() => handleDropdownToggle('mobile-resources')}
-                    className="w-full flex justify-between items-center px-4 py-3 rounded-md font-medium text-gray-800 hover:bg-gray-100"
+                    className="w-full flex justify-between items-center px-4 py-3 rounded-md font-medium text-gray-800 hover:bg-gray-100 transition-colors duration-200 text-left"
                   >
                     <span>Resources</span>
-                    <ChevronDown className={`w-5 h-5 transition-transform ${
+                    <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${
                       activeDropdown === 'mobile-resources' ? 'transform rotate-180' : ''
                     }`} />
                   </button>
                   
                   {activeDropdown === 'mobile-resources' && (
-                    <div className="pl-4">
+                    <div className="pl-4 animate-fadeIn">
                       {resourcesLinks.map((item) => (
                         <button
                           key={item.name}
@@ -281,7 +365,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                             handleNavigation(item.href);
                             setMobileMenuOpen(false);
                           }}
-                          className="block px-4 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-[#8B5C9E]"
+                          className="block w-full px-4 py-3 rounded-md text-gray-600 hover:bg-gray-100 hover:text-[#8B5C9E] transition-colors duration-200 text-left"
                         >
                           {item.name}
                         </button>
@@ -294,16 +378,16 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                 <div className="border-t border-gray-200 pt-2">
                   <button
                     onClick={() => handleDropdownToggle('mobile-media')}
-                    className="w-full flex justify-between items-center px-4 py-3 rounded-md font-medium text-gray-800 hover:bg-gray-100"
+                    className="w-full flex justify-between items-center px-4 py-3 rounded-md font-medium text-gray-800 hover:bg-gray-100 transition-colors duration-200 text-left"
                   >
                     <span>Media</span>
-                    <ChevronDown className={`w-5 h-5 transition-transform ${
+                    <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${
                       activeDropdown === 'mobile-media' ? 'transform rotate-180' : ''
                     }`} />
                   </button>
                   
                   {activeDropdown === 'mobile-media' && (
-                    <div className="pl-4">
+                    <div className="pl-4 animate-fadeIn">
                       {mediaLinks.map((item) => (
                         <button
                           key={item.name}
@@ -311,7 +395,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                             handleNavigation(item.href);
                             setMobileMenuOpen(false);
                           }}
-                          className="block px-4 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-[#8B5C9E]"
+                          className="block w-full px-4 py-3 rounded-md text-gray-600 hover:bg-gray-100 hover:text-[#8B5C9E] transition-colors duration-200 text-left"
                         >
                           {item.name}
                         </button>
@@ -323,7 +407,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                 {/* Book Appointment Button */}
                 <div className="pt-4 border-t border-gray-200">
                   <BookingButton 
-                    className="w-full py-3 px-6 rounded-md font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center justify-center bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]"
+                    className="w-full py-4 px-6 rounded-md font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center justify-center bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]"
                     icon={<Calendar className="w-5 h-5 mr-2" />}
                     text="Book an Appointment"
                   />
@@ -336,7 +420,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
       
       {/* Header spacing element - only needed for pages without hero sections that overlay the header */}
       {!isTransparent && (
-        <div className={`w-full ${isFixed ? 'h-14 md:h-16 lg:h-20' : 'h-14 md:h-16 lg:h-20'}`}></div>
+        <div className={`w-full ${isFixed ? 'h-16 md:h-16 lg:h-20' : 'h-16 md:h-16 lg:h-20'}`}></div>
       )}
     </>
   );

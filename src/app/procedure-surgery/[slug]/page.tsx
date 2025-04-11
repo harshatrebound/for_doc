@@ -23,7 +23,7 @@ export default async function ProcedurePage({ params }: ProcedurePageProps) {
 
   return (
     <div className="min-h-screen bg-white">
-      <SiteHeader theme="transparent" />
+      <SiteHeader theme="light" />
       
       <main>
         {/* Hero Section */}

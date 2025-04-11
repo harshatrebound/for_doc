@@ -127,3 +127,85 @@ h2, h3, h4 {
   border-color: var(--border);
   color: var(--card-foreground);
 }
+
+@layer utilities {
+  /* Header transition variables */
+  :root {
+    --header-height: 80px;
+    --header-height-scrolled: 64px;
+    --header-bg-opacity: 0;
+    --header-blur: 0px;
+  }
+
+  /* Animation for dropdown menus */
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Support for CSS variable-based styles */
+  .bg-opacity-var {
+    background-color: rgba(var(--header-bg-color, 46, 58, 89), var(--header-bg-opacity, 0));
+  }
+
+  .backdrop-blur-var {
+    backdrop-filter: blur(var(--header-blur, 0px));
+  }
+
+  /* Add special mobile handling for header transitions */
+  @media (max-width: 1023px) {
+    :root {
+      --header-height: 70px;
+      --header-height-scrolled: 60px;
+    }
+  }
+
+  /* Existing animations */
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-float-slow {
+    animation: float 10s ease-in-out infinite;
+  }
+  
+  .animate-float-medium {
+    animation: float 15s ease-in-out infinite;
+  }
+  
+  .animate-float-fast {
+    animation: float 8s ease-in-out infinite;
+  }
+  
+  .animate-subtle-rotate {
+    animation: subtleRotate 40s linear infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+  
+  @keyframes subtleRotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
