@@ -12,6 +12,7 @@ import SiteFooter from '@/components/layout/SiteFooter';
 import { cn } from '@/lib/utils';
 import { Metadata } from 'next';
 import HeroSection from '@/components/ui/HeroSection';
+import { AnimatePresence } from 'framer-motion';
 
 const specialties = [
   {
@@ -127,9 +128,20 @@ export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   
+  // Animation for rotating specialty text
+  const specialtyWords = ["Joint Health", "Knee Pain", "Shoulder Pain", "Ankle Pain", "Hip Pain", "Elbow Pain", "Wrist Pain", "Sports Injuries"];
+  const [currentSpecialtyIndex, setCurrentSpecialtyIndex] = useState(0);
+  
   // Fix hydration issues with useEffect
   useEffect(() => {
     setMounted(true);
+    
+    // Rotate through specialty words
+    const intervalId = setInterval(() => {
+      setCurrentSpecialtyIndex((prev) => (prev + 1) % specialtyWords.length);
+    }, 3000);
+    
+    return () => clearInterval(intervalId);
   }, []);
   
   const { scrollYProgress } = useScroll({
@@ -166,17 +178,47 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <HeroSection
-        variant="color"
+        variant="image"
         height="large"
         bgColor="#2E3A59"
+        bgImage="https://images.unsplash.com/photo-1588776814546-daab30f310ce?q=80&w=2070&auto=format&fit=crop"
         title={
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto text-center">
             <div className="inline-block bg-[#8B5C9E]/20 text-white px-4 py-1 rounded-lg text-sm font-medium mb-6 backdrop-blur-sm border border-[#8B5C9E]/30">
               SPECIALIZED ORTHOPEDIC CARE
             </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] mb-4">
               <span className="block">Expert Care for</span>
-              <span className="block mt-2">Joint & Bone Health</span>
+              <div className="relative h-[1.3em] mt-2">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={currentSpecialtyIndex}
+                    initial={{ y: 50, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -50, opacity: 0 }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    className="absolute inset-0 flex items-center justify-center"
+                    style={{
+                      textShadow: '0 0 15px rgba(255, 255, 255, 0.8), 0 0 30px rgba(139, 92, 158, 0.9), 0 0 45px rgba(139, 92, 158, 0.5)', 
+                      WebkitTextStroke: '1px rgba(255, 255, 255, 0.4)',
+                      position: 'relative'
+                    }}
+                  >
+                    <span className="relative z-10 px-6 py-2">
+                      {specialtyWords[currentSpecialtyIndex]}
+                      <span 
+                        className="absolute -inset-0 -z-10"
+                        style={{
+                          background: 'radial-gradient(circle, rgba(139, 92, 158, 0.7) 0%, rgba(139, 92, 158, 0.4) 40%, rgba(139, 92, 158, 0) 70%)',
+                          filter: 'blur(10px)',
+                          transform: 'translateZ(0)',
+                          borderRadius: '8px'
+                        }}
+                      ></span>
+                    </span>
+                  </motion.span>
+                </AnimatePresence>
+              </div>
             </h1>
             <p className="mt-6 text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed font-light">
               Comprehensive orthopedic evaluation and treatment from board-certified specialists dedicated to restoring your mobility and comfort.
