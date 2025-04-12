@@ -3,9 +3,6 @@ import path from 'path';
 import { promises as fs } from 'fs';
 import Papa from 'papaparse';
 
-// Base URL for the site
-const BASE_URL = 'https://fordoc-production.up.railway.app';
-
 // Get all bone-joint-school topics from CSV
 async function getBoneJointTopics(): Promise<string[]> {
   try {
@@ -102,58 +99,64 @@ async function getBlogPosts(): Promise<string[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Read and validate Base URL from environment variable inside the function
+  const siteUrl = process.env.SITE_URL;
+  if (!siteUrl) {
+    throw new Error('Missing SITE_URL environment variable for sitemap generation.');
+  }
+
   // Static routes
   const staticRoutes = [
     {
-      url: BASE_URL,
+      url: siteUrl, // Use validated siteUrl
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 1,
     },
     {
-      url: `${BASE_URL}/procedure-surgery`,
+      url: `${siteUrl}/procedure-surgery`, // Use validated siteUrl
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.9,
     },
     {
-      url: `${BASE_URL}/bone-joint-school`,
+      url: `${siteUrl}/bone-joint-school`, // Use validated siteUrl
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.9,
     },
     {
-      url: `${BASE_URL}/surgeons-staff`,
+      url: `${siteUrl}/surgeons-staff`, // Use validated siteUrl
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.9,
     },
     {
-      url: `${BASE_URL}/publications`,
+      url: `${siteUrl}/publications`, // Use validated siteUrl
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     },
     {
-      url: `${BASE_URL}/clinical-videos`,
+      url: `${siteUrl}/clinical-videos`, // Use validated siteUrl
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     },
     {
-      url: `${BASE_URL}/blogs`,
+      url: `${siteUrl}/blogs`, // Use validated siteUrl
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     },
     {
-      url: `${BASE_URL}/gallery`,
+      url: `${siteUrl}/gallery`, // Use validated siteUrl
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     },
     {
-      url: `${BASE_URL}/contact`,
+      url: `${siteUrl}/contact`, // Use validated siteUrl
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.7,
@@ -171,35 +174,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Dynamic routes with their priorities
   const procedureRoutes = procedures.map(slug => ({
-    url: `${BASE_URL}/procedure-surgery/${slug}`,
+    url: `${siteUrl}/procedure-surgery/${slug}`, // Use validated siteUrl
     lastModified: new Date(),
     changeFrequency: 'monthly' as const,
     priority: 0.8,
   }));
 
   const boneJointRoutes = boneJointTopics.map(slug => ({
-    url: `${BASE_URL}/bone-joint-school/${slug}`,
+    url: `${siteUrl}/bone-joint-school/${slug}`, // Use validated siteUrl
     lastModified: new Date(),
     changeFrequency: 'monthly' as const,
     priority: 0.8,
   }));
 
   const publicationRoutes = publications.map(slug => ({
-    url: `${BASE_URL}/publications/${slug}`,
+    url: `${siteUrl}/publications/${slug}`, // Use validated siteUrl
     lastModified: new Date(),
     changeFrequency: 'monthly' as const,
     priority: 0.7,
   }));
 
   const staffRoutes = staffProfiles.map(slug => ({
-    url: `${BASE_URL}/surgeons-staff/${slug}`,
+    url: `${siteUrl}/surgeons-staff/${slug}`, // Use validated siteUrl
     lastModified: new Date(),
     changeFrequency: 'monthly' as const,
     priority: 0.8,
   }));
 
   const blogRoutes = blogPosts.map(slug => ({
-    url: `${BASE_URL}/blogs/${slug}`,
+    url: `${siteUrl}/blogs/${slug}`, // Use validated siteUrl
     lastModified: new Date(),
     changeFrequency: 'monthly' as const,
     priority: 0.7,
