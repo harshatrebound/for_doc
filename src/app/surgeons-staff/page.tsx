@@ -16,6 +16,7 @@ import HeroSection from '@/components/ui/HeroSection';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import BookingModal from '@/components/booking/BookingModal';
+import { cn } from '@/lib/utils';
 
 // Hardcoded staff data based on surgeons.html
 const allStaff = [
@@ -147,8 +148,12 @@ const groupStaffByRole = (staffList: typeof allStaff) => {
   }, {} as Record<string, typeof allStaff>);
 };
 
+// Define roles eligible for filtering
+const filterableRoles = ['Psychologist', 'Fellow', 'Physiotherapist', 'Staff', 'ManipalStaff'];
+
 export default function SurgeonsStaffPage() {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<string | null>(null); // null means 'All'
   const groupedStaff = groupStaffByRole(allStaff);
 
   // Define section titles and icons based on role
@@ -161,6 +166,14 @@ export default function SurgeonsStaffPage() {
     { role: 'Staff', title: 'Clinic Staff', icon: Users },
     { role: 'ManipalStaff', title: 'Manipal Hospital Staff', icon: Users },
   ];
+
+  // Get staff eligible for filtering
+  const filterableStaff = allStaff.filter(staff => filterableRoles.includes(staff.role));
+
+  // Filter staff based on the active filter
+  const filteredStaff = activeFilter
+    ? filterableStaff.filter(staff => staff.role === activeFilter)
+    : filterableStaff;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -219,121 +232,201 @@ export default function SurgeonsStaffPage() {
       {/* Main Content Area */}
       <main className="container mx-auto px-4 py-12 md:py-16">
 
-          {/* --- Featured Personnel Section --- */}
-          {['Director', 'Consultant'].map(featuredRole => {
-              const staffList = groupedStaff[featuredRole];
-              if (!staffList || staffList.length === 0) return null;
-              
-              const sectionInfo = sections.find(s => s.role === featuredRole);
-              const SectionIcon = sectionInfo?.icon || Users; // Fallback icon
-
-              return staffList.map(staff => (
-                  <section key={staff.slug} id={staff.role.toLowerCase()} className="mb-16 bg-gradient-to-r from-white via-gray-50 to-gray-100 p-8 rounded-lg shadow-lg border border-gray-200">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-                          {/* Image Column */}
-                          <div className="md:col-span-1">
-                              <div className="relative aspect-square w-full max-w-xs mx-auto md:max-w-none rounded-lg overflow-hidden shadow-md">
-                                  <Image
-                                      src={staff.imageUrl}
-                                      alt={staff.name}
-                                      fill
-                                      className="object-cover object-center"
-                                      sizes="(max-width: 768px) 80vw, 30vw"
-                                      priority={staff.role === 'Director'} // Prioritize Director image
-                                  />
+          {/* --- Featured Personnel Section (Side-by-Side) --- */}
+          <section className="mb-16">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Render Director Card */}
+                  {groupedStaff['Director']?.map(staff => {
+                      const sectionInfo = sections.find(s => s.role === staff.role);
+                      const SectionIcon = sectionInfo?.icon || Users;
+                      return (
+                          <div 
+                              key={staff.slug} 
+                              id={staff.role.toLowerCase()} 
+                              className="relative overflow-hidden rounded-xl shadow-xl border border-gray-200 group h-full flex flex-col"
+                          >
+                              <div className="absolute inset-0 bg-gradient-to-br from-[#8B5C9E]/5 via-white to-white group-hover:from-[#8B5C9E]/10 transition-all duration-500"></div>
+                              <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] group-hover:opacity-[0.04] transition-opacity duration-500"></div>
+                              <div className="relative p-8 flex-grow flex flex-col md:flex-row items-center gap-6">
+                                  <div className="flex-shrink-0 w-36 h-36 md:w-40 md:h-40 relative">
+                                      <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-[#8B5C9E]/20 to-transparent animate-pulse-slow opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
+                                      <Image
+                                          src={staff.imageUrl}
+                                          alt={staff.name}
+                                          fill
+                                          className="rounded-full object-cover object-center shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-500"
+                                          sizes="(max-width: 768px) 144px, 160px"
+                                          priority
+                                      />
+                                  </div>
+                                  <div className="flex-grow text-center md:text-left">
+                                      <div className="mb-3">
+                                          <span className="inline-flex items-center bg-[#8B5C9E]/10 text-[#8B5C9E] px-3 py-1 rounded-full text-sm font-medium">
+                                              <SectionIcon className="w-4 h-4 mr-1.5" />
+                                              {sectionInfo?.title || staff.role}
+                                          </span>
+                                      </div>
+                                      <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+                                          {staff.name}
+                                      </h2>
+                                      <p className="text-sm text-gray-700 mb-3 font-medium">
+                                          {staff.title}
+                                      </p>
+                                      {staff.qualifications && (
+                                          <p className="text-xs text-gray-500 italic">
+                                              {staff.qualifications}
+                                          </p>
+                                      )}
+                                  </div>
                               </div>
                           </div>
-                          {/* Text Column */}
-                          <div className="md:col-span-2 text-center md:text-left">
-                              <div className="inline-flex items-center bg-[#8B5C9E]/10 text-[#8B5C9E] px-3 py-1 rounded-full text-sm font-medium mb-4">
-                                <SectionIcon className="w-4 h-4 mr-2" />
-                                {sectionInfo?.title || staff.role}
-                              </div>
-                              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                                  {staff.name}
-                              </h2>
-                              <p className="text-base text-gray-600 mb-3">
-                                  {staff.title}
-                              </p>
-                              {staff.qualifications && (
-                                <p className="text-sm text-gray-500 italic">
-                                  {staff.qualifications}
-                                </p>
-                              )}
-                          </div>
-                      </div>
-                  </section>
-              ));
-          })}
+                      );
+                  })}
 
-          {/* --- Standard Grid for Other Roles --- */}
-          {sections.map(section => {
-             // Skip roles already handled in Featured section
-             if (section.role === 'Director' || section.role === 'Consultant') return null;
-              
-             const staffList = groupedStaff[section.role];
-             if (!staffList || staffList.length === 0) return null; // Skip if no staff for this role
-             
-             const SectionIcon = section.icon;
- 
-             return (
-               <section key={section.role} id={section.role.toLowerCase()} className="mb-16">
-                  <div className="flex items-center mb-8 pt-8 border-t border-gray-200">
-                   <SectionIcon className="w-6 h-6 text-[#8B5C9E] mr-3" />
-                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900">{section.title}</h2>
-                 </div>
-                 
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                   {staffList.map((staff) => {
-                     // Role badge styling
-                     const roleBadgeStyle = {
-                       Psychologist: 'bg-blue-100 text-blue-800',
-                       Fellow: 'bg-green-100 text-green-800',
-                       Physiotherapist: 'bg-purple-100 text-purple-800',
-                       Staff: 'bg-yellow-100 text-yellow-800',
-                       ManipalStaff: 'bg-indigo-100 text-indigo-800'
-                     }[staff.role] || 'bg-gray-100 text-gray-800'; // Default style
-
+                  {/* Render Consultant Card */}
+                  {groupedStaff['Consultant']?.map(staff => {
+                     const sectionInfo = sections.find(s => s.role === staff.role);
+                     const SectionIcon = sectionInfo?.icon || Users;
                      return (
-                       // Standard Staff Card - Enhanced
-                       <div 
-                         key={staff.slug} 
-                         className="group bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden text-center transform hover:-translate-y-1"
-                       >
-                           <div className="relative aspect-square w-full overflow-hidden">
-                               {/* Role Badge */}
-                               <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-semibold z-10 ${roleBadgeStyle}`}>
-                                 {staff.role.replace('ManipalStaff','Manipal Staff')} 
-                               </div>
-                               <Image
-                                   src={staff.imageUrl}
-                                   alt={staff.name}
-                                   fill
-                                   className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
-                                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                   loading="lazy"
-                               />
-                           </div>
-                           <div className="p-4">
-                               <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                                   {staff.name}
-                               </h3>
-                               <p className="text-sm text-gray-600 line-clamp-2">
-                                   {staff.title}
-                               </p>
-                               {staff.qualifications && (
-                                 <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                                   {staff.qualifications}
-                                 </p>
-                               )}
-                           </div>
-                      </div>
+                          <div 
+                              key={staff.slug} 
+                              id={staff.role.toLowerCase()} 
+                              className="relative overflow-hidden rounded-xl shadow-xl border border-gray-200 group h-full flex flex-col"
+                          >
+                              <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-white group-hover:from-gray-100/50 transition-all duration-500"></div>
+                              <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] group-hover:opacity-[0.04] transition-opacity duration-500"></div>
+                              <div className="relative p-8 flex-grow flex flex-col md:flex-row items-center gap-6">
+                                  <div className="flex-shrink-0 w-36 h-36 md:w-40 md:h-40 relative">
+                                       <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-[#8B5C9E]/15 to-transparent animate-pulse-slow opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
+                                      <Image
+                                          src={staff.imageUrl}
+                                          alt={staff.name}
+                                          fill
+                                          className="rounded-full object-cover object-center shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-500"
+                                          sizes="(max-width: 768px) 144px, 160px"
+                                      />
+                                  </div>
+                                  <div className="flex-grow text-center md:text-left">
+                                      <div className="mb-3">
+                                          <span className="inline-flex items-center bg-[#8B5C9E]/10 text-[#8B5C9E] px-3 py-1 rounded-full text-sm font-medium">
+                                              <SectionIcon className="w-4 h-4 mr-1.5" />
+                                              {sectionInfo?.title || staff.role}
+                                          </span>
+                                      </div>
+                                      <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+                                          {staff.name}
+                                      </h2>
+                                      <p className="text-sm text-gray-700 mb-3 font-medium">
+                                          {staff.title}
+                                      </p>
+                                      {staff.qualifications && (
+                                          <p className="text-xs text-gray-500 italic">
+                                              {staff.qualifications}
+                                          </p>
+                                      )}
+                                  </div>
+                              </div>
+                          </div>
                      );
-                   })}
-                 </div>
-               </section>
-             );
-           })}
+                  })}
+              </div>
+          </section>
+
+          {/* --- Filterable Staff Section --- */}
+          <section className="mb-16">
+              {/* Filter Tags */}
+              <div className="flex flex-wrap justify-center gap-3 mb-10 pt-8 border-t border-gray-200">
+                  <Button
+                      variant={activeFilter === null ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setActiveFilter(null)}
+                      className={cn(
+                          "rounded-full transition-all",
+                          activeFilter === null ? 'bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]' : 'border-gray-300 hover:bg-gray-100'
+                      )}
+                  >
+                      All Team Members
+                  </Button>
+                  {filterableRoles.map(role => {
+                      const sectionInfo = sections.find(s => s.role === role);
+                      const count = filterableStaff.filter(s => s.role === role).length;
+                      if (count === 0) return null; // Don't show filter if no staff have this role
+                      
+                      return (
+                          <Button
+                              key={role}
+                              variant={activeFilter === role ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => setActiveFilter(role)}
+                               className={cn(
+                                  "rounded-full transition-all",
+                                  activeFilter === role ? 'bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]' : 'border-gray-300 hover:bg-gray-100'
+                              )}
+                          >
+                              {sectionInfo?.title || role.replace('ManipalStaff', 'Manipal Staff')} ({count})
+                          </Button>
+                      );
+                  })}
+              </div>
+
+              {/* Filtered Staff Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {filteredStaff.map((staff) => {
+                      // Role badge styling
+                      const roleBadgeStyle = {
+                        Psychologist: 'bg-blue-100 text-blue-800',
+                        Fellow: 'bg-green-100 text-green-800',
+                        Physiotherapist: 'bg-purple-100 text-purple-800',
+                        Staff: 'bg-yellow-100 text-yellow-800',
+                        ManipalStaff: 'bg-indigo-100 text-indigo-800'
+                      }[staff.role] || 'bg-gray-100 text-gray-800';
+                      
+                      return (
+                        // Smaller Staff Card
+                        <div 
+                          key={staff.slug} 
+                          className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden text-center transform hover:-translate-y-1 flex flex-col"
+                        >
+                            <div className="relative aspect-square w-full overflow-hidden flex-shrink-0">
+                                <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold z-10 ${roleBadgeStyle}`}>
+                                  {staff.role.replace('ManipalStaff','Manipal Staff')} 
+                                </div>
+                                <Image
+                                    src={staff.imageUrl}
+                                    alt={staff.name}
+                                    fill
+                                    className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                                    loading="lazy"
+                                />
+                            </div>
+                            <div className="p-3 flex-grow flex flex-col justify-between">
+                                <div> {/* Wrapper for text content */} 
+                                    <h3 className="text-base font-semibold text-gray-900 mb-0.5 leading-tight">
+                                        {staff.name}
+                                    </h3>
+                                    <p className="text-xs text-gray-600 line-clamp-2 leading-snug mb-1">
+                                        {staff.title}
+                                    </p>
+                                </div>
+                                {staff.qualifications && (
+                                  <p className="text-[10px] text-gray-500 mt-1 line-clamp-2 italic leading-tight">
+                                    {staff.qualifications}
+                                  </p>
+                                )}
+                            </div>
+                       </div>
+                      );
+                    })}
+                </div>
+
+                {/* Message if no staff match filter */}
+                {filteredStaff.length === 0 && activeFilter && (
+                    <div className="text-center text-gray-500 py-10 col-span-full">
+                        No team members found for the "{sections.find(s => s.role === activeFilter)?.title || activeFilter}" category.
+                    </div>
+                )}
+          </section>
 
           {/* Additional Info Section */}
           <section className="bg-white rounded-xl p-8 shadow-md mt-16">
