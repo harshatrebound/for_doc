@@ -45,7 +45,7 @@ export default function HeroSection({
   const heightClass = {
     small: 'min-h-[50vh] md:min-h-[60vh]',
     medium: 'min-h-[60vh] md:min-h-[70vh]',
-    large: 'min-h-[70vh] md:min-h-[80vh]',
+    large: 'min-h-[80vh] md:min-h-[90vh]',
   }[height];
 
   // Determine text alignment
