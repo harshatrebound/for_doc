@@ -276,7 +276,7 @@ export async function generateMetadata(
         images: imageUrl ? [{ url: imageUrl }] : [],
         type: 'article',
     },
-    authors: [{ name: 'Sports Orthopedics' }],
+    authors: [{ name: 'Sports Orthopedics Institute' }],
     keywords: [pageTitle, 'orthopedics', 'bone', 'joint', data?.category || ''].filter(Boolean),
   }
 }

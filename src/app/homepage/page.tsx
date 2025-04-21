@@ -221,7 +221,7 @@ export default function HomePage() {
               </div>
             </h1>
             <p className="mt-6 text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed font-light">
-              Comprehensive orthopedic evaluation and treatment from board-certified specialists dedicated to restoring your mobility and comfort.
+              Comprehensive orthopedic evaluation and treatment from experienced specialists dedicated to restoring your mobility and comfort.
             </p>
           </div>
         }
@@ -272,8 +272,8 @@ export default function HomePage() {
                  <div className="w-16 h-16 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 ring-2 ring-gray-200 group-hover:ring-[#8B5C9E]/50">
                   <Activity className="w-8 h-8 text-[#8B5C9E]" />
                 </div>
-                <p className="text-3xl font-bold text-gray-900 mb-1">2,000+</p>
-                <p className="text-sm text-gray-600 uppercase tracking-wider font-medium">Successful Procedures</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">10k+</p>
+                <p className="text-sm text-gray-600 uppercase tracking-wider font-medium">Successful Surgical Procedures</p>
               </div>
               
               {/* Trust Indicator 2 - Adjusted colors */}
@@ -285,13 +285,13 @@ export default function HomePage() {
                 <p className="text-sm text-gray-600 uppercase tracking-wider font-medium">Years of Experience</p>
               </div>
               
-              {/* Trust Indicator 3 - Adjusted colors */}
+              {/* Trust Indicator 3 - New Specialized Care Areas stat */}
               <div className="group flex flex-col items-center text-center transition-all duration-300">
-                 <div className="w-16 h-16 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 ring-2 ring-gray-200 group-hover:ring-[#8B5C9E]/50">
+                <div className="w-16 h-16 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 ring-2 ring-gray-200 group-hover:ring-[#8B5C9E]/50">
                   <Users className="w-8 h-8 text-[#8B5C9E]" />
                 </div>
-                <p className="text-3xl font-bold text-gray-900 mb-1">15+</p>
-                <p className="text-sm text-gray-600 uppercase tracking-wider font-medium">Board-Certified Specialists</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">6+</p>
+                <p className="text-sm text-gray-600 uppercase tracking-wider font-medium">Specialized Care Areas</p>
               </div>
             </div>
             
@@ -498,14 +498,14 @@ export default function HomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
                 <span className="inline-block bg-[#8B5C9E]/10 text-[#8B5C9E] px-4 py-2 rounded-full text-sm font-medium mb-6">
-                  About Sports Orthopedics
+                  About Sports Orthopedics Institute
                 </span>
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
                   Dedicated to Excellence in Orthopedic Care
                 </h2>
                 <div className="text-gray-600 space-y-4">
                   <p>
-                    At Sports Orthopedics, we are committed to providing exceptional orthopedic care with a focus on sports medicine and rehabilitation. Our team of skilled specialists combines years of experience with cutting-edge techniques to deliver personalized treatment plans.
+                    At Sports Orthopedics Institute, we are committed to providing exceptional orthopedic care with a focus on sports medicine and rehabilitation. Our team of skilled specialists combines years of experience with cutting-edge techniques to deliver personalized treatment plans.
                   </p>
                   <p>
                     Whether you're recovering from an injury, managing chronic pain, or seeking to improve your mobility and performance, our comprehensive approach addresses your specific needs and goals.

@@ -9,7 +9,7 @@ interface BookingWidgetProps {
 
 const BookingWidget = ({
   buttonStyle = 'default',
-  buttonText = 'Book Appointment',
+  buttonText = 'Request Consultation',
   primaryColor = '#8B5C9E'
 }: BookingWidgetProps) => {
   const [isOpen, setIsOpen] = useState(false);

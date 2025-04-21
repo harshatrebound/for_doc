@@ -55,10 +55,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/logo.svg" }
+      { url: "/logo.jpg" }
     ],
-    shortcut: { url: "/logo.svg" },
-    apple: { url: "/logo.svg" }
+    shortcut: { url: "/logo.jpg" },
+    apple: { url: "/logo.jpg" }
   },
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
@@ -75,7 +75,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+        <link rel="icon" href="/logo.jpg" type="image/jpeg" />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <main className="min-h-screen">

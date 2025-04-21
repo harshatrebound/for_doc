@@ -151,7 +151,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
     <>
       <header 
         ref={headerRef}
-        className={`w-full z-50 transition-all duration-300 ${
+        className={`w-full z-50 transition-all duration-300 flex items-center ${
           isFixed ? 'fixed top-0 left-0 right-0' : 'absolute top-0 left-0 right-0'
         } ${
           mobileMenuOpen ? 'bg-white' : isTransparent ? 'bg-opacity-var backdrop-blur-var' : 'bg-white'
@@ -160,29 +160,41 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
           // CSS variables will be set via JS for dynamic opacity and blur
           '--header-bg-opacity': '0',
           '--header-blur': '0px',
-          height: scrolled ? 'var(--header-height-scrolled, 64px)' : 'var(--header-height, 80px)',
+          height: scrolled ? 'var(--header-height-scrolled, 72px)' : 'var(--header-height, 88px)',
           backgroundColor: isTransparent ? 'rgba(46, 58, 89, var(--header-bg-opacity))' : '',
           backdropFilter: isTransparent ? 'blur(var(--header-blur))' : '',
           boxShadow: scrolled ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
         } as React.CSSProperties}
       >
-        <div className="container mx-auto px-4 h-full">
-          <div className="flex items-center justify-between h-full">
-            {/* Logo */}
-            <button onClick={() => handleNavigation('/')} className="flex items-center">
-              <div className="relative h-10 w-10 mr-3 transition-all duration-300">
-                <Image
-                  src="/logo.svg"
-                  alt="Sports Orthopedics Logo"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                />
-              </div>
-              <span className={`font-bold text-xl transition-colors duration-300 ${getTextColor()}`}>
-                Sports Orthopedics
-              </span>
-            </button>
+        <div className="container mx-auto px-4 flex items-center h-full">
+          <div className="flex items-center justify-between w-full">
+            {/* Logo and Brand - Webflow-style implementation */}
+            <div className="flex items-center">
+              <button 
+                onClick={() => handleNavigation('/')} 
+                className="group flex items-start space-x-3"
+                aria-label="Go to homepage"
+              >
+                <div className="relative h-[44px] w-[44px] md:h-[52px] md:w-[52px] overflow-hidden shadow-sm transition-all duration-300 group-hover:shadow-md">
+                  <Image
+                    src="/logo.jpg"
+                    alt=""
+                    width={78}
+                    height={78}
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+                <div className="flex flex-col justify-start text-left">
+                  <span className={`font-bold text-sm md:text-base leading-tight tracking-tight transition-colors duration-300 ${getTextColor()}`}>
+                    Sports Orthopedics
+                  </span>
+                  <span className={`font-medium text-xs md:text-sm leading-tight transition-colors duration-300 ${getTextColor()}`}>
+                    Institute
+                  </span>
+                </div>
+              </button>
+            </div>
             
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center">
@@ -304,7 +316,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                     : 'bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]'
                 }`}
                 icon={<Calendar className="w-5 h-5 mr-2" />}
-                text="Book an Appointment"
+                text="Request Consultation"
               />
             </div>
             
@@ -409,7 +421,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                   <BookingButton 
                     className="w-full py-4 px-6 rounded-md font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center justify-center bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]"
                     icon={<Calendar className="w-5 h-5 mr-2" />}
-                    text="Book an Appointment"
+                    text="Request Consultation"
                   />
                 </div>
               </nav>

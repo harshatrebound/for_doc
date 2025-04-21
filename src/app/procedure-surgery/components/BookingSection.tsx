@@ -19,7 +19,7 @@ export default function BookingSection() {
             onClick={() => setIsBookingModalOpen(true)}
             className="block w-full py-3 px-4 bg-[#8B5C9E] hover:bg-[#7a4f8a] text-white font-medium rounded-lg text-center transition-colors"
           >
-            Book an Appointment
+            Request Consultation
           </button>
           <Link
             href="/contact"

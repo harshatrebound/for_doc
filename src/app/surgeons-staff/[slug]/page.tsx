@@ -6,10 +6,10 @@ import Image from 'next/image';
 import React from 'react';
 import { notFound } from 'next/navigation';
 import { Container } from '@/components/ui/container';
-import { Breadcrumb } from '@/components/ui/breadcrumb';
-import { StaffProfile } from './components/StaffProfile';
-import { StaffHero } from './components/StaffHero';
-import { StaffContentBlocks } from './components/StaffContentBlocks';
+import Link from 'next/link';
+import { ArrowLeft, ArrowRight, Award, BookOpen, Briefcase, GraduationCap, Medal, User, FileText, Building, Users } from 'lucide-react';
+import SiteHeader from '@/components/layout/SiteHeader';
+import BookingButton from '@/components/BookingButton';
 
 interface StaffMember {
   Slug: string;
@@ -85,9 +85,9 @@ function parseContentBlocks(contentBlocksJSON: string): ContentBlock[] {
 function extractQualifications(contentBlocks: ContentBlock[]): string {
   const paragraphBlock = contentBlocks.find(block => 
     block.type === 'paragraph' && 
-    block.text?.includes('MBBS') ||
+    (block.text?.includes('MBBS') ||
     block.text?.includes('MS') ||
-    block.text?.includes('MSc'));
+    block.text?.includes('MSc')));
   
   return paragraphBlock?.text?.replace(/<[^>]*>/g, '') || '';
 }
@@ -98,13 +98,108 @@ function extractPosition(contentBlocks: ContentBlock[]): string {
   return headingBlock?.text || '';
 }
 
-function parseBreadcrumbs(breadcrumbJSON: string): { name: string; url: string | null }[] {
-  try {
-    return JSON.parse(breadcrumbJSON);
-  } catch (error: any) {
-    console.error('Error parsing breadcrumb JSON:', error);
-    return [];
-  }
+// Parse all the content and organize by section
+function extractSections(blocks: ContentBlock[]): Record<string, ContentBlock[]> {
+  const sections: Record<string, string[]> = {
+    'biography': [],
+    'awards': [],
+    'qualifications': [],
+    'additional_credentials': [],
+    'professional_visits': [],
+    'faculty': [],
+    'conferences': [],
+    'podium_presentations': [],
+    'poster_presentations': [],
+    'courses': [],
+    'cme': [],
+    'publications': [],
+    'executive': [],
+    'affiliations': [],
+    'contact': [],
+  };
+  
+  let currentSection = 'biography';
+  let inPresentationCoAuthorSection = false;
+  
+  // Process each block
+  blocks.forEach(block => {
+    if (block.type === 'heading' || block.type === 'profile_section_heading') {
+      const headingText = block.text?.toLowerCase() || '';
+      
+      if (headingText.includes('biograph') || headingText.includes('about')) {
+        currentSection = 'biography';
+      } 
+      else if (headingText.includes('award') || headingText.includes('distinction') || 
+               headingText.includes('recognition')) {
+        currentSection = 'awards';
+      }
+      else if (headingText.includes('qualification')) {
+        currentSection = 'qualifications';
+      }
+      else if (headingText.includes('credential')) {
+        currentSection = 'additional_credentials';
+      }
+      else if (headingText.includes('visit')) {
+        currentSection = 'professional_visits';
+      }
+      else if (headingText.includes('faculty') || headingText.includes('lecture')) {
+        currentSection = 'faculty';
+      }
+      else if (headingText.includes('conference')) {
+        currentSection = 'conferences';
+      }
+      else if (headingText.includes('podium')) {
+        currentSection = 'podium_presentations';
+        inPresentationCoAuthorSection = false;
+      }
+      else if (headingText.includes('co-author')) {
+        inPresentationCoAuthorSection = true;
+      }
+      else if (headingText.includes('poster')) {
+        currentSection = 'poster_presentations';
+      }
+      else if (headingText.includes('course')) {
+        currentSection = 'courses';
+      }
+      else if (headingText.includes('cme') || headingText.includes('continued medical')) {
+        currentSection = 'cme';
+      }
+      else if (headingText.includes('publication')) {
+        currentSection = 'publications';
+      }
+      else if (headingText.includes('executive') || headingText.includes('management')) {
+        currentSection = 'executive';
+      }
+      else if (headingText.includes('affiliation') || headingText.includes('membership')) {
+        currentSection = 'affiliations';
+      }
+      else if (headingText.includes('contact')) {
+        currentSection = 'contact';
+      }
+    } 
+    else if (block.type === 'paragraph') {
+      // Add paragraph content to the current section
+      if (block.text) {
+        // Special handling for co-authored presentations
+        if (inPresentationCoAuthorSection) {
+          sections['podium_presentations'].push(block.text);
+        } else {
+          sections[currentSection].push(block.text);
+        }
+      }
+    }
+  });
+  
+  // Convert to ContentBlock format for consistency
+  const result: Record<string, ContentBlock[]> = {};
+  Object.entries(sections).forEach(([key, texts]) => {
+    result[key] = texts.map(text => ({
+      type: 'paragraph',
+      text
+    }));
+  });
+  
+  return result;
 }
 
 export default async function StaffMemberPage({ params }: { params: { slug: string } }) {
@@ -120,41 +215,134 @@ export default async function StaffMemberPage({ params }: { params: { slug: stri
   const position = extractPosition(contentBlocks);
   const name = staffMember.Title.split('|')[0].trim();
   
-  const breadcrumbs = parseBreadcrumbs(staffMember.BreadcrumbJSON).map(item => ({
-    name: item.name,
-    href: item.url || '#'
-  }));
+  // Get sections for the CV
+  const sections = extractSections(contentBlocks);
 
-  // Add the home link if not present
-  if (!breadcrumbs.some(item => item.name === 'Home')) {
-    breadcrumbs.unshift({ name: 'Home', href: '/' });
-  }
+  // Section configuration with icons and titles
+  const sectionConfig = [
+    { id: 'biography', title: 'Professional Biography', icon: User },
+    { id: 'awards', title: 'Awards & Distinction', icon: Award },
+    { id: 'qualifications', title: 'Qualifications', icon: GraduationCap },
+    { id: 'additional_credentials', title: 'Additional Credentials', icon: Medal },
+    { id: 'professional_visits', title: 'Professional Visits', icon: Building },
+    { id: 'faculty', title: 'Faculty & Guest Lectures', icon: Users },
+    { id: 'conferences', title: 'Conferences', icon: Users },
+    { id: 'podium_presentations', title: 'Podium Presentations', icon: Users },
+    { id: 'poster_presentations', title: 'Poster Presentations', icon: FileText },
+    { id: 'courses', title: 'Courses', icon: BookOpen },
+    { id: 'cme', title: 'Continued Medical Education (CMEs)', icon: BookOpen },
+    { id: 'publications', title: 'Publications', icon: FileText },
+    { id: 'executive', title: 'Executive & Management Experience', icon: Briefcase },
+    { id: 'affiliations', title: 'Affiliations & Memberships', icon: Users },
+    { id: 'contact', title: 'Contact Information', icon: Users },
+  ];
+
+  // Format HTML content with proper lists
+  const formatContent = (content: ContentBlock[]) => {
+    return content.map((block, index) => {
+      const text = block.text || '';
+      if (text.includes('</li>')) {
+        // Already formatted as a list
+        return (
+          <div 
+            key={index}
+            className="text-gray-700"
+            dangerouslySetInnerHTML={{ __html: text }}
+          />
+        );
+      } else {
+        // Format as a list item with arrow icon
+        return (
+          <div key={index} className="flex mb-3">
+            <ArrowRight className="h-5 w-5 text-[#8B5C9E] mr-3 flex-shrink-0 mt-0.5" />
+            <div 
+              className="text-gray-700"
+              dangerouslySetInnerHTML={{ __html: text }}
+            />
+          </div>
+        );
+      }
+    });
+  };
 
   return (
-    <main className="min-h-screen bg-white">
-      <StaffHero
-        name={name}
-        position={position}
-        qualifications={qualifications}
-        imageUrl={imageUrl}
-      />
+    <main className="min-h-screen bg-gray-50">
+      <SiteHeader theme="light" />
       
-      <Container className="py-12">
-        <Breadcrumb items={breadcrumbs} />
+      <Container className="pt-24 pb-16">
+        <div className="flex items-center mb-8">
+          <Link 
+            href="/surgeons-staff" 
+            className="inline-flex items-center text-[#8B5C9E] hover:text-[#7A4F8C] font-medium"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Team
+          </Link>
+        </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-12">
-          <div className="lg:col-span-1">
-            <StaffProfile 
-              staffMember={staffMember}
-              contentBlocks={contentBlocks}
-            />
+        {/* Profile Header Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+          <div className="p-8 flex flex-col md:flex-row gap-6 items-start md:items-center">
+            {/* Profile Image */}
+            <div className="w-32 h-32 rounded-full overflow-hidden flex-shrink-0 border-4 border-white shadow-md">
+              {imageUrl ? (
+                <Image
+                  src={imageUrl}
+                  alt={name}
+                  width={128}
+                  height={128}
+                  className="object-cover w-full h-full"
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+                  No Image
+                </div>
+              )}
+            </div>
+            
+            {/* Profile Info */}
+            <div className="flex-grow">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{name}</h1>
+              {position && (
+                <h2 className="text-xl text-gray-700 mb-3">{position}</h2>
+              )}
+              {qualifications && (
+                <div className="text-sm text-gray-600">{qualifications}</div>
+              )}
+            </div>
+            
+            {/* Book Appointment Button */}
+            <div className="mt-4 md:mt-0">
+              <BookingButton 
+                className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white text-center py-3 px-6 rounded-md font-medium transition-all duration-300 hover:shadow-lg"
+                text="Book Appointment"
+              />
+            </div>
           </div>
-          
-          <div className="lg:col-span-2">
-            <StaffContentBlocks 
-              contentBlocks={contentBlocks} 
-            />
-          </div>
+        </div>
+        
+        {/* Render all CV sections */}
+        <div className="space-y-8">
+          {sectionConfig.map(section => {
+            const content = sections[section.id] || [];
+            if (content.length === 0) return null;
+            
+            const Icon = section.icon;
+            
+            return (
+              <div key={section.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="p-6 border-b border-gray-100">
+                  <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                    <Icon className="h-5 w-5 text-[#8B5C9E] mr-3" />
+                    {section.title}
+                  </h2>
+                </div>
+                <div className="p-6">
+                  {formatContent(content)}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </Container>
     </main>

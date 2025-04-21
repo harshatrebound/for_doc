@@ -55,7 +55,7 @@ export default function BookingButton({
         onClick={() => setIsBookingModalOpen(true)}
         className={`${getButtonClasses()} bg-[#8B5C9E] text-white hover:bg-[#7a4f8b]`}
       >
-         Book an Appointment
+         Request Consultation
          <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
       </Button>
 

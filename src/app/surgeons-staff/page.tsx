@@ -433,7 +433,7 @@ export default function SurgeonsStaffPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Work With the Best in Orthopedic Care</h2>
             <div className="prose max-w-none">
               <p>
-                At Sports Orthopedics, our medical team comprises internationally trained and experienced 
+                At Sports Orthopedics Institute, our medical team comprises internationally trained and experienced 
                 specialists who have achieved excellence in their respective fields. Our surgeons have been 
                 recognized with prestigious awards and have pioneered advanced techniques in orthopedic care.
               </p>
