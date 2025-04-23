@@ -1,9 +1,10 @@
 "use client";
 
+import React from 'react';
 import Image from 'next/image';
-import { Container } from '@/components/ui/container';
 import BookingButton from '@/components/BookingButton';
-import { ArrowRight } from 'lucide-react';
+import { GraduationCap, Briefcase, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface StaffHeroProps {
   name: string;
@@ -14,55 +15,86 @@ interface StaffHeroProps {
 
 export function StaffHero({ name, position, qualifications, imageUrl }: StaffHeroProps) {
   return (
-    <div className="relative w-full">
-      {/* Hero background with overlay */}
-      <div className="absolute inset-0 z-0">
-        <div className="relative w-full min-h-[60vh] md:min-h-[70vh] overflow-hidden">
-          <Image
-            src={imageUrl}
-            alt={name}
-            fill
-            className="object-cover object-top filter brightness-75"
-            priority
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#8B5C9E]/90 via-[#2E3A59]/60 to-transparent"></div>
-          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03]"></div>
-        </div>
-      </div>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="relative bg-gradient-to-r from-[#8B5C9E]/10 to-[#8B5C9E]/5 rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8"
+    >
+      <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-[#8B5C9E]/20 to-transparent opacity-30" />
       
-      {/* Hero content */}
-      <Container className="relative z-10 min-h-[60vh] md:min-h-[70vh] flex flex-col justify-end pb-16 pt-24 md:pt-32">
-        <div className="max-w-3xl text-white">
-          <div className="inline-block bg-[#8B5C9E]/20 text-white px-4 py-1 rounded-lg text-sm font-medium mb-6 backdrop-blur-sm border border-[#8B5C9E]/30">
-            ORTHOPEDIC SPECIALIST
-          </div>
-          
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-3">
+      <div className="p-8 md:p-10 flex flex-col md:flex-row gap-8 items-start md:items-center relative z-10">
+        {/* Profile Image */}
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden flex-shrink-0 border-4 border-white shadow-lg"
+        >
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={name}
+              width={160}
+              height={160}
+              className="object-cover w-full h-full"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+              No Image
+            </div>
+          )}
+        </motion.div>
+        
+        {/* Profile Info */}
+        <div className="flex-grow">
+          <motion.h1 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="text-3xl md:text-4xl font-bold text-gray-900 mb-3"
+          >
             {name}
-          </h1>
+          </motion.h1>
           
           {position && (
-            <h2 className="text-xl md:text-2xl text-white/90 font-medium mb-4">
+            <motion.h2 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="text-xl text-[#8B5C9E] font-medium mb-3 flex items-center"
+            >
+              <Briefcase className="h-5 w-5 mr-2 text-[#8B5C9E]/70" />
               {position}
-            </h2>
+            </motion.h2>
           )}
           
           {qualifications && (
-            <p className="text-lg text-white/80 font-light mb-8">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="text-sm text-gray-600 flex items-center mb-4"
+            >
+              <GraduationCap className="h-5 w-5 mr-2 text-[#8B5C9E]/70" />
               {qualifications}
-            </p>
+            </motion.div>
           )}
           
-          <div className="flex flex-col sm:flex-row gap-4 mt-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="mt-4 md:mt-3"
+          >
             <BookingButton 
-              className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white rounded-md px-8 py-4 text-lg font-medium transition-all duration-300 hover:shadow-lg w-full sm:w-auto"
-              text="Request a Consultation"
-              icon={<ArrowRight className="w-5 h-5 mr-2" />}
+              className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white text-center py-3 px-6 rounded-md font-medium transition-all duration-300 hover:shadow-lg flex items-center justify-center"
+              text="Book Appointment"
+              icon={<ArrowRight className="w-5 h-5 ml-2" />}
             />
-          </div>
+          </motion.div>
         </div>
-      </Container>
-    </div>
+      </div>
+    </motion.div>
   );
 } 

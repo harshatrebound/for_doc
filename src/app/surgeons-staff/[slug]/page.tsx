@@ -7,9 +7,11 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import { Container } from '@/components/ui/container';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Award, BookOpen, Briefcase, GraduationCap, Medal, User, FileText, Building, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Award, BookOpen, Briefcase, GraduationCap, Medal, User, FileText, Building, Users, Stethoscope, Globe, Bookmark, Heart, Phone } from 'lucide-react';
 import SiteHeader from '@/components/layout/SiteHeader';
 import BookingButton from '@/components/BookingButton';
+import DoctorDataSection from './components/DoctorDataSection';
+import { StaffHero } from './components/StaffHero';
 
 interface StaffMember {
   Slug: string;
@@ -218,52 +220,30 @@ export default async function StaffMemberPage({ params }: { params: { slug: stri
   // Get sections for the CV
   const sections = extractSections(contentBlocks);
 
-  // Section configuration with icons and titles
+  // Modern section configuration with improved icons
   const sectionConfig = [
-    { id: 'biography', title: 'Professional Biography', icon: User },
-    { id: 'awards', title: 'Awards & Distinction', icon: Award },
-    { id: 'qualifications', title: 'Qualifications', icon: GraduationCap },
-    { id: 'additional_credentials', title: 'Additional Credentials', icon: Medal },
-    { id: 'professional_visits', title: 'Professional Visits', icon: Building },
-    { id: 'faculty', title: 'Faculty & Guest Lectures', icon: Users },
-    { id: 'conferences', title: 'Conferences', icon: Users },
-    { id: 'podium_presentations', title: 'Podium Presentations', icon: Users },
-    { id: 'poster_presentations', title: 'Poster Presentations', icon: FileText },
-    { id: 'courses', title: 'Courses', icon: BookOpen },
-    { id: 'cme', title: 'Continued Medical Education (CMEs)', icon: BookOpen },
-    { id: 'publications', title: 'Publications', icon: FileText },
-    { id: 'executive', title: 'Executive & Management Experience', icon: Briefcase },
-    { id: 'affiliations', title: 'Affiliations & Memberships', icon: Users },
-    { id: 'contact', title: 'Contact Information', icon: Users },
+    { id: 'biography', title: 'Professional Biography', icon: <User className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'expertise', title: 'Areas of Expertise', icon: <Stethoscope className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'awards', title: 'Awards & Recognition', icon: <Award className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'qualifications', title: 'Qualifications', icon: <GraduationCap className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'additional_credentials', title: 'Additional Credentials', icon: <Medal className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'work_experience', title: 'Professional Experience', icon: <Briefcase className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'professional_visits', title: 'Professional Visits', icon: <Globe className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'faculty', title: 'Faculty & Guest Lectures', icon: <Users className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'conferences', title: 'Conferences', icon: <Users className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'podium_presentations', title: 'Podium Presentations', icon: <FileText className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'poster_presentations', title: 'Poster Presentations', icon: <FileText className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'courses', title: 'Courses', icon: <BookOpen className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'technical_skills', title: 'Technical Skills & Training', icon: <Bookmark className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'cme', title: 'Continued Medical Education', icon: <BookOpen className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'publications', title: 'Publications', icon: <FileText className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'areas_of_interest', title: 'Areas of Interest', icon: <Heart className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'executive', title: 'Executive & Management', icon: <Briefcase className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'languages', title: 'Languages', icon: <Globe className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'hobbies', title: 'Personal Interests', icon: <Heart className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'affiliations', title: 'Affiliations & Memberships', icon: <Users className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'contact', title: 'Contact Information', icon: <Phone className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
   ];
-
-  // Format HTML content with proper lists
-  const formatContent = (content: ContentBlock[]) => {
-    return content.map((block, index) => {
-      const text = block.text || '';
-      if (text.includes('</li>')) {
-        // Already formatted as a list
-        return (
-          <div 
-            key={index}
-            className="text-gray-700"
-            dangerouslySetInnerHTML={{ __html: text }}
-          />
-        );
-      } else {
-        // Format as a list item with arrow icon
-        return (
-          <div key={index} className="flex mb-3">
-            <ArrowRight className="h-5 w-5 text-[#8B5C9E] mr-3 flex-shrink-0 mt-0.5" />
-            <div 
-              className="text-gray-700"
-              dangerouslySetInnerHTML={{ __html: text }}
-            />
-          </div>
-        );
-      }
-    });
-  };
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -280,69 +260,47 @@ export default async function StaffMemberPage({ params }: { params: { slug: stri
           </Link>
         </div>
         
-        {/* Profile Header Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
-          <div className="p-8 flex flex-col md:flex-row gap-6 items-start md:items-center">
-            {/* Profile Image */}
-            <div className="w-32 h-32 rounded-full overflow-hidden flex-shrink-0 border-4 border-white shadow-md">
-              {imageUrl ? (
-                <Image
-                  src={imageUrl}
-                  alt={name}
-                  width={128}
-                  height={128}
-                  className="object-cover w-full h-full"
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
-                  No Image
-                </div>
-              )}
-            </div>
-            
-            {/* Profile Info */}
-            <div className="flex-grow">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{name}</h1>
-              {position && (
-                <h2 className="text-xl text-gray-700 mb-3">{position}</h2>
-              )}
-              {qualifications && (
-                <div className="text-sm text-gray-600">{qualifications}</div>
-              )}
-            </div>
-            
-            {/* Book Appointment Button */}
-            <div className="mt-4 md:mt-0">
-              <BookingButton 
-                className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white text-center py-3 px-6 rounded-md font-medium transition-all duration-300 hover:shadow-lg"
-                text="Book Appointment"
-              />
-            </div>
-          </div>
-        </div>
+        {/* Use enhanced StaffHero component */}
+        <StaffHero 
+          name={name}
+          position={position || 'Orthopedic Surgeon'}
+          qualifications={qualifications || ''}
+          imageUrl={imageUrl || '/placeholder-staff.jpg'}
+        />
         
-        {/* Render all CV sections */}
-        <div className="space-y-8">
-          {sectionConfig.map(section => {
-            const content = sections[section.id] || [];
-            if (content.length === 0) return null;
-            
-            const Icon = section.icon;
-            
-            return (
-              <div key={section.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="p-6 border-b border-gray-100">
-                  <h2 className="text-xl font-bold text-gray-900 flex items-center">
-                    <Icon className="h-5 w-5 text-[#8B5C9E] mr-3" />
-                    {section.title}
-                  </h2>
-                </div>
-                <div className="p-6">
-                  {formatContent(content)}
-                </div>
+        {/* Render doctor data using the new component */}
+        <div className="space-y-4">
+          {/* Biography section with special styling */}
+          {sections.biography && sections.biography.length > 0 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4">
+              <div className="p-6 border-b border-gray-100">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                  <User className="h-5 w-5 text-[#8B5C9E] mr-3" />
+                  Professional Biography
+                </h2>
               </div>
-            );
-          })}
+              <div className="p-6 prose prose-purple max-w-none">
+                {sections.biography.map((block, index) => (
+                  <div 
+                    key={index}
+                    className="text-gray-700 mb-4 last:mb-0"
+                    dangerouslySetInnerHTML={{ __html: block.text || '' }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Dynamic data sections */}
+          {sectionConfig.filter(section => section.id !== 'biography').map(section => (
+            <DoctorDataSection 
+              key={section.id}
+              doctorSlug={params.slug}
+              sectionKey={section.id}
+              sectionTitle={section.title}
+              icon={section.icon}
+            />
+          ))}
         </div>
       </Container>
     </main>
