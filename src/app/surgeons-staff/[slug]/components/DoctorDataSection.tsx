@@ -64,6 +64,11 @@ export default function DoctorDataSection({ doctorSlug, sectionKey, sectionTitle
   const toggleExpanded = () => setIsExpanded(!isExpanded);
   const displayItems = isExpanded ? items : items.slice(0, 3);
 
+  // Function to safely render HTML content
+  const renderHTML = (html: string) => {
+    return { __html: html };
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4">
       <div 
@@ -84,7 +89,10 @@ export default function DoctorDataSection({ doctorSlug, sectionKey, sectionTitle
           {displayItems.map((item, index) => (
             <div key={index} className="flex">
               <ArrowRight className="h-5 w-5 text-[#8B5C9E] mr-3 flex-shrink-0 mt-0.5" />
-              <p className="text-gray-700">{item}</p>
+              <div 
+                className="text-gray-700"
+                dangerouslySetInnerHTML={renderHTML(item)}
+              />
             </div>
           ))}
         </div>
