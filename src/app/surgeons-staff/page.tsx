@@ -266,16 +266,24 @@ export default function SurgeonsStaffPage() {
                                               {sectionInfo?.title || staff.role}
                                           </span>
                                       </div>
-                                      <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+                                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                                           {staff.name}
                                       </h2>
-                                      <p className="text-sm text-gray-700 mb-3 font-medium">
+                                      <p className="text-[#8B5C9E] font-medium text-lg mb-2 flex items-center justify-center md:justify-start">
+                                          <SectionIcon className="w-5 h-5 mr-2" /> {sectionInfo?.title}
+                                      </p>
+                                      <p className="text-sm text-gray-600 mb-4">
                                           {staff.title}
                                       </p>
-                                      {staff.qualifications && (
-                                          <p className="text-xs text-gray-500 italic">
-                                              {staff.qualifications}
-                                          </p>
+                                      
+                                      {/* Add View Profile Button for Dr. Naveen */}
+                                      {staff.slug === 'dr-naveen-kumar-l-v' && (
+                                        <Link 
+                                          href="/surgeons-staff/naveen"
+                                          className="inline-flex items-center px-4 py-2 bg-[#8B5C9E] text-white rounded-md hover:bg-[#7A4F8C] transition-colors"
+                                        >
+                                          View Full Profile <ArrowRight className="ml-2 w-4 h-4" />
+                                        </Link>
                                       )}
                                   </div>
                               </div>
@@ -293,7 +301,7 @@ export default function SurgeonsStaffPage() {
                               id={staff.role.toLowerCase()} 
                               className="relative overflow-hidden rounded-xl shadow-xl border border-gray-200 group h-full flex flex-col"
                           >
-                              <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-white group-hover:from-gray-100/50 transition-all duration-500"></div>
+                              <div className="absolute inset-0 bg-gradient-to-br from-[#8B5C9E]/5 via-white to-white group-hover:from-[#8B5C9E]/10 transition-all duration-500"></div>
                               <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] group-hover:opacity-[0.04] transition-opacity duration-500"></div>
                               <div className="relative p-8 flex-grow flex flex-col md:flex-row items-center gap-6">
                                   <div className="flex-shrink-0 w-36 h-36 md:w-40 md:h-40 relative">
@@ -313,16 +321,24 @@ export default function SurgeonsStaffPage() {
                                               {sectionInfo?.title || staff.role}
                                           </span>
                                       </div>
-                                      <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+                                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                                           {staff.name}
                                       </h2>
-                                      <p className="text-sm text-gray-700 mb-3 font-medium">
+                                      <p className="text-[#8B5C9E] font-medium text-lg mb-2 flex items-center justify-center md:justify-start">
+                                          <SectionIcon className="w-5 h-5 mr-2" /> {sectionInfo?.title}
+                                      </p>
+                                      <p className="text-sm text-gray-600 mb-4">
                                           {staff.title}
                                       </p>
-                                      {staff.qualifications && (
-                                          <p className="text-xs text-gray-500 italic">
-                                              {staff.qualifications}
-                                          </p>
+                                      
+                                      {/* Add View Profile Button for Dr. Sameer */}
+                                      {staff.slug === 'dr-sameer-km' && (
+                                        <Link 
+                                          href="/surgeons-staff/sameer"
+                                          className="inline-flex items-center px-4 py-2 bg-[#8B5C9E] text-white rounded-md hover:bg-[#7A4F8C] transition-colors"
+                                        >
+                                          View Full Profile <ArrowRight className="ml-2 w-4 h-4" />
+                                        </Link>
                                       )}
                                   </div>
                               </div>
@@ -413,6 +429,25 @@ export default function SurgeonsStaffPage() {
                                   <p className="text-[10px] text-gray-500 mt-1 line-clamp-2 italic leading-tight">
                                     {staff.qualifications}
                                   </p>
+                                )}
+                                
+                                {/* Add Profile Link for Naveen and Sameer in filterable staff cards */}
+                                {staff.slug === 'dr-naveen-kumar-l-v' && (
+                                  <Link 
+                                    href="/surgeons-staff/naveen"
+                                    className="mt-3 inline-flex items-center text-[#8B5C9E] text-sm font-medium hover:text-[#7A4F8C]"
+                                  >
+                                    View Full Profile <ArrowRight className="ml-1 w-4 h-4" />
+                                  </Link>
+                                )}
+                                
+                                {staff.slug === 'dr-sameer-km' && (
+                                  <Link 
+                                    href="/surgeons-staff/sameer"
+                                    className="mt-3 inline-flex items-center text-[#8B5C9E] text-sm font-medium hover:text-[#7A4F8C]"
+                                  >
+                                    View Full Profile <ArrowRight className="ml-1 w-4 h-4" />
+                                  </Link>
                                 )}
                             </div>
                        </div>

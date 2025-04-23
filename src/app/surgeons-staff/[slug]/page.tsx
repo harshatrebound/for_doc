@@ -9,6 +9,7 @@ import { Container } from '@/components/ui/container';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Award, BookOpen, Briefcase, GraduationCap, Medal, User, FileText, Building, Users, Stethoscope, Globe, Bookmark, Heart, Phone } from 'lucide-react';
 import SiteHeader from '@/components/layout/SiteHeader';
+import SiteFooter from '@/components/layout/SiteFooter';
 import BookingButton from '@/components/BookingButton';
 import DoctorDataSection from './components/DoctorDataSection';
 import { StaffHero } from './components/StaffHero';
@@ -234,14 +235,15 @@ export default async function StaffMemberPage({ params }: { params: { slug: stri
     { id: 'podium_presentations', title: 'Podium Presentations', icon: <FileText className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
     { id: 'poster_presentations', title: 'Poster Presentations', icon: <FileText className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
     { id: 'courses', title: 'Courses', icon: <BookOpen className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
-    { id: 'technical_skills', title: 'Technical Skills & Training', icon: <Bookmark className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
     { id: 'cme', title: 'Continued Medical Education', icon: <BookOpen className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'technical_skills', title: 'Technical Skills & Training', icon: <Bookmark className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'research', title: 'Research', icon: <FileText className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
     { id: 'publications', title: 'Publications', icon: <FileText className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
     { id: 'areas_of_interest', title: 'Areas of Interest', icon: <Heart className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
     { id: 'executive', title: 'Executive & Management', icon: <Briefcase className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
+    { id: 'affiliations', title: 'Affiliations & Memberships', icon: <Users className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
     { id: 'languages', title: 'Languages', icon: <Globe className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
     { id: 'hobbies', title: 'Personal Interests', icon: <Heart className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
-    { id: 'affiliations', title: 'Affiliations & Memberships', icon: <Users className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
     { id: 'contact', title: 'Contact Information', icon: <Phone className="h-5 w-5 text-[#8B5C9E] mr-3" /> },
   ];
 
@@ -270,29 +272,8 @@ export default async function StaffMemberPage({ params }: { params: { slug: stri
         
         {/* Render doctor data using the new component */}
         <div className="space-y-4">
-          {/* Biography section with special styling */}
-          {sections.biography && sections.biography.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4">
-              <div className="p-6 border-b border-gray-100">
-                <h2 className="text-xl font-bold text-gray-900 flex items-center">
-                  <User className="h-5 w-5 text-[#8B5C9E] mr-3" />
-                  Professional Biography
-                </h2>
-              </div>
-              <div className="p-6 prose prose-purple max-w-none">
-                {sections.biography.map((block, index) => (
-                  <div 
-                    key={index}
-                    className="text-gray-700 mb-4 last:mb-0"
-                    dangerouslySetInnerHTML={{ __html: block.text || '' }}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Dynamic data sections */}
-          {sectionConfig.filter(section => section.id !== 'biography').map(section => (
+          {/* Use the standard DoctorDataSection component for all sections including biography */}
+          {sectionConfig.map(section => (
             <DoctorDataSection 
               key={section.id}
               doctorSlug={params.slug}
@@ -303,6 +284,9 @@ export default async function StaffMemberPage({ params }: { params: { slug: stri
           ))}
         </div>
       </Container>
+
+      {/* Add Site Footer */}
+      <SiteFooter />
     </main>
   );
 } 
