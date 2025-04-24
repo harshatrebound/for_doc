@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { Calendar, Menu, X, ChevronDown } from 'lucide-react';
 import BookingButton from '@/components/BookingButton';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface SiteHeaderProps {
   theme?: 'light' | 'transparent' | 'fixed' | 'default';
@@ -21,6 +22,18 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
   const pathname = usePathname();
   const headerRef = useRef<HTMLElement>(null);
   const isMobile = useRef(false);
+
+  // Lock scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
 
   // Set initial mobile state and attach event listener for window resize
   useEffect(() => {
@@ -43,11 +56,10 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
       lastScrollY = window.scrollY;
       setScrollY(lastScrollY);
       
+      // Simplified scroll detection - make it more immediate on mobile
       if (isMobile.current) {
-        // Use a lower threshold for mobile devices
         setScrolled(lastScrollY > 10);
       } else {
-        // Use a higher threshold for desktop
         setScrolled(lastScrollY > 20);
       }
       
@@ -63,24 +75,21 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
     const updateHeaderOpacity = (currentScrollY: number) => {
       if (!headerRef.current) return;
       
-      // Calculate opacity based on scroll position
-      let opacity = 0;
-      const maxScroll = isMobile.current ? 80 : 150;
-      
-      if (theme === 'transparent') {
-        // Start with a slight base opacity on mobile for better visibility
-        const baseOpacity = isMobile.current ? 0.2 : 0;
-        opacity = Math.min(baseOpacity + (currentScrollY / maxScroll), 1);
-      } else {
-        opacity = 1; // Non-transparent headers are always solid
+      // Simplified mobile opacity logic - more immediate/predictable
+      if (isMobile.current && theme === 'transparent') {
+        // On mobile with transparent theme, quickly transition to solid
+        const opacity = currentScrollY > 10 ? 1 : 0.2;
+        headerRef.current.style.setProperty('--header-bg-opacity', opacity.toString());
+        headerRef.current.style.setProperty('--header-blur', opacity > 0.5 ? '8px' : '0px');
+      } else if (!isMobile.current) {
+        // Desktop can keep the existing gradual transition
+        const maxScroll = 150;
+        const baseOpacity = 0;
+        const opacity = Math.min(baseOpacity + (currentScrollY / maxScroll), 1);
+        headerRef.current.style.setProperty('--header-bg-opacity', opacity.toString());
+        const blurValue = Math.min(Math.round(opacity * 10), 8);
+        headerRef.current.style.setProperty('--header-blur', `${blurValue}px`);
       }
-      
-      // Apply the calculated opacity to the header background
-      headerRef.current.style.setProperty('--header-bg-opacity', opacity.toString());
-      
-      // Dynamically adjust the blur effect
-      const blurValue = Math.min(Math.round(opacity * 10), 8);
-      headerRef.current.style.setProperty('--header-blur', `${blurValue}px`);
     };
     
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -120,6 +129,17 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
     { name: 'Contact', href: '/contact' },
   ];
 
+  // All mobile navigation links flattened with sections
+  const allMobileLinks = [
+    { name: 'Home', href: '/' },
+    { name: 'Surgeons & Staff', href: '/surgeons-staff' },
+    { name: 'Procedures', href: '/procedure-surgery' },
+    { section: 'Resources' },
+    ...resourcesLinks,
+    { section: 'Media' },
+    ...mediaLinks,
+  ];
+
   const handleDropdownToggle = (dropdown: string) => {
     if (activeDropdown === dropdown) {
       setActiveDropdown(null);
@@ -137,11 +157,16 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
 
   // Helper function to get text and icon colors based on scroll position
   const getTextColor = (baseScrolled = scrolled) => {
+    // For mobile with transparent theme, quickly switch to brand color on scroll
+    if (isMobile.current && isTransparent) {
+      return scrolled ? 'text-[#8B5C9E]' : 'text-white';
+    }
+    
+    // Desktop can keep more nuanced transitions
     if (isTransparent && !baseScrolled) {
       return 'text-white';
     }
     if (isTransparent && scrollY < 150) {
-      // Gradual text color transition between white and purple
       return scrollY > 100 ? 'text-[#8B5C9E]' : 'text-white';
     }
     return 'text-[#8B5C9E]';
@@ -154,7 +179,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
         className={`w-full z-50 transition-all duration-300 flex items-center ${
           isFixed ? 'fixed top-0 left-0 right-0' : 'absolute top-0 left-0 right-0'
         } ${
-          mobileMenuOpen ? 'bg-white' : isTransparent ? 'bg-opacity-var backdrop-blur-var' : 'bg-white'
+          isTransparent ? 'bg-opacity-var backdrop-blur-var' : 'bg-white'
         } ${className}`}
         style={{
           // CSS variables will be set via JS for dynamic opacity and blur
@@ -320,115 +345,129 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
               />
             </div>
             
-            {/* Mobile Menu Button - larger target area */}
-            <button 
-              className="lg:hidden p-3 rounded-md transition-colors duration-300"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-            >
-              {mobileMenuOpen ? (
-                <X className={`transition-colors duration-300 ${
-                  mobileMenuOpen ? 'text-[#8B5C9E]' : getTextColor()
-                }`} size={24} />
-              ) : (
-                <Menu className={`transition-colors duration-300 ${getTextColor()}`} size={24} />
-              )}
-            </button>
-          </div>
-        </div>
-        
-        {/* Mobile Navigation - sliding drawer style for better UX */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-gray-100 shadow-lg overflow-hidden transition-all duration-300">
-            <div className="container mx-auto px-4 py-4">
-              <nav className="flex flex-col space-y-2">
-                {/* Main Links */}
-                {mainNavLinks.map((item) => (
-                  <button
-                    key={item.name}
-                    onClick={() => {
-                      handleNavigation(item.href);
-                      setMobileMenuOpen(false);
-                    }}
-                    className="px-4 py-3 rounded-md font-medium text-gray-800 hover:bg-gray-100 hover:text-[#8B5C9E] transition-colors duration-200 text-left"
-                  >
-                    {item.name}
-                  </button>
-                ))}
-                
-                {/* Resources Section */}
-                <div className="border-t border-gray-200 pt-2 mt-2">
-                  <button
-                    onClick={() => handleDropdownToggle('mobile-resources')}
-                    className="w-full flex justify-between items-center px-4 py-3 rounded-md font-medium text-gray-800 hover:bg-gray-100 transition-colors duration-200 text-left"
-                  >
-                    <span>Resources</span>
-                    <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${
-                      activeDropdown === 'mobile-resources' ? 'transform rotate-180' : ''
-                    }`} />
-                  </button>
-                  
-                  {activeDropdown === 'mobile-resources' && (
-                    <div className="pl-4 animate-fadeIn">
-                      {resourcesLinks.map((item) => (
-                        <button
-                          key={item.name}
-                          onClick={() => {
-                            handleNavigation(item.href);
-                            setMobileMenuOpen(false);
-                          }}
-                          className="block w-full px-4 py-3 rounded-md text-gray-600 hover:bg-gray-100 hover:text-[#8B5C9E] transition-colors duration-200 text-left"
-                        >
-                          {item.name}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                
-                {/* Media Section */}
-                <div className="border-t border-gray-200 pt-2">
-                  <button
-                    onClick={() => handleDropdownToggle('mobile-media')}
-                    className="w-full flex justify-between items-center px-4 py-3 rounded-md font-medium text-gray-800 hover:bg-gray-100 transition-colors duration-200 text-left"
-                  >
-                    <span>Media</span>
-                    <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${
-                      activeDropdown === 'mobile-media' ? 'transform rotate-180' : ''
-                    }`} />
-                  </button>
-                  
-                  {activeDropdown === 'mobile-media' && (
-                    <div className="pl-4 animate-fadeIn">
-                      {mediaLinks.map((item) => (
-                        <button
-                          key={item.name}
-                          onClick={() => {
-                            handleNavigation(item.href);
-                            setMobileMenuOpen(false);
-                          }}
-                          className="block w-full px-4 py-3 rounded-md text-gray-600 hover:bg-gray-100 hover:text-[#8B5C9E] transition-colors duration-200 text-left"
-                        >
-                          {item.name}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                
-                {/* Book Appointment Button */}
-                <div className="pt-4 border-t border-gray-200">
-                  <BookingButton 
-                    className="w-full py-4 px-6 rounded-md font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center justify-center bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]"
-                    icon={<Calendar className="w-5 h-5 mr-2" />}
-                    text="Request Consultation"
-                  />
-                </div>
-              </nav>
+            {/* Mobile: Booking & Menu Buttons */}
+            <div className="flex items-center space-x-2 lg:hidden">
+              {/* Mobile Booking Button (compact) */}
+              <BookingButton 
+                className={`px-3 py-2 rounded-full font-medium transition-colors duration-300 shadow-sm hover:shadow-md flex items-center ${
+                  isTransparent && !scrolled
+                    ? 'bg-white text-[#8B5C9E] hover:bg-white/90'
+                    : 'bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]'
+                }`}
+                icon={<Calendar className="w-4 h-4" />}
+                text=""
+                ariaLabel="Request consultation"
+              />
+              
+              {/* Mobile Menu Button - with consistent styling */}
+              <button 
+                className={`p-2 rounded-full transition-colors duration-300 ${
+                  isTransparent && !scrolled
+                    ? 'bg-white/20 hover:bg-white/30'
+                    : 'bg-gray-100 hover:bg-gray-200'
+                }`}
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              >
+                <Menu className={`transition-colors duration-300 ${
+                  isTransparent && !scrolled ? 'text-white' : 'text-[#8B5C9E]'
+                }`} size={20} />
+              </button>
             </div>
           </div>
-        )}
+        </div>
       </header>
+      
+      {/* Mobile Navigation Drawer */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black z-40"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            
+            {/* Drawer */}
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'tween', duration: 0.3 }}
+              className="fixed inset-y-0 left-0 w-[280px] max-w-[80vw] bg-white shadow-xl z-50 flex flex-col"
+            >
+              {/* Drawer Header */}
+              <div className="border-b border-gray-100 p-4 flex justify-between items-center">
+                <div className="flex items-start space-x-3">
+                  <div className="relative h-[44px] w-[44px] overflow-hidden shadow-sm">
+                    <Image
+                      src="/logo.jpg"
+                      alt=""
+                      width={78}
+                      height={78}
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-col justify-start text-left">
+                    <span className="font-bold text-sm leading-tight tracking-tight text-[#8B5C9E]">
+                      Sports Orthopedics
+                    </span>
+                    <span className="font-medium text-xs leading-tight text-[#8B5C9E]">
+                      Institute
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 rounded-full hover:bg-gray-100"
+                  aria-label="Close menu"
+                >
+                  <X className="w-5 h-5 text-[#8B5C9E]" />
+                </button>
+              </div>
+              
+              {/* Drawer Content - Navigation */}
+              <div className="flex-1 overflow-y-auto">
+                <nav className="py-4">
+                  {allMobileLinks.map((item, index) => {
+                    if ('section' in item) {
+                      return (
+                        <div key={`section-${index}`} className="px-4 pt-4 pb-2 text-sm font-medium text-gray-500 uppercase tracking-wider">
+                          {item.section}
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <button
+                        key={item.href}
+                        onClick={() => handleNavigation(item.href)}
+                        className={`flex w-full text-left px-4 py-3 text-gray-800 hover:bg-gray-50 transition-colors ${
+                          pathname === item.href ? 'bg-gray-50 text-[#8B5C9E] font-medium' : ''
+                        }`}
+                      >
+                        {item.name}
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+              
+              {/* Drawer Footer - Booking Button */}
+              <div className="border-t border-gray-100 p-4">
+                <BookingButton 
+                  className="w-full py-3 px-4 rounded-md font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center justify-center bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]"
+                  icon={<Calendar className="w-5 h-5 mr-2" />}
+                  text="Request Consultation"
+                />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
       
       {/* Header spacing element - only needed for pages without hero sections that overlay the header */}
       {!isTransparent && (
