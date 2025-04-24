@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       console.log(`Reading CSV file from: ${filePath}`);
       const fileContent = fs.readFileSync(filePath, 'utf8');
       
-      // Parse the CSV data safely with handling for escaped commas
+      // Parse the CSV data safely with handling for escaped commas and quoted values
       const lines = fileContent.split('\n');
       console.log(`CSV file contains ${lines.length} lines`);
       
@@ -62,15 +62,53 @@ export async function POST(request: NextRequest) {
         const line = lines[i].trim();
         if (!line) continue;
         
-        // Find the first two commas to separate the three columns
-        let firstCommaIndex = line.indexOf(',');
-        let secondCommaIndex = line.indexOf(',', firstCommaIndex + 1);
+        // Properly parse CSV with quoted values
+        // This regex will match: value,value,"quoted value with, commas"
+        const parseCSVLine = (line: string): string[] => {
+          const result: string[] = [];
+          let currentValue = '';
+          let insideQuotes = false;
+          
+          for (let j = 0; j < line.length; j++) {
+            const char = line[j];
+            
+            if (char === '"') {
+              insideQuotes = !insideQuotes;
+            } else if (char === ',' && !insideQuotes) {
+              // End of field
+              result.push(currentValue.trim());
+              currentValue = '';
+            } else {
+              currentValue += char;
+            }
+          }
+          
+          // Add the last field
+          if (currentValue) {
+            result.push(currentValue.trim());
+          }
+          
+          // Remove quotes from values
+          return result.map(val => {
+            if (val.startsWith('"') && val.endsWith('"')) {
+              return val.substring(1, val.length - 1);
+            }
+            return val;
+          });
+        };
         
-        if (firstCommaIndex === -1 || secondCommaIndex === -1) continue;
+        const fields = parseCSVLine(line);
         
-        const slug = line.substring(0, firstCommaIndex).trim().toLowerCase();
-        const section = line.substring(firstCommaIndex + 1, secondCommaIndex).trim().toLowerCase();
-        const content = line.substring(secondCommaIndex + 1).trim();
+        if (fields.length < 3) {
+          console.log(`Line ${i} has fewer than 3 fields: ${line}`);
+          continue;
+        }
+        
+        const slug = fields[0].toLowerCase();
+        const section = fields[1].toLowerCase();
+        const content = fields[2];
+        
+        console.log(`Parsed line ${i} - slug: "${slug}", section: "${section}"`);
         
         if (slug === doctorSlug.toLowerCase() && 
             section === csvSectionTitle.toLowerCase()) {
