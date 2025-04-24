@@ -5,6 +5,8 @@ import fs from 'fs';
 export async function POST(request: NextRequest) {
   try {
     const { doctorSlug, sectionKey } = await request.json();
+    
+    console.log(`Processing request for doctorSlug: ${doctorSlug}, sectionKey: ${sectionKey}`);
 
     if (!doctorSlug || !sectionKey) {
       return NextResponse.json(
@@ -41,16 +43,19 @@ export async function POST(request: NextRequest) {
     };
 
     const csvSectionTitle = sectionKeyMapping[sectionKey] || sectionKey;
+    console.log(`Mapped section key "${sectionKey}" to CSV section title: "${csvSectionTitle}"`);
     
     // Read the CSV file
     const filePath = path.join(process.cwd(), 'surgeons_data.csv');
     let results: any[] = [];  // Create a variable to store results
 
     try {
+      console.log(`Reading CSV file from: ${filePath}`);
       const fileContent = fs.readFileSync(filePath, 'utf8');
       
       // Parse the CSV data safely with handling for escaped commas
       const lines = fileContent.split('\n');
+      console.log(`CSV file contains ${lines.length} lines`);
       
       // Skip the header line
       for (let i = 1; i < lines.length; i++) {
@@ -68,12 +73,15 @@ export async function POST(request: NextRequest) {
         const content = line.substring(secondCommaIndex + 1).trim();
         
         if (slug === doctorSlug.toLowerCase() && 
-            section === csvSectionTitle.toLowerCase() && 
-            content) {
-          results.push(content);
+            section === csvSectionTitle.toLowerCase()) {
+          console.log(`Found match in CSV - Line ${i}: slug="${slug}", section="${section}"`);
+          if (content) {
+            results.push(content);
+          }
         }
       }
       
+      console.log(`CSV search completed. Found ${results.length} results.`);
       // Do NOT return here - we'll check JSON if results are empty
     } catch (error) {
       console.error('Error reading or parsing CSV file:', error);
@@ -94,24 +102,35 @@ export async function POST(request: NextRequest) {
         }
         
         const jsonPath = path.join(process.cwd(), 'surgeon_details', `${simpleSlug}.json`);
+        console.log(`Looking for JSON file at: ${jsonPath}`);
         
         if (fs.existsSync(jsonPath)) {
+          console.log(`JSON file found for ${simpleSlug}`);
           const jsonContent = fs.readFileSync(jsonPath, 'utf8');
           const doctorData = JSON.parse(jsonContent);
           
           // Look for the appropriate section in the JSON data
           const jsonSectionTitle = sectionKeyMapping[sectionKey] || sectionKey;
+          console.log(`Looking for section "${jsonSectionTitle}" in JSON data`);
           
           if (doctorData[jsonSectionTitle] && Array.isArray(doctorData[jsonSectionTitle])) {
+            console.log(`Found ${doctorData[jsonSectionTitle].length} items in JSON for section "${jsonSectionTitle}"`);
             results = doctorData[jsonSectionTitle];
+          } else {
+            console.log(`Section "${jsonSectionTitle}" not found in JSON data or is not an array`);
           }
+        } else {
+          console.log(`JSON file not found at: ${jsonPath}`);
         }
       } catch (error) {
         console.error('Error reading or parsing JSON file:', error);
         // Continue with empty results rather than failing
       }
+    } else {
+      console.log('Results found in CSV, skipping JSON lookup');
     }
 
+    console.log(`Returning ${results.length} total results`);
     // Return results from either CSV or JSON
     return NextResponse.json({ items: results });
   } catch (error) {
