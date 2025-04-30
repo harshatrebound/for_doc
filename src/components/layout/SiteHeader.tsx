@@ -1,16 +1,31 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, CSSProperties } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
-import { Calendar, Menu, X, ChevronDown } from 'lucide-react';
+import { Calendar, Menu, X, ChevronDown, ChevronRight, Activity, Users, Bookmark } from 'lucide-react';
 import BookingButton from '@/components/BookingButton';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getBoneJointTopics } from '@/app/bone-joint-school/actions';
 
 interface SiteHeaderProps {
   theme?: 'light' | 'transparent' | 'fixed' | 'default';
   className?: string;
+}
+
+interface BoneJointTopicCategory {
+  slug: string;
+  title: string;
+}
+
+// Add a new BoneJointTopic interface to match what's returned from getBoneJointTopics
+interface BoneJointTopic {
+  slug: string;
+  title: string;
+  imageUrl: string;
+  summary: string;
+  category?: string;
 }
 
 export default function SiteHeader({ theme = 'default', className = '' }: SiteHeaderProps) {
@@ -22,6 +37,11 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
   const pathname = usePathname();
   const headerRef = useRef<HTMLElement>(null);
   const isMobile = useRef(false);
+  const [boneJointCategories, setBoneJointCategories] = useState<string[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [boneJointTopics, setBoneJointTopics] = useState<BoneJointTopic[]>([]);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [leaveTimeout, setLeaveTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Lock scroll when mobile menu is open
   useEffect(() => {
@@ -104,20 +124,41 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
     setActiveDropdown(null);
   }, [pathname]);
 
+  // Fetch categories and topics on mount
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        setCategoriesLoading(true);
+        // Fetch topics and categories
+        const { categories, topics } = await getBoneJointTopics();
+        // Add 'All' category for convenience
+        setBoneJointCategories(['All', ...categories.filter((cat: string | null) => cat)]); // Ensure no null/empty categories
+        setBoneJointTopics(topics);
+      } catch (error) {
+        console.error("Failed to fetch Bone & Joint School categories:", error);
+        setBoneJointCategories(['All']); // Fallback
+        setBoneJointTopics([]);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    }
+    loadCategories();
+  }, []);
+
   const isTransparent = theme === 'transparent';
   const isLight = theme === 'light' || (theme === 'transparent' && scrolled);
   const isFixed = theme === 'fixed';
 
-  // Main navigation links - reduced to essential items
+  // Main navigation links
   const mainNavLinks = [
     { name: 'Home', href: '/' },
     { name: 'Surgeons & Staff', href: '/surgeons-staff' },
     { name: 'Procedures', href: '/procedure-surgery' },
+    // Bone & Joint School is now handled separately as a dropdown
   ];
 
   // Resources dropdown items
   const resourcesLinks = [
-    { name: 'Bone & Joint School', href: '/bone-joint-school' },
     { name: 'Clinical Videos', href: '/clinical-videos' },
     { name: 'Publications', href: '/publications' },
   ];
@@ -134,18 +175,93 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
     { name: 'Home', href: '/' },
     { name: 'Surgeons & Staff', href: '/surgeons-staff' },
     { name: 'Procedures', href: '/procedure-surgery' },
+    // Add Bone & Joint School section for mobile
+    { section: 'Bone & Joint School' },
+    ...(boneJointCategories.map((category: string) => ({
+      name: category,
+      href: `/bone-joint-school${category === 'All' ? '' : `?category=${encodeURIComponent(category)}`}`
+    }))),
     { section: 'Resources' },
     ...resourcesLinks,
     { section: 'Media' },
     ...mediaLinks,
   ];
 
-  const handleDropdownToggle = (dropdown: string) => {
-    if (activeDropdown === dropdown) {
-      setActiveDropdown(null);
-    } else {
+  // Enhanced mouse over handlers with delay
+  const handleMouseEnter = (dropdown: string) => {
+    // Only activate hover behavior on desktop
+    if (!isMobile.current) {
+      // Clear any existing timeout
+      if (leaveTimeout) {
+        clearTimeout(leaveTimeout);
+        setLeaveTimeout(null);
+      }
       setActiveDropdown(dropdown);
+      // Don't reset category on mouse enter to allow direct movement to submenu
     }
+  };
+
+  const handleMouseLeave = () => {
+    // Only deactivate hover behavior on desktop
+    if (!isMobile.current) {
+      // Set a timeout to delay menu closing
+      const timeout = setTimeout(() => {
+        setActiveDropdown(null);
+        setActiveCategory(null);
+      }, 300); // 300ms delay gives enough time to move to submenu
+      
+      setLeaveTimeout(timeout);
+    }
+  };
+
+  // Handle category hover with delay
+  const handleCategoryMouseEnter = (category: string) => {
+    if (!isMobile.current) {
+      // Clear any existing timeout
+      if (leaveTimeout) {
+        clearTimeout(leaveTimeout);
+        setLeaveTimeout(null);
+      }
+      setActiveCategory(category);
+    }
+  };
+
+  // Handle menu container mouse enter - clear any closing timeout
+  const handleMenuContainerMouseEnter = () => {
+    if (leaveTimeout) {
+      clearTimeout(leaveTimeout);
+      setLeaveTimeout(null);
+    }
+  };
+
+  // Get category icon based on name
+  const getCategoryIcon = (category: string) => {
+    switch(category.toLowerCase()) {
+      case 'knee':
+        return <Activity className="h-4 w-4 mr-2 text-[#8B5C9E] opacity-70" />;
+      case 'shoulder':
+        return <Activity className="h-4 w-4 mr-2 text-[#8B5C9E] opacity-70" />;
+      case 'hip':
+        return <Activity className="h-4 w-4 mr-2 text-[#8B5C9E] opacity-70" />;
+      case 'elbow':
+        return <Activity className="h-4 w-4 mr-2 text-[#8B5C9E] opacity-70" />;
+      case 'foot & ankle':
+        return <Activity className="h-4 w-4 mr-2 text-[#8B5C9E] opacity-70" />;
+      case 'hand & wrist':
+        return <Activity className="h-4 w-4 mr-2 text-[#8B5C9E] opacity-70" />;
+      case 'all':
+        return <Bookmark className="h-4 w-4 mr-2 text-[#8B5C9E] opacity-70" />;
+      default:
+        return <Bookmark className="h-4 w-4 mr-2 text-[#8B5C9E] opacity-70" />;
+    }
+  };
+
+  // Get topics for a specific category
+  const getTopicsForCategory = (category: string) => {
+    if (category === 'All') {
+      return boneJointTopics;
+    }
+    return boneJointTopics.filter(topic => topic.category === category);
   };
 
   // Update your Link components to use the router for smoother transitions
@@ -186,10 +302,10 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
           '--header-bg-opacity': '0',
           '--header-blur': '0px',
           height: scrolled ? 'var(--header-height-scrolled, 72px)' : 'var(--header-height, 88px)',
-          backgroundColor: isTransparent ? 'rgba(46, 58, 89, var(--header-bg-opacity))' : '',
-          backdropFilter: isTransparent ? 'blur(var(--header-blur))' : '',
+          backgroundColor: isTransparent ? `rgba(46, 58, 89, var(--header-bg-opacity))` : '',
+          backdropFilter: isTransparent ? `blur(var(--header-blur))` : '',
           boxShadow: scrolled ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
-        } as React.CSSProperties}
+        } as CSSProperties}
       >
         <div className="container mx-auto px-4 flex items-center h-full">
           <div className="flex items-center justify-between w-full">
@@ -247,10 +363,126 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                     </li>
                   ))}
                   
-                  {/* Resources Dropdown */}
-                  <li className="relative mr-8">
+                  {/* Bone & Joint School Dropdown with improved hover handling */}
+                  <li 
+                    className="relative mr-8"
+                    onMouseEnter={() => handleMouseEnter('boneJoint')}
+                    onMouseLeave={handleMouseLeave}
+                  >
                     <button
-                      onClick={() => handleDropdownToggle('resources')}
+                      className={`font-medium transition-colors duration-300 flex items-center group ${
+                        isTransparent && !scrolled 
+                          ? 'text-white hover:text-white/80' 
+                          : 'text-gray-800 hover:text-[#8B5C9E]'
+                      } py-2`}
+                      aria-expanded={activeDropdown === 'boneJoint'}
+                      aria-haspopup="true"
+                      disabled={categoriesLoading}
+                    >
+                      Bone & Joint School
+                      <span className={`flex items-center justify-center ml-2 w-5 h-5 ${
+                        isTransparent && !scrolled 
+                          ? 'bg-white/20 group-hover:bg-white/30' 
+                          : 'bg-gray-100 group-hover:bg-[#8B5C9E]/10'
+                      } rounded-full transition-all duration-150 ${activeDropdown === 'boneJoint' ? 'rotate-180' : ''}`}>
+                        <ChevronDown className={`w-3.5 h-3.5 ${
+                          isTransparent && !scrolled ? 'text-white' : 'text-[#8B5C9E]'
+                        }`} />
+                      </span>
+                      <span className={`absolute bottom-0 left-0 w-0 h-0.5 ${
+                        isTransparent && !scrolled ? 'bg-white' : 'bg-[#8B5C9E]'
+                      } group-hover:w-full transition-all duration-300`}></span>
+                    </button>
+                    
+                    {activeDropdown === 'boneJoint' && !categoriesLoading && (
+                      <div 
+                        className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg py-2 z-40 border border-gray-100 max-h-[calc(100vh-200px)] overflow-visible"
+                        onMouseEnter={handleMenuContainerMouseEnter}
+                        role="menu"
+                        aria-label="Bone & Joint School Categories"
+                      >
+                        {/* Only show first "All" entry */}
+                        {boneJointCategories.filter((category: string) => category !== 'All' || boneJointCategories.indexOf(category) === 0).map((category: string) => (
+                          <div 
+                            key={category}
+                            className="relative group"
+                            onMouseEnter={() => handleCategoryMouseEnter(category)}
+                            role="none"
+                          >
+                            <button
+                              className={`block w-full text-left px-4 py-2 ${
+                                activeCategory === category 
+                                  ? 'bg-gray-100 text-[#8B5C9E]' 
+                                  : 'text-gray-800 hover:bg-gray-50 hover:text-[#8B5C9E]'
+                              } flex justify-between items-center transition-all duration-150`}
+                              onClick={() => handleNavigation(`/bone-joint-school${category === 'All' ? '' : `?category=${encodeURIComponent(category)}`}`)}
+                              role="menuitem"
+                              aria-haspopup={category !== 'All'}
+                              aria-expanded={category !== 'All' && activeCategory === category}
+                            >
+                              <span className="flex items-center">
+                                {getCategoryIcon(category)}
+                                {category}
+                              </span>
+                              {category !== 'All' && (
+                                <ChevronRight className={`h-4 w-4 transform transition-transform duration-150 ${activeCategory === category ? 'translate-x-1 text-[#8B5C9E]' : 'text-gray-400'}`} />
+                              )}
+                            </button>
+
+                            {/* Second level dropdown with improved positioning and visual connection */}
+                            {activeCategory === category && category !== 'All' && (
+                              <div 
+                                className="absolute left-full top-0 w-64 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100 overflow-y-auto"
+                                style={{ 
+                                  maxHeight: '60vh'
+                                }}
+                                role="menu"
+                                aria-label={`${category} Topics`}
+                                onMouseEnter={handleMenuContainerMouseEnter}
+                              >
+                                {/* Visual connecting element */}
+                                <div 
+                                  className="absolute left-0 top-0 w-1 bg-[#8B5C9E] rounded-l"
+                                  style={{ 
+                                    height: '2.5rem', // Match the height of parent button
+                                    transform: 'translateX(-1px)'
+                                  }}
+                                ></div>
+                                
+                                {/* Category heading for the submenu */}
+                                <div className="px-4 py-2 font-medium text-sm text-[#8B5C9E] border-b border-gray-100 mb-1">
+                                  {category} Topics
+                                </div>
+                                
+                                {getTopicsForCategory(category).length > 0 ? (
+                                  getTopicsForCategory(category).map((topic: BoneJointTopic) => (
+                                    <button
+                                      key={topic.slug}
+                                      onClick={() => handleNavigation(`/bone-joint-school/${topic.slug}`)}
+                                      className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-50 hover:text-[#8B5C9E] transition-colors duration-150"
+                                      role="menuitem"
+                                    >
+                                      {topic.title}
+                                    </button>
+                                  ))
+                                ) : (
+                                  <div className="px-4 py-2 text-gray-500 italic">No topics available</div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </li>
+                  
+                  {/* Resources Dropdown - Using hover with delay */}
+                  <li 
+                    className="relative mr-8"
+                    onMouseEnter={() => handleMouseEnter('resources')}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    <button
                       className={`font-medium transition-colors duration-300 flex items-center group ${
                         isTransparent && !scrolled 
                           ? 'text-white hover:text-white/80' 
@@ -264,7 +496,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                         isTransparent && !scrolled 
                           ? 'bg-white/20 group-hover:bg-white/30' 
                           : 'bg-gray-100 group-hover:bg-[#8B5C9E]/10'
-                      } rounded-full`}>
+                      } rounded-full transition-all duration-150 ${activeDropdown === 'resources' ? 'rotate-180' : ''}`}>
                         <ChevronDown className={`w-3.5 h-3.5 ${
                           isTransparent && !scrolled ? 'text-white' : 'text-[#8B5C9E]'
                         }`} />
@@ -275,12 +507,18 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                     </button>
                     
                     {activeDropdown === 'resources' && (
-                      <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100">
+                      <div 
+                        className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100"
+                        onMouseEnter={handleMenuContainerMouseEnter}
+                        role="menu"
+                        aria-label="Resources"
+                      >
                         {resourcesLinks.map((item) => (
                           <button
                             key={item.name}
                             onClick={() => handleNavigation(item.href)}
-                            className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 hover:text-[#8B5C9E]"
+                            className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-50 hover:text-[#8B5C9E] transition-colors duration-150"
+                            role="menuitem"
                           >
                             {item.name}
                           </button>
@@ -289,10 +527,13 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                     )}
                   </li>
                   
-                  {/* Media Dropdown */}
-                  <li className="relative">
+                  {/* Media Dropdown - Using hover with delay */}
+                  <li 
+                    className="relative"
+                    onMouseEnter={() => handleMouseEnter('media')}
+                    onMouseLeave={handleMouseLeave}
+                  >
                     <button
-                      onClick={() => handleDropdownToggle('media')}
                       className={`font-medium transition-colors duration-300 flex items-center group ${
                         isTransparent && !scrolled 
                           ? 'text-white hover:text-white/80' 
@@ -306,7 +547,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                         isTransparent && !scrolled 
                           ? 'bg-white/20 group-hover:bg-white/30' 
                           : 'bg-gray-100 group-hover:bg-[#8B5C9E]/10'
-                      } rounded-full`}>
+                      } rounded-full transition-all duration-150 ${activeDropdown === 'media' ? 'rotate-180' : ''}`}>
                         <ChevronDown className={`w-3.5 h-3.5 ${
                           isTransparent && !scrolled ? 'text-white' : 'text-[#8B5C9E]'
                         }`} />
@@ -317,12 +558,18 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                     </button>
                     
                     {activeDropdown === 'media' && (
-                      <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100">
+                      <div 
+                        className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100"
+                        onMouseEnter={handleMenuContainerMouseEnter}
+                        role="menu"
+                        aria-label="Media"
+                      >
                         {mediaLinks.map((item) => (
                           <button
                             key={item.name}
                             onClick={() => handleNavigation(item.href)}
-                            className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 hover:text-[#8B5C9E]"
+                            className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-50 hover:text-[#8B5C9E] transition-colors duration-150"
+                            role="menuitem"
                           >
                             {item.name}
                           </button>
@@ -432,27 +679,124 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
               {/* Drawer Content - Navigation */}
               <div className="flex-1 overflow-y-auto">
                 <nav className="py-4">
-                  {allMobileLinks.map((item, index) => {
-                    if ('section' in item) {
-                      return (
-                        <div key={`section-${index}`} className="px-4 pt-4 pb-2 text-sm font-medium text-gray-500 uppercase tracking-wider">
-                          {item.section}
-                        </div>
-                      );
-                    }
-                    
-                    return (
+                  {/* Display main navigation links first */}
+                  {mainNavLinks.map((item) => (
+                    <button
+                      key={item.href}
+                      onClick={() => handleNavigation(item.href)}
+                      className={`flex w-full text-left px-4 py-3 text-gray-800 hover:bg-gray-50 transition-colors ${
+                        pathname === item.href ? 'bg-gray-50 text-[#8B5C9E] font-medium' : ''
+                      }`}
+                    >
+                      {item.name}
+                    </button>
+                  ))}
+
+                  {/* Bone & Joint School Section */}
+                  {!categoriesLoading && boneJointCategories.length > 0 && (
+                    <div className="mt-4">
+                      <div className="px-4 pt-2 pb-2 text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Bone & Joint School
+                      </div>
+
+                      {/* "All" category */}
                       <button
-                        key={item.href}
-                        onClick={() => handleNavigation(item.href)}
+                        key="bone-joint-all"
+                        onClick={() => handleNavigation('/bone-joint-school')}
                         className={`flex w-full text-left px-4 py-3 text-gray-800 hover:bg-gray-50 transition-colors ${
-                          pathname === item.href ? 'bg-gray-50 text-[#8B5C9E] font-medium' : ''
+                          pathname === '/bone-joint-school' && !pathname.includes('?category=') 
+                            ? 'bg-gray-50 text-[#8B5C9E] font-medium' 
+                            : ''
                         }`}
                       >
-                        {item.name}
+                        All Topics
                       </button>
-                    );
-                  })}
+
+                      {/* Categories as expandable sections */}
+                      {boneJointCategories.filter(cat => cat !== 'All').map((category) => (
+                        <div key={`mobile-category-${category}`} className="relative">
+                          <button
+                            onClick={() => {
+                              if (activeCategory === category) {
+                                setActiveCategory(null);
+                              } else {
+                                setActiveCategory(category);
+                              }
+                            }}
+                            className={`flex w-full text-left px-4 py-3 text-gray-800 hover:bg-gray-50 transition-colors justify-between items-center ${
+                              pathname.includes(`?category=${encodeURIComponent(category)}`) 
+                                ? 'bg-gray-50 text-[#8B5C9E] font-medium' 
+                                : ''
+                            }`}
+                          >
+                            <span>{category}</span>
+                            <ChevronDown 
+                              className={`h-4 w-4 transition-transform ${activeCategory === category ? 'rotate-180' : ''}`} 
+                            />
+                          </button>
+
+                          {/* Expanded topics for this category */}
+                          {activeCategory === category && (
+                            <div className="bg-gray-50">
+                              {getTopicsForCategory(category).map(topic => (
+                                <button
+                                  key={`mobile-topic-${topic.slug}`}
+                                  onClick={() => handleNavigation(`/bone-joint-school/${topic.slug}`)}
+                                  className={`flex w-full text-left pl-8 pr-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors ${
+                                    pathname.includes(topic.slug) 
+                                      ? 'bg-gray-100 text-[#8B5C9E] font-medium' 
+                                      : ''
+                                  }`}
+                                >
+                                  {topic.title}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Resources Section */}
+                  {resourcesLinks.length > 0 && (
+                    <div className="mt-4">
+                      <div className="px-4 pt-2 pb-2 text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Resources
+                      </div>
+                      {resourcesLinks.map((item) => (
+                        <button
+                          key={item.href}
+                          onClick={() => handleNavigation(item.href)}
+                          className={`flex w-full text-left px-4 py-3 text-gray-800 hover:bg-gray-50 transition-colors ${
+                            pathname === item.href ? 'bg-gray-50 text-[#8B5C9E] font-medium' : ''
+                          }`}
+                        >
+                          {item.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Media Section */}
+                  {mediaLinks.length > 0 && (
+                    <div className="mt-4">
+                      <div className="px-4 pt-2 pb-2 text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Media
+                      </div>
+                      {mediaLinks.map((item) => (
+                        <button
+                          key={item.href}
+                          onClick={() => handleNavigation(item.href)}
+                          className={`flex w-full text-left px-4 py-3 text-gray-800 hover:bg-gray-50 transition-colors ${
+                            pathname === item.href ? 'bg-gray-50 text-[#8B5C9E] font-medium' : ''
+                          }`}
+                        >
+                          {item.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </nav>
               </div>
               

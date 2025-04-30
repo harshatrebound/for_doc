@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
-// Use node runtime instead of edge
-export const runtime = 'nodejs';
+// Use edge runtime for OG images
+export const runtime = 'edge';
 
 // Use default export instead of named export
 export default async function OpengraphImage() {
