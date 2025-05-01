@@ -1,11 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DataTable } from '@/components/admin/DataTable';
+import FullCalendarView from '@/components/FullCalendarView';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { format } from 'date-fns';
-import { fetchAppointments, updateAppointmentStatus } from '@/app/actions/admin';
+import { 
+  fetchAppointments, 
+  updateAppointmentStatus, 
+  createAppointment,
+  updateAppointment,
+  fetchDoctors
+} from '@/app/actions/admin';
 import { toast } from 'react-hot-toast';
 import {
   DropdownMenu,
@@ -13,7 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, CalendarIcon, ListIcon } from 'lucide-react';
 
 interface Doctor {
   name: string;
@@ -36,12 +43,41 @@ interface Appointment {
 
 export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   useEffect(() => {
-    loadAppointments();
+    loadInitialData();
   }, []);
+
+  const loadInitialData = async () => {
+    setIsLoading(true);
+    try {
+      const [appointmentResult, doctorResult] = await Promise.all([
+        fetchAppointments(),
+        fetchDoctors()
+      ]);
+
+      if (appointmentResult.success && appointmentResult.data) {
+        setAppointments(appointmentResult.data);
+      } else {
+        toast.error(appointmentResult.error || 'Failed to load appointments');
+      }
+
+      if (doctorResult.success && doctorResult.data) {
+        setDoctors(doctorResult.data);
+      } else {
+        toast.error(doctorResult.error || 'Failed to load doctors');
+      }
+    } catch (error) {
+      console.error('Error loading initial data:', error);
+      toast.error('Failed to load page data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const loadAppointments = async () => {
     try {
@@ -54,8 +90,6 @@ export default function AppointmentsPage() {
     } catch (error) {
       console.error('Error loading appointments:', error);
       toast.error('Failed to load appointments');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -65,7 +99,7 @@ export default function AppointmentsPage() {
       const result = await updateAppointmentStatus(appointmentId, newStatus);
       if (result.success) {
         toast.success('Appointment status updated successfully');
-        loadAppointments(); // Refresh the appointments list
+        loadAppointments();
       } else {
         toast.error(result.error || 'Failed to update status');
       }
@@ -214,6 +248,39 @@ export default function AppointmentsPage() {
     },
   ];
 
+  const handleUpdateAppointment = async (appointment: Appointment) => {
+    try {
+      setUpdatingStatus(appointment.id || null);
+      const result = await updateAppointment(appointment);
+      if (result.success) {
+        toast.success('Appointment updated successfully');
+        loadAppointments();
+      } else {
+        toast.error(result.error || 'Failed to update appointment');
+      }
+    } catch (error) {
+      console.error('Error updating appointment:', error);
+      toast.error('Failed to update appointment');
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
+  
+  const handleCreateAppointment = async (appointment: Appointment) => {
+    try {
+      const result = await createAppointment(appointment);
+      if (result.success) {
+        toast.success('Appointment created successfully');
+        loadAppointments();
+      } else {
+        toast.error(result.error || 'Failed to create appointment');
+      }
+    } catch (error) {
+      console.error('Error creating appointment:', error);
+      toast.error('Failed to create appointment');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -221,6 +288,9 @@ export default function AppointmentsPage() {
       </div>
     );
   }
+  
+  console.log('[AppointmentsPage] Appointments state:', appointments);
+  console.log('[AppointmentsPage] Doctors state:', doctors);
 
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -231,16 +301,49 @@ export default function AppointmentsPage() {
             View and manage all appointments
           </p>
         </div>
+        <div className="flex items-center gap-2">
+           <Button 
+             variant={viewMode === 'list' ? 'default' : 'outline'}
+             size="sm"
+             onClick={() => setViewMode('list')} 
+             className="bg-[#8B5C9E] text-white hover:bg-[#7a4f8a] focus:ring-[#8B5C9E] data-[state=checked]:bg-[#8B5C9E] data-[state=checked]:text-white"
+           >
+              <ListIcon className="h-4 w-4 mr-2" />
+              List View
+           </Button>
+           <Button 
+             variant={viewMode === 'calendar' ? 'default' : 'outline'} 
+             size="sm"
+             onClick={() => setViewMode('calendar')} 
+             className="bg-[#8B5C9E] text-white hover:bg-[#7a4f8a] focus:ring-[#8B5C9E] data-[state=checked]:bg-[#8B5C9E] data-[state=checked]:text-white"
+           >
+              <CalendarIcon className="h-4 w-4 mr-2" />
+              Calendar View
+           </Button>
+        </div>
       </div>
 
-      <Card className="border-0 shadow-md overflow-hidden">
-        <DataTable
-          columns={columns}
-          data={appointments}
-          searchable
-          sortable
-        />
-      </Card>
+      {viewMode === 'list' && (
+        <Card className="border-0 shadow-md overflow-hidden">
+          <DataTable
+            columns={columns}
+            data={appointments}
+            searchable
+            sortable
+          />
+        </Card>
+      )}
+
+      {viewMode === 'calendar' && (
+        <div className="bg-white border-0 shadow-md rounded-lg p-4"> 
+          <FullCalendarView 
+            appointments={appointments}
+            doctors={doctors}
+            onUpdateAppointment={handleUpdateAppointment}
+            onCreateAppointment={handleCreateAppointment} 
+          />
+        </div>
+      )}
     </div>
   );
 } 

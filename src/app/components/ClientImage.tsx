@@ -45,7 +45,7 @@ export default function ClientImage({
       fill={fill}
       className={className}
       priority={priority}
-      unoptimized={unoptimized || imgSrc.startsWith('http')}
+      unoptimized={unoptimized || imgSrc.startsWith('http://') || imgSrc.startsWith('https://')}
       onError={handleError}
     />
   );

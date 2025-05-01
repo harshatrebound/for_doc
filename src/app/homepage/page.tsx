@@ -100,17 +100,18 @@ const testimonials = [
 ];
 
 // Lazy loading components for better performance
-const LazyImage = ({ src, alt, ...props }: any) => {
+const LazyImage = ({ src, alt, fill, ...props }: any) => {
   const [isLoaded, setIsLoaded] = useState(false);
   
   return (
-    <div className="relative overflow-hidden" {...props}>
+    <div className="relative overflow-hidden">
       {!isLoaded && (
         <div className="absolute inset-0 bg-gray-100 animate-pulse" />
       )}
       <Image 
         src={src} 
         alt={alt}
+        fill={fill}
         onLoad={() => setIsLoaded(true)}
         className={cn(
           "transition-opacity duration-500",

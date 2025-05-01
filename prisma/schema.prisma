@@ -14,32 +14,32 @@ datasource db {
 }
 
 model Doctor {
-  id          String   @id @default(uuid())
-  name        String
-  speciality  String
-  fee         Float
-  image       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  schedules   DoctorSchedule[]
+  id           String           @id @default(uuid())
+  name         String
+  speciality   String
+  fee          Float
+  image        String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  schedules    DoctorSchedule[]
   appointments Appointment[]
   specialDates SpecialDate[]
 }
 
 model DoctorSchedule {
-  id            String   @id @default(uuid())
-  doctorId      String
-  dayOfWeek     Int     // 0-6 (Sunday-Saturday)
-  startTime     String  // HH:mm format
-  endTime       String  // HH:mm format
-  isActive      Boolean @default(true)
-  slotDuration  Int     @default(15)  // Duration in minutes
-  bufferTime    Int     @default(5)   // Buffer time in minutes
-  breakStart    String? // HH:mm format
-  breakEnd      String? // HH:mm format
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  doctor        Doctor   @relation(fields: [doctorId], references: [id])
+  id           String   @id @default(uuid())
+  doctorId     String
+  dayOfWeek    Int // 0-6 (Sunday-Saturday)
+  startTime    String // HH:mm format
+  endTime      String // HH:mm format
+  isActive     Boolean  @default(true)
+  slotDuration Int      @default(15) // Duration in minutes
+  bufferTime   Int      @default(5) // Buffer time in minutes
+  breakStart   String? // HH:mm format
+  breakEnd     String? // HH:mm format
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  doctor       Doctor   @relation(fields: [doctorId], references: [id])
 }
 
 model Appointment {
@@ -48,9 +48,9 @@ model Appointment {
   customerId  String?
   patientName String?
   date        DateTime
-  time        String?  // HH:mm format
-  timeSlot    String?  // HH:mm format
-  status      String   // SCHEDULED, CONFIRMED, COMPLETED, CANCELLED, NO_SHOW
+  time        String? // HH:mm format
+  timeSlot    String? // HH:mm format
+  status      String // SCHEDULED, CONFIRMED, COMPLETED, CANCELLED, NO_SHOW
   email       String?
   phone       String?
   notes       String?
@@ -60,16 +60,16 @@ model Appointment {
 }
 
 model SpecialDate {
-  id          String   @id @default(uuid())
-  doctorId    String
-  date        DateTime
-  type        String   // HOLIDAY or BREAK
-  reason      String?
-  breakStart  String?  // HH:mm format
-  breakEnd    String?  // HH:mm format
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  doctor      Doctor   @relation(fields: [doctorId], references: [id])
+  id         String   @id @default(uuid())
+  doctorId   String
+  date       DateTime
+  type       String // HOLIDAY or BREAK
+  reason     String?
+  breakStart String? // HH:mm format
+  breakEnd   String? // HH:mm format
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  doctor     Doctor   @relation(fields: [doctorId], references: [id])
 
   @@index([doctorId, date])
 }
