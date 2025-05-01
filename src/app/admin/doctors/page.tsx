@@ -162,19 +162,21 @@ export default function DoctorsPage() {
                   <Filter className="h-4 w-4" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-white p-6">
                 <SheetHeader>
                   <SheetTitle>Filter Doctors</SheetTitle>
                 </SheetHeader>
-                <div className="py-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-3">Specialty</h3>
+                <div className="py-6">
+                  <h3 className="text-sm font-medium text-gray-900 mb-3 pb-3 border-b">
+                    Specialty
+                  </h3>
                   <div className="space-y-2">
                     <button
                       onClick={() => {
                         setSelectedSpecialty(null);
                         setIsFilterOpen(false);
                       }}
-                      className={`w-full px-3 py-2 text-left rounded-lg text-sm ${
+                      className={`w-full px-3 py-2 text-left rounded-lg text-sm transition-colors duration-150 ${
                         !selectedSpecialty
                           ? 'bg-[#8B5C9E] text-white'
                           : 'text-gray-700 hover:bg-gray-100'
@@ -189,7 +191,7 @@ export default function DoctorsPage() {
                           setSelectedSpecialty(specialty);
                           setIsFilterOpen(false);
                         }}
-                        className={`w-full px-3 py-2 text-left rounded-lg text-sm ${
+                        className={`w-full px-3 py-2 text-left rounded-lg text-sm transition-colors duration-150 ${
                           selectedSpecialty === specialty
                             ? 'bg-[#8B5C9E] text-white'
                             : 'text-gray-700 hover:bg-gray-100'
@@ -235,7 +237,7 @@ export default function DoctorsPage() {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <h3 className="text-lg font-medium text-gray-900 truncate">
-                            Dr. {doctor.name}
+                            {doctor.name}
                           </h3>
                           <div className="mt-1 flex items-center gap-2">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

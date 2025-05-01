@@ -1,4 +1,4 @@
-console.log('--- Loading next.config.cjs ---');
+console.log('--- Loading next.config.js ---');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

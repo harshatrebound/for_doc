@@ -39,6 +39,7 @@ interface AppointmentModalProps {
   doctors?: Doctor[]; // List of doctors to select from
   isNewAppointment?: boolean;
   selectedDate?: Date; // For new appointments
+  prefilledTime?: string; // ADDED: For pre-filling time from drawer
 }
 
 const statuses = ['SCHEDULED', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'];
@@ -50,7 +51,8 @@ export default function AppointmentModal({
   onSave, 
   doctors = [], 
   isNewAppointment = false,
-  selectedDate
+  selectedDate,
+  prefilledTime
 }: AppointmentModalProps) {
   // Form state
   const [formData, setFormData] = useState<Appointment>({
@@ -69,32 +71,35 @@ export default function AppointmentModal({
   // Initialize form with appointment data or default values
   useEffect(() => {
     if (isOpen) {
-      console.log("Modal opened with appointment:", appointment);
-      console.log("isNewAppointment:", isNewAppointment);
-      console.log("selectedDate:", selectedDate);
-      console.log("doctors:", doctors);
-      
-      if (isNewAppointment && selectedDate) {
-        setFormData({
-          patientName: '',
-          date: selectedDate,
-          time: '',
-          status: 'SCHEDULED',
-          doctorId: doctors.length > 0 ? doctors[0].id : '',
-        });
-      } else if (appointment) {
-        console.log("Setting form data from appointment:", appointment);
-        
-        // Log each property to debug
-        console.log("id:", appointment.id);
-        console.log("patientName:", appointment.patientName);
-        console.log("date:", appointment.date);
-        console.log("time:", appointment.time);
-        console.log("status:", appointment.status);
-        console.log("doctorId:", appointment.doctorId);
-        console.log("doctor:", appointment.doctor);
-        
-        // Create a complete appointment object with all properties
+      console.log("Modal Effect Triggered. Props received: isNew=", isNewAppointment, "appointment=", appointment, "selectedDate=", selectedDate, "prefilledTime=", prefilledTime);
+
+      // Explicitly prioritize the isNewAppointment flag
+      if (isNewAppointment) { 
+        if (selectedDate) {
+          console.log(`Modal Effect: Initializing for NEW. Using selectedDate: ${selectedDate} and prefilledTime: ${prefilledTime}`);
+          const initialData = {
+            patientName: '',
+            date: selectedDate, // Use the prop directly here
+            time: prefilledTime || '',
+            status: 'SCHEDULED',
+            doctorId: doctors && doctors.length > 0 ? doctors[0].id : '',
+            id: undefined,
+            customerId: null,
+            doctor: undefined,
+          };
+          console.log("--> Setting NEW formData:", initialData);
+          setFormData(initialData);
+        } else {
+          // This case might indicate an issue, as selectedDate should be set for new appointments from calendar/drawer
+          console.warn("Modal opened for new appointment but selectedDate is missing.");
+          // Fallback to a default empty state
+          setFormData({
+            patientName: '', date: new Date(), time: '', status: 'SCHEDULED', doctorId: '' 
+          }); 
+        }
+      } else if (appointment) { // Only process as edit if NOT new AND appointment exists
+        console.log("Modal Effect: Initializing for EDIT.", appointment);
+        // ... existing logic for formatting and setting appointment data ...
         const formattedAppointment = {
           id: appointment.id,
           patientName: appointment.patientName || '',
@@ -103,17 +108,22 @@ export default function AppointmentModal({
           status: (appointment.status || 'SCHEDULED').toUpperCase(),
           doctorId: appointment.doctorId || '',
           customerId: appointment.customerId || null,
-          doctor: appointment.doctor || null,
+          doctor: appointment.doctor || undefined,
         };
-        
-        console.log("Formatted appointment data for form:", formattedAppointment);
-        console.log("--- DEBUG --- Doctor ID before setting form data:", formattedAppointment.doctorId);
-        console.log("--- DEBUG --- Time before setting form data:", formattedAppointment.time);
+        console.log("--> Setting EDIT formData:", formattedAppointment);
         setFormData(formattedAppointment);
+      } else {
+        // Handle state where modal is opened not as new, but no appointment provided
+        console.warn("Modal opened in non-new state without appointment data.");
+        // Reset to a default empty state
+        setFormData({
+          patientName: '', date: new Date(), time: '', status: 'SCHEDULED', doctorId: '' 
+        });
       }
+      // Reset available slots regardless of new/edit
       setAvailableTimeSlots([]);
     }
-  }, [isOpen, appointment, isNewAppointment, selectedDate, doctors]);
+  }, [isOpen, appointment, isNewAppointment, selectedDate, doctors, prefilledTime]);
 
   // Effect to fetch available time slots when doctor or date changes
   useEffect(() => {
@@ -210,6 +220,8 @@ export default function AppointmentModal({
         </DialogHeader>
         
         <div className="p-6 space-y-4">
+          {/* Log formData right before rendering inputs */}
+          {console.log("Rendering modal form with formData.date:", formData.date)}
           {/* Patient Name */}
           <div className="space-y-2">
             <Label htmlFor="patientName" className="text-sm font-medium">
@@ -240,7 +252,7 @@ export default function AppointmentModal({
               <SelectContent>
                 {doctors.map(doctor => (
                   <SelectItem key={doctor.id} value={doctor.id}>
-                    Dr. {doctor.name} ({doctor.speciality})
+                    {doctor.name} ({doctor.speciality})
                   </SelectItem>
                 ))}
               </SelectContent>

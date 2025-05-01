@@ -13,6 +13,10 @@ import TopicContentRenderer from './components/TopicContentRenderer';
 import BookingButton from './components/BookingButton';
 import ShareButton from './components/ShareButton';
 import Papa from 'papaparse';
+import { getTopicData, getRelatedTopics as getRelatedTopicsFromService } from '@/lib/content-integration';
+import PageContent from '@/components/content/PageContent';
+import HeroSection from '@/components/ui/HeroSection';
+import NotFound from '@/app/not-found';
 
 // --- Constants ---
 const CSV_FILE_PATH = path.join(process.cwd(), 'docs', 'bone_joint_school_cms.csv');
@@ -44,6 +48,16 @@ interface TopicData {
   publishDate?: string;
   readingTime?: string;
   relatedSlugs?: string[];
+  metaTitle?: string;
+  metaDescription?: string;
+  ogImage?: string;
+  canonicalUrl?: string;
+  keywords?: string;
+}
+
+// Define Props type
+type Props = {
+  params: { slug: string }
 }
 
 // --- Data Fetching ---
@@ -119,6 +133,11 @@ async function getTopicDataFromCsv(slug: string): Promise<TopicData | null> {
       publishDate,
       readingTime,
       relatedSlugs,
+      metaTitle: row.MetaTitle,
+      metaDescription: row.MetaDescription,
+      ogImage: row.OGImage,
+      canonicalUrl: row.CanonicalURL,
+      keywords: row.Keywords,
     };
 
   } catch (error) {
@@ -248,24 +267,40 @@ export async function generateStaticParams() {
   }
 }
 
-// --- Metadata Generation (Uses CSV Data) ---
-type Props = {
-  params: { slug: string }
-}
-
+// --- Metadata Generation using integration layer ---
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const data = await getTopicDataFromCsv(params.slug);
+  const data = await getTopicData(params.slug);
 
-  const pageTitle = data?.title || params.slug.replace(/-/g, ' ');
-  // Try to get description from first paragraph
-  const firstParagraph = data?.contentBlocks?.find(b => b.type === 'paragraph');
-  const plainTextDescription = firstParagraph ? stripHtml(firstParagraph.text) : `Learn about ${pageTitle}.`;
-  const description = plainTextDescription.length > 160 ? plainTextDescription.substring(0, 157) + '...' : plainTextDescription;
+  if (!data) {
+    return {
+      title: 'Page Not Found',
+      description: 'The requested topic could not be found.'
+    };
+  }
 
-  const imageUrl = data?.featuredImageUrl;
+  // Use SEO fields if available, otherwise fall back to defaults
+  const pageTitle = data.metaTitle || data.title || params.slug.replace(/-/g, ' ');
+  
+  // Use meta description if available
+  let description = data.metaDescription;
+  
+  // Fall back to first paragraph if no meta description
+  if (!description) {
+    const firstParagraph = data.contentBlocks?.find(b => b.type === 'paragraph');
+    const plainTextDescription = firstParagraph ? stripHtml(firstParagraph.text) : `Learn about ${pageTitle}.`;
+    description = plainTextDescription.length > 160 ? plainTextDescription.substring(0, 157) + '...' : plainTextDescription;
+  }
+
+  // Use og image if available, otherwise featured image
+  const imageUrl = data.ogImage || data.featuredImageUrl;
+  
+  // Use keywords if available
+  const keywordsList = data.keywords ? 
+    data.keywords.split(',').map(k => k.trim()) : 
+    [pageTitle, 'orthopedics', 'bone', 'joint', data.category || ''].filter(Boolean);
 
   return {
     title: pageTitle,
@@ -276,8 +311,13 @@ export async function generateMetadata(
         images: imageUrl ? [{ url: imageUrl }] : [],
         type: 'article',
     },
+    ...(data.canonicalUrl && { 
+      alternates: {
+        canonical: data.canonicalUrl
+      }
+    }),
     authors: [{ name: 'Sports Orthopedics Institute' }],
-    keywords: [pageTitle, 'orthopedics', 'bone', 'joint', data?.category || ''].filter(Boolean),
+    keywords: keywordsList,
   }
 }
 
@@ -358,22 +398,37 @@ const RelatedTopicCard = ({ title, slug, imageUrl }: { title: string, slug: stri
 // --- The Page Component (Server Component) ---
 export default async function BoneJointTopicPage({ params }: Props) {
   const { slug } = params;
-  const topicData = await getTopicDataFromCsv(slug);
+  
+  // Use new integration layer to get data
+  const topicData = await getTopicData(slug);
 
   if (!topicData) {
-    notFound(); // If CSV data is missing or failed to parse, show 404
+    notFound(); // Show 404 if content is missing
   }
+
+  // Get all related topics using the integration layer
+  const relatedTopics = await getRelatedTopicsFromService(
+    slug, 
+    'bone-joint-school', 
+    3, 
+    topicData.category || undefined
+  );
 
   const { 
     title: pageTitle, 
     featuredImageUrl: mainImage, 
-    breadcrumbData, 
     contentBlocks,
     category,
-    publishDate,
+    publishedAt,
     readingTime,
-    relatedSlugs
   } = topicData;
+  
+  // For breadcrumb, we need to create a compatible structure
+  const breadcrumbData = [
+    { name: 'Home', url: '/' },
+    { name: 'Bone & Joint School', url: '/bone-joint-school' },
+    { name: pageTitle, url: null }
+  ];
   
   // Get the first paragraph for intro text
   const firstParagraph = contentBlocks.find(block => block.type === 'paragraph');
@@ -381,9 +436,6 @@ export default async function BoneJointTopicPage({ params }: Props) {
   
   // Generate table of contents with original indices
   const tocItems = generateTOC(contentBlocks);
-  
-  // Get related topics
-  const relatedTopics = await getRelatedTopics(slug, category, relatedSlugs);
   
   // Current URL for sharing
   const pageUrl = `https://sportsorthopedics.in/bone-joint-school/${slug}`;
@@ -413,10 +465,10 @@ export default async function BoneJointTopicPage({ params }: Props) {
                   </Link>
                 )}
                 
-                {publishDate && (
+                {publishedAt && (
                   <div className="inline-flex items-center text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
                     <Calendar className="w-3 h-3 mr-1" />
-                    <time dateTime={publishDate}>{new Date(publishDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</time>
+                    <time dateTime={publishedAt}>{new Date(publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</time>
                   </div>
                 )}
                 

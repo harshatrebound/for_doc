@@ -129,14 +129,19 @@ export async function fetchDoctors() {
   }
 }
 
-export async function fetchAppointments(filters?: {
-  startDate?: Date;
-  endDate?: Date;
-  doctorId?: string;
-  status?: string;
-}) {
+export async function fetchAppointments(
+  page: number = 1, 
+  pageSize: number = 10, 
+  filters?: {
+    startDate?: Date;
+    endDate?: Date;
+    doctorId?: string;
+    status?: string;
+  }
+) {
   try {
     const where: any = {};
+    const skip = (page - 1) * pageSize;
 
     if (filters?.startDate && filters?.endDate) {
       where.date = {
@@ -152,6 +157,9 @@ export async function fetchAppointments(filters?: {
     if (filters?.status) {
       where.status = filters.status;
     }
+    
+    // Get total count for pagination
+    const totalCount = await prisma.appointment.count({ where });
 
     const appointments = await prisma.appointment.findMany({
       where,
@@ -166,10 +174,23 @@ export async function fetchAppointments(filters?: {
       },
       orderBy: {
         date: 'desc'
-      }
+      },
+      skip,
+      take: pageSize
     });
 
-    return { success: true, data: appointments };
+    return { 
+      success: true, 
+      data: {
+        appointments,
+        pagination: {
+          total: totalCount,
+          page,
+          pageSize,
+          pageCount: Math.ceil(totalCount / pageSize)
+        }
+      } 
+    };
   } catch (error) {
     console.error('Error fetching appointments:', error);
     return { success: false, error: 'Failed to fetch appointments' };

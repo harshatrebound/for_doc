@@ -24,6 +24,11 @@ export async function GET(request: NextRequest) {
     const doctorId = searchParams.get('doctorId');
     const status = searchParams.get('status');
     const today = startOfDay(new Date());
+    
+    // Add pagination parameters
+    const page = parseInt(searchParams.get('page') || '1');
+    const pageSize = parseInt(searchParams.get('pageSize') || '10');
+    const skip = (page - 1) * pageSize;
 
     let dateFilter = {};
     switch (type) {
@@ -57,6 +62,10 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
 
+    // Get total count for pagination
+    const totalCount = await prisma.appointment.count({ where });
+    
+    // Get appointments with pagination
     const appointments = await prisma.appointment.findMany({
       where,
       include: {
@@ -72,9 +81,19 @@ export async function GET(request: NextRequest) {
         { date: 'asc' },
         { time: 'asc' },
       ],
+      skip,
+      take: pageSize,
     });
 
-    return NextResponse.json(appointments);
+    return NextResponse.json({
+      appointments,
+      pagination: {
+        total: totalCount,
+        page,
+        pageSize,
+        pageCount: Math.ceil(totalCount / pageSize)
+      }
+    });
   } catch (error) {
     console.error('Failed to fetch appointments:', error);
     return NextResponse.json(

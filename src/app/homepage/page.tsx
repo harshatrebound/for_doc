@@ -19,42 +19,42 @@ const specialties = [
     title: 'Knee',
     description: 'We provide comprehensive specialized care for injuries and conditions affecting the knee joint, ligaments, cartilage, muscles & bones around.',
     icon: Activity,
-    image: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/male-physiotherapist-checking-woman-s-knee-mobility.webp',
+    image: '/images/orthopedics/knee-mobility.webp',
     href: '/bone-joint-school/knee-pain/'
   },
   {
     title: 'Shoulder',
     description: 'We provide comprehensive specialized care for injuries and conditions affecting the shoulder joint, ligaments, cartilage, muscles & bones around.',
     icon: Activity,
-    image: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/male-physiotherapist-checking-woman-s-shoulder.webp',
+    image: '/images/orthopedics/shoulder-mobility.webp',
     href: '/bone-joint-school/shoulder-pain/'
   },
   {
     title: 'Ankle',
     description: 'We provide comprehensive specialized care for injuries and conditions affecting the ankle joint, ligaments, cartilage, muscles & bones around.',
     icon: Activity,
-    image: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/man-suction-session.webp',
+    image: '/images/orthopedics/ankle-therapy.webp',
     href: '/bone-joint-school/ankle-pain/'
   },
   {
     title: 'Hip',
     description: 'We provide comprehensive specialized care for injuries and conditions affecting the hip joint, ligaments, cartilage, muscles and bones around.',
     icon: Activity,
-    image: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/young-attractive-model-brown-sweater-standing-white-wall.webp',
+    image: '/images/orthopedics/hip-model.webp',
     href: '/bone-joint-school/hip-pain/'
   },
   {
     title: 'Elbow',
     description: 'We provide comprehensive specialized care for injuries and conditions affecting the elbow joint, ligaments, cartilage, muscles and bones around.',
     icon: Activity,
-    image: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/upset-brunette-young-woman-injured-arm-sport-training-touches-her-wrist-isolated-white-wall.webp',
+    image: '/images/orthopedics/elbow-injury.webp',
     href: '/bone-joint-school/elbow-pain/'
   },
   {
     title: 'Wrist',
     description: 'We provide comprehensive specialized care for injuries and conditions affecting the wrist joint, ligaments, cartilage, muscles & bones around.',
     icon: Activity,
-    image: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/serious-brunette-young-woman-with-ponytail-massages-her-arthritic-hand.webp',
+    image: '/images/orthopedics/wrist-pain.webp',
     href: '/bone-joint-school/wrist-pain/'
   },
 ];
@@ -104,7 +104,7 @@ const LazyImage = ({ src, alt, fill, ...props }: any) => {
   const [isLoaded, setIsLoaded] = useState(false);
   
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative overflow-hidden" style={fill ? {position: 'relative', height: '100%', width: '100%'} : {}}>
       {!isLoaded && (
         <div className="absolute inset-0 bg-gray-100 animate-pulse" />
       )}
@@ -113,6 +113,7 @@ const LazyImage = ({ src, alt, fill, ...props }: any) => {
         alt={alt}
         fill={fill}
         onLoad={() => setIsLoaded(true)}
+        sizes={fill ? "(max-width: 768px) 100vw, 50vw" : props.sizes || "100vw"}
         className={cn(
           "transition-opacity duration-500",
           isLoaded ? "opacity-100" : "opacity-0"
@@ -362,12 +363,13 @@ export default function HomePage() {
                 {/* Enhanced Card Container */}
                 <div className="relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden">
                   {/* Image Container with Enhanced Effects */}
-                  <div className="relative h-64 w-full">
+                  <div className="relative h-64 w-full" style={{minHeight: '16rem'}}>
                     <LazyImage
                       src={specialty.image}
                       alt={specialty.title}
                       fill
                       loading="lazy"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-80" />
@@ -524,13 +526,13 @@ export default function HomePage() {
               </div>
               <div className="relative">
                 <div className="absolute -inset-4 bg-[#8B5C9E]/5 rounded-2xl blur-xl" />
-                <div className="relative aspect-square rounded-2xl overflow-hidden">
+                <div className="relative aspect-square rounded-2xl overflow-hidden" style={{height: '100%', minHeight: '300px'}}>
                   <LazyImage
                     src="https://images.unsplash.com/photo-1666214280557-f1b5022eb634?q=80&w=1500&auto=format&fit=crop"
                     alt="Medical professionals discussing a patient case"
                     fill
-                    className="object-cover"
                     sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover"
                   />
                 </div>
                 <div className="absolute -bottom-6 -right-6 w-48 h-48 bg-[#8B5C9E]/10 rounded-full blur-3xl" />
@@ -557,9 +559,9 @@ export default function HomePage() {
             >
               <div className="lg:col-span-1 relative">
                 <div className="absolute -inset-4 bg-[#8B5C9E]/10 rounded-full blur-2xl animate-pulse" />
-                <div className="relative aspect-square rounded-full overflow-hidden shadow-xl mx-auto lg:mx-0 w-64 h-64 lg:w-full lg:h-auto">
+                <div className="relative aspect-square rounded-full overflow-hidden shadow-xl mx-auto lg:mx-0 w-64 h-64 lg:w-full lg:h-auto" style={{minHeight: '16rem'}}>
                   <LazyImage
-                    src="https://sportsorthopedics.in/wp-content/uploads/2025/01/313414809_424129516595915_5712394841841282653_n.jpg"
+                    src="/images/orthopedics/dr-naveen.jpg"
                     alt="Dr. Naveen Kumar L.V"
                     fill
                     className="object-cover object-top"
@@ -630,11 +632,10 @@ export default function HomePage() {
               viewport={{ once: true }}
               className="space-y-12"
             >
-              {/* Using the image URLs from the old template */}
-              {/* Note: These images appear to contain multiple logos. Consider splitting them or using individual logo files if available */}
+              {/* Using local image paths for logos */}
                <div className="flex justify-center items-center bg-gray-50 p-8 rounded-lg shadow-sm">
                  <LazyImage
-                    src="https://sportsorthopedics.in/wp-content/uploads/2025/01/download-1.webp"
+                    src="/images/orthopedics/alma-mater-logos.webp"
                     alt="Alma Mater Logos"
                     width={852}
                     height={174}
@@ -643,7 +644,7 @@ export default function HomePage() {
                </div>
                 <div className="flex justify-center items-center bg-gray-50 p-8 rounded-lg shadow-sm">
                    <LazyImage
-                    src="https://sportsorthopedics.in/wp-content/uploads/2025/01/download-2-833x166.webp"
+                    src="/images/orthopedics/affiliation-logos.webp"
                     alt="Affiliation Logos"
                     width={833}
                     height={166}

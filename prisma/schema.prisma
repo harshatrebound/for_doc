@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -16,46 +10,46 @@ datasource db {
 model Doctor {
   id           String           @id @default(uuid())
   name         String
-  speciality   String
   fee          Float
-  image        String?
+  speciality   String
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
-  schedules    DoctorSchedule[]
+  image        String?
   appointments Appointment[]
+  schedules    DoctorSchedule[]
   specialDates SpecialDate[]
 }
 
 model DoctorSchedule {
   id           String   @id @default(uuid())
   doctorId     String
-  dayOfWeek    Int // 0-6 (Sunday-Saturday)
-  startTime    String // HH:mm format
-  endTime      String // HH:mm format
+  dayOfWeek    Int
+  startTime    String
+  endTime      String
   isActive     Boolean  @default(true)
-  slotDuration Int      @default(15) // Duration in minutes
-  bufferTime   Int      @default(5) // Buffer time in minutes
-  breakStart   String? // HH:mm format
-  breakEnd     String? // HH:mm format
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  breakEnd     String?
+  breakStart   String?
+  bufferTime   Int      @default(5)
+  slotDuration Int      @default(15)
   doctor       Doctor   @relation(fields: [doctorId], references: [id])
 }
 
 model Appointment {
   id          String   @id @default(uuid())
   doctorId    String
-  customerId  String?
   patientName String?
-  date        DateTime
-  time        String? // HH:mm format
-  timeSlot    String? // HH:mm format
-  status      String // SCHEDULED, CONFIRMED, COMPLETED, CANCELLED, NO_SHOW
-  email       String?
   phone       String?
-  notes       String?
+  email       String?
+  date        DateTime
+  time        String?
+  status      String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  customerId  String?
+  notes       String?
+  timeSlot    String?
   doctor      Doctor   @relation(fields: [doctorId], references: [id])
 }
 
@@ -63,10 +57,10 @@ model SpecialDate {
   id         String   @id @default(uuid())
   doctorId   String
   date       DateTime
-  type       String // HOLIDAY or BREAK
+  type       String
   reason     String?
-  breakStart String? // HH:mm format
-  breakEnd   String? // HH:mm format
+  breakStart String?
+  breakEnd   String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   doctor     Doctor   @relation(fields: [doctorId], references: [id])
@@ -77,6 +71,64 @@ model SpecialDate {
 model Settings {
   id        String   @id
   data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Page {
+  id               String         @id @default(uuid())
+  slug             String         @unique
+  pageType         String
+  title            String
+  featuredImageUrl String?
+  summary          String?
+  categoryId       String?
+  publishedAt      DateTime?
+  updatedAt        DateTime       @updatedAt
+  createdAt        DateTime       @default(now())
+  readingTime      String?
+  canonicalUrl     String?
+  keywords         String?
+  metaDescription  String?
+  metaTitle        String?
+  ogImage          String?
+  contentBlocks    ContentBlock[]
+  category         Category?      @relation(fields: [categoryId], references: [id])
+
+  @@index([pageType])
+  @@index([slug, pageType])
+}
+
+model ContentBlock {
+  id        String   @id @default(uuid())
+  pageId    String
+  type      String
+  level     Int?
+  text      String
+  icon      String?
+  sortOrder Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  pages       Page[]
+}
+
+// Model for storing gallery images
+model GalleryImage {
+  id        String   @id @default(uuid())
+  url       String   // URL of the uploaded image (e.g., /uploads/gallery/image.jpg)
+  altText   String?  // Optional alt text for accessibility and SEO
+  title     String?  // Optional title/caption
+  order     Int?     // Optional field for custom sorting
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

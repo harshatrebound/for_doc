@@ -1,0 +1,20 @@
+
+CSV Image URL Update Report
+==========================
+Time: 2025-05-01T08:38:09.235Z
+
+Summary:
+- CSV files processed: 137
+- CSV files modified: 9
+- Total URL replacements: 514
+
+Modified Files:
+- image-urls-list.csv (372 replacements)
+- docs\surgeons_staff_cms.csv (4 replacements)
+- docs\publication_cms.csv (18 replacements)
+- docs\procedure_surgery_cms.csv (44 replacements)
+- docs\post_cms.csv (24 replacements)
+- docs\page_cms.csv (6 replacements)
+- docs\category_cms.csv (5 replacements)
+- docs\bone_joint_school_cms.csv (40 replacements)
+- docs\content_csv\surgeons-staff_surgeons-staff_.csv (1 replacements)

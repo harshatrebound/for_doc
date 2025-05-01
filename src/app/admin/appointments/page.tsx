@@ -20,7 +20,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, CalendarIcon, ListIcon } from 'lucide-react';
+import { ChevronDown, CalendarIcon, ListIcon, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Pagination, PaginationData } from '@/components/admin/Pagination';
 
 interface Doctor {
   name: string;
@@ -47,21 +48,30 @@ export default function AppointmentsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  
+  // Add pagination state
+  const [pagination, setPagination] = useState<PaginationData>({
+    total: 0,
+    page: 1,
+    pageSize: 10,
+    pageCount: 0
+  });
 
   useEffect(() => {
     loadInitialData();
-  }, []);
+  }, [pagination.page, pagination.pageSize]); // Reload when page or page size changes
 
   const loadInitialData = async () => {
     setIsLoading(true);
     try {
       const [appointmentResult, doctorResult] = await Promise.all([
-        fetchAppointments(),
+        fetchAppointments(pagination.page, pagination.pageSize),
         fetchDoctors()
       ]);
 
       if (appointmentResult.success && appointmentResult.data) {
-        setAppointments(appointmentResult.data);
+        setAppointments(appointmentResult.data.appointments);
+        setPagination(appointmentResult.data.pagination);
       } else {
         toast.error(appointmentResult.error || 'Failed to load appointments');
       }
@@ -81,9 +91,10 @@ export default function AppointmentsPage() {
 
   const loadAppointments = async () => {
     try {
-      const result = await fetchAppointments();
+      const result = await fetchAppointments(pagination.page, pagination.pageSize);
       if (result.success && result.data) {
-        setAppointments(result.data);
+        setAppointments(result.data.appointments);
+        setPagination(result.data.pagination);
       } else {
         toast.error(result.error || 'Failed to load appointments');
       }
@@ -91,6 +102,15 @@ export default function AppointmentsPage() {
       console.error('Error loading appointments:', error);
       toast.error('Failed to load appointments');
     }
+  };
+
+  // Add pagination navigation handlers
+  const handlePageChange = (newPage: number) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPagination(prev => ({ ...prev, pageSize: newSize, page: 1 }));
   };
 
   const handleStatusChange = async (appointmentId: string, newStatus: string) => {
@@ -324,14 +344,24 @@ export default function AppointmentsPage() {
       </div>
 
       {viewMode === 'list' && (
-        <Card className="border-0 shadow-md overflow-hidden">
+        <div className="space-y-4">
           <DataTable
             columns={columns}
             data={appointments}
             searchable
             sortable
+            loading={isLoading}
           />
-        </Card>
+          
+          {/* Add pagination component */}
+          {!isLoading && appointments.length > 0 && (
+            <Pagination 
+              pagination={pagination}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          )}
+        </div>
       )}
 
       {viewMode === 'calendar' && (

@@ -1,14 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid'; // Plugin for month view
-import interactionPlugin from '@fullcalendar/interaction'; // Plugin for date clicking, dragging, etc.
+import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction'; // Plugin for date clicking, dragging, etc.
 import timeGridPlugin from '@fullcalendar/timegrid'; // Plugin for week/day views (optional)
-import { EventContentArg, DayCellMountArg } from '@fullcalendar/core';
+import type { EventContentArg, MoreLinkArg, EventClickArg } from '@fullcalendar/core';
 import AppointmentModal from './AppointmentModal';
+import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import { isBefore, startOfDay } from 'date-fns'; // Import date-fns functions
+import { isBefore, startOfDay, format, isToday } from 'date-fns'; // Import date-fns functions
+import type { Doctor } from '@/types/doctor'; // Import Doctor type
+import DayAppointmentsDrawer from './DayAppointmentsDrawer'; // Import the new drawer
 
 // Re-use or import the Appointment type from the admin page
 interface Appointment {
@@ -26,12 +29,28 @@ interface Appointment {
   };
 }
 
+// Define Extended Props structure used within FullCalendar
+interface AppointmentExtendedProps {
+  doctorName?: string;
+  doctorId: string;
+  time: string | null;
+  status: string;
+  customerId: string | null;
+  fullAppointment: Appointment;
+}
+
 interface FullCalendarViewProps {
   appointments: Appointment[];
   doctors?: Doctor[];
   onUpdateAppointment?: (appointment: Appointment) => Promise<void>;
   onCreateAppointment?: (appointment: Appointment) => Promise<void>;
 }
+
+// --- Constants for Drawer --- 
+const DRAWER_WORKING_HOURS_START = 9; // 9 AM
+const DRAWER_WORKING_HOURS_END = 17; // 5 PM (exclusive)
+const DRAWER_TIME_SLOT_INTERVAL = 30; // minutes
+// -----------------------------
 
 // Helper function to determine card background based on appointment status
 const getStatusColorClass = (status: string = 'SCHEDULED') => {
@@ -66,7 +85,7 @@ const formatAppointmentsForCalendar = (appointments: Appointment[]) => {
       status: app.status,
       customerId: app.customerId,
       fullAppointment: app // Store full appointment data for easy access
-    }
+    } as AppointmentExtendedProps // Add type assertion here
   }));
   console.log('[FullCalendarView] Formatted events for calendar:', formatted); // Log formatted data
   return formatted;
@@ -75,7 +94,7 @@ const formatAppointmentsForCalendar = (appointments: Appointment[]) => {
 // Custom rendering function for each event (appointment card)
 const renderEventContent = (eventInfo: EventContentArg) => {
   const { event } = eventInfo;
-  const { extendedProps } = event;
+  const extendedProps = event.extendedProps as AppointmentExtendedProps;
   const status = extendedProps.status || 'SCHEDULED';
   const colorClass = getStatusColorClass(status);
 
@@ -85,7 +104,7 @@ const renderEventContent = (eventInfo: EventContentArg) => {
       <div>
         <p className="text-xs font-semibold truncate mb-0.5">{event.title}</p>
         {extendedProps.doctorName && 
-          <p className="text-[11px] opacity-90 truncate">Dr. {extendedProps.doctorName}</p>
+          <p className="text-[11px] opacity-90 truncate">{extendedProps.doctorName}</p>
         }
       </div>
       {extendedProps.time && 
@@ -95,12 +114,12 @@ const renderEventContent = (eventInfo: EventContentArg) => {
   );
 };
 
-const FullCalendarView: React.FC<FullCalendarViewProps> = ({ 
+const FullCalendarView = ({ 
   appointments, 
   doctors = [],
   onUpdateAppointment = async () => {},
   onCreateAppointment = async () => {}
-}) => {
+}: FullCalendarViewProps) => {
   const calendarEvents = formatAppointmentsForCalendar(appointments);
   
   // Modal state
@@ -108,49 +127,101 @@ const FullCalendarView: React.FC<FullCalendarViewProps> = ({
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [isNewAppointment, setIsNewAppointment] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  
+  const [prefilledTimeForModal, setPrefilledTimeForModal] = useState<string | undefined>(undefined);
+
+  // Drawer State
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [selectedDateForDrawer, setSelectedDateForDrawer] = useState<Date | null>(null);
+
   // Handle event click - open modal for editing
-  const handleEventClick = (info: any) => {
-    const eventId = info.event.id;
-    console.log("Appointment clicked with ID:", eventId);
-    console.log("Event object:", info.event);
-    console.log("Event start:", info.event.start);
-    console.log("Extended props:", info.event.extendedProps);
-    
-    // Get appointment data from the appointments array
-    const appointmentToEdit = appointments.find(app => app.id === eventId);
-    console.log("Found appointment in array:", appointmentToEdit);
+  const handleEventClick = (info: EventClickArg | { event: { extendedProps: AppointmentExtendedProps } }) => { 
+    // Ensure info.event.id exists if it's a real EventClickArg
+    const eventId = 'id' in info.event ? info.event.id : null;
+    const extendedProps = info.event.extendedProps as AppointmentExtendedProps;
+    console.log("Event click triggered for:", extendedProps.fullAppointment?.patientName);
+
+    // Get the full appointment data from extendedProps
+    const appointmentToEdit = extendedProps.fullAppointment;
     
     if (appointmentToEdit) {
-      // Create a complete appointment object with all required fields
-      const completeAppointment = {
-        ...appointmentToEdit,
-        date: new Date(appointmentToEdit.date),
-        // Explicitly set these properties to ensure they're not lost
-        time: appointmentToEdit.time,
-        doctorId: appointmentToEdit.doctorId,
-        patientName: appointmentToEdit.patientName,
-        status: appointmentToEdit.status
-      };
-      
-      console.log("Complete appointment data to edit:", completeAppointment);
-      console.log("--- DEBUG --- Doctor ID before setting state:", completeAppointment.doctorId);
-      console.log("--- DEBUG --- Time before setting state:", completeAppointment.time);
-      
-      setSelectedAppointment(completeAppointment);
-      setIsNewAppointment(false);
-      setIsModalOpen(true);
+        const appointmentDate = typeof appointmentToEdit.date === 'string' 
+                                ? new Date(appointmentToEdit.date) 
+                                : appointmentToEdit.date;
+        const completeAppointment = {
+            ...appointmentToEdit,
+            date: appointmentDate,
+            time: appointmentToEdit.time ?? null, 
+            patientName: appointmentToEdit.patientName ?? null,
+            status: appointmentToEdit.status ?? 'SCHEDULED', 
+            doctorId: appointmentToEdit.doctorId ?? '',
+            customerId: appointmentToEdit.customerId ?? null,
+            doctor: appointmentToEdit.doctor ?? { name: 'N/A', speciality: 'N/A' }
+        };
+
+        console.log("Complete appointment data for modal:", completeAppointment);
+        setSelectedAppointment(completeAppointment);
+        setIsNewAppointment(false);
+        setPrefilledTimeForModal(undefined);
+        setIsModalOpen(true);
+    } else {
+        console.error("Could not find full appointment data in event click info:", info);
     }
   };
   
-  // Handle "+" button click - open modal for creating
-  const handleAddAppointment = (date: Date) => {
-    setSelectedDate(date);
+  // Handle background day cell click on calendar -> Opens Drawer
+  const handleDateClick = (clickInfo: DateClickArg) => {
+    const clickedDate = clickInfo.date;
+    // Open drawer only for today or future dates
+    if (!isBefore(startOfDay(clickedDate), startOfDay(new Date()))) {
+      console.log("Date cell clicked:", clickedDate);
+      setSelectedDateForDrawer(clickedDate);
+      setIsDrawerOpen(true);
+    } else {
+      console.log("Ignoring click on past date:", clickedDate);
+    }
+  };
+  
+  // Handle "+N more" link click -> Opens Drawer
+  const handleMoreLinkClick = (arg: MoreLinkArg) => {
+    console.log("More link clicked for date:", arg.date);
+    setSelectedDateForDrawer(arg.date);
+    setIsDrawerOpen(true);
+    arg.jsEvent.preventDefault(); 
+    arg.jsEvent.stopPropagation();
+    return false; 
+  };
+
+  // Handle clicking an existing appointment *inside the drawer* -> Opens Modal
+  const handleDrawerAppointmentClick = (appointment: Appointment) => {
+    console.log("Appointment clicked from drawer:", appointment);
+    const simulatedEventInfo = {
+        event: {
+            extendedProps: { 
+                fullAppointment: appointment,
+                doctorName: appointment.doctor?.name,
+                doctorId: appointment.doctorId,
+                time: appointment.time,
+                status: appointment.status,
+                customerId: appointment.customerId,
+             } as AppointmentExtendedProps
+        }
+    };
+    handleEventClick(simulatedEventInfo);
+    setIsDrawerOpen(false); // Close drawer after clicking
+  };
+  
+  // Handle clicking the '+' button for an empty slot *inside the drawer* -> Opens Modal for new appointment
+  const handleDrawerAddSlotClick = (date: Date, time: string) => {
+    console.log("Add slot clicked from drawer:", date, time);
+    console.log("--> Setting selectedDate for modal to:", date); // Log date being set
+    setSelectedDate(date); // Set date context for modal
+    setPrefilledTimeForModal(time); // Set time context for modal
     setSelectedAppointment(null);
     setIsNewAppointment(true);
     setIsModalOpen(true);
+    setIsDrawerOpen(false); // Close drawer
   };
-  
+
   // Handle saving appointment (create or update)
   const handleSaveAppointment = async (appointment: Appointment) => {
     if (isNewAppointment) {
@@ -160,57 +231,10 @@ const FullCalendarView: React.FC<FullCalendarViewProps> = ({
     }
     setIsModalOpen(false);
   };
-  
-  // Custom day cell content to add "+" button
-  const dayCellDidMount = (arg: DayCellMountArg) => {
-    const { el, date } = arg;
-    const today = startOfDay(new Date());
-    const cellDate = startOfDay(date);
-
-    // Only add the button for today and future dates
-    if (!isBefore(cellDate, today)) {
-      // Ensure the parent cell is positioned relatively for absolute positioning of the button
-      el.style.position = 'relative';
-
-      // Create the "+" button
-      const addButton = document.createElement('button');
-      addButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5C9E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>`;
-      addButton.className = 'add-appointment-btn';
-      addButton.style.cssText = `
-        position: absolute;
-        bottom: 2px;
-        right: 2px;
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        display: none; /* Initially hidden */
-        z-index: 10;
-      `;
-      
-      // Add hover effect to the day cell to show/hide the button
-      el.addEventListener('mouseenter', () => {
-        addButton.style.display = 'block';
-      });
-      
-      el.addEventListener('mouseleave', () => {
-        addButton.style.display = 'none';
-      });
-      
-      // Handle click event
-      addButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        handleAddAppointment(date);
-      });
-      
-      // Append the button to the day cell
-      el.appendChild(addButton);
-    }
-  };
 
   return (
-    <div className="fc-theme-standard"> {/* Add custom wrapper for full calendar styling */}
-      <style jsx global>{`
+    <div className="fc-theme-standard relative"> {/* Ensure relative positioning */}
+      <style>{` 
         /* Calendar header styling */
         .fc .fc-toolbar-title {
           font-size: 1.25rem;
@@ -226,79 +250,71 @@ const FullCalendarView: React.FC<FullCalendarViewProps> = ({
         
         /* Style the calendar day cells */
         .fc .fc-daygrid-day {
-          min-height: 120px;
-        }
-        
-        /* Style buttons to match your admin theme */
-        .fc .fc-button-primary {
-          background-color: #8B5C9E !important;
-          border-color: #8B5C9E !important;
-        }
-        
-        .fc .fc-button-primary:hover {
-          background-color: #7a4f8a !important;
-        }
-        
-        /* Apply custom styles to the "more" link */
-        .fc .fc-daygrid-more-link {
-          color: #8B5C9E;
-          font-weight: 500;
+          border-color: #e2e8f0; /* Tailwind gray-200 */
+          position: relative; /* Ensure relative positioning for the button */
+          min-height: 100px; /* Adjust height as needed */
         }
 
-        /* Fix hover effects extending beyond card boundaries */
-        .fc-event-main {
-          padding: 0 !important;
-        }
-        
-        .fc-h-event {
-          background: transparent !important;
-          border: none !important;
+        .fc .fc-daygrid-day-top {
+            text-align: center;
+            padding: 4px;
         }
 
+        /* Past day styling */
+        .fc .fc-day-past {
+            background-color: #f8f9fa; /* Lighter gray for past dates */
+        }
+
+        /* Today styling */
+        .fc .fc-day-today {
+            background-color: #fef3c7; /* Tailwind amber-100 */
+            font-weight: bold;
+        }
+
+        /* Event rendering adjustments */
         .fc-daygrid-event {
-          border: none !important;
-          background: transparent !important;
-          box-shadow: none !important;
-        }
-        
-        /* Remove FullCalendar's default hover effect */
-        .fc-event:hover {
-          filter: none !important;
-          box-shadow: none !important;
-        }
-        
-        /* Style for day cell hover */
-        .fc .fc-daygrid-day:hover {
-          background-color: rgba(139, 92, 158, 0.03);
-        }
-        
-        /* Make events clickable */
-        .fc-event {
-          cursor: pointer;
+            white-space: normal; /* Allow text wrapping inside event */
+            cursor: pointer;
+            margin-bottom: 3px !important; /* Ensure spacing between events */
+            border: none !important; /* Remove default FC border */
+            padding: 0 !important; /* Remove default FC padding */
         }
 
-        /* Custom Scrollbar Styling for SelectContent */
-        [data-radix-select-content][class*="max-h-"] {
-          /* Firefox */
-          scrollbar-width: thin;
-          scrollbar-color: #8B5C9E #f0eaf3; /* thumb track */
+        /* Ensure our custom event content fills the container */
+        .fc-daygrid-event .fc-event-main {
+            height: 100%;
+        }
 
-          /* WebKit (Chrome, Safari, Edge) */
-          &::-webkit-scrollbar {
-            width: 6px;
-          }
-          &::-webkit-scrollbar-track {
-            background: #f0eaf3; /* Light purple track */
+        /* Styling for the add button */
+        .add-appointment-btn svg {
+            display: inline-block; /* Prevents potential layout shifts */
+            vertical-align: middle;
+        }
+        .add-appointment-btn:hover svg {
+           stroke: #6d28d9; /* Example: Darker purple on hover */
+        }
+        
+        /* Styling for the "more" link */
+        .fc .fc-daygrid-more-link {
+            color: #6d28d9; /* Brand color */
+            font-weight: 500;
+            font-size: 0.75rem; /* Smaller text */
+            padding: 2px 4px;
             border-radius: 3px;
-          }
-          &::-webkit-scrollbar-thumb {
-            background-color: #8B5C9E; /* Brand purple thumb */
-            border-radius: 3px;
-            border: 1px solid #f0eaf3; /* Creates padding around thumb */
-          }
-          &::-webkit-scrollbar-thumb:hover {
-            background-color: #7a4f8a; /* Darker purple on hover */
-          }
+            transition: background-color 0.2s ease;
+        }
+        .fc .fc-daygrid-more-link:hover {
+            background-color: #f3e8ff; /* Lighter purple background on hover */
+            text-decoration: none;
+        }
+
+        /* Ensure day cells are clickable */
+        .fc .fc-daygrid-day:not(.fc-day-past) .fc-daygrid-day-frame {
+            cursor: pointer;
+        }
+        /* Style for hover effect on clickable day cells */
+        .fc .fc-daygrid-day:not(.fc-day-past):hover .fc-daygrid-day-frame {
+            background-color: rgba(139, 92, 158, 0.04); /* Subtle hover */
         }
       `}</style>
       
@@ -313,23 +329,44 @@ const FullCalendarView: React.FC<FullCalendarViewProps> = ({
         events={calendarEvents} 
         eventContent={renderEventContent}
         eventClick={handleEventClick}
-        dayCellDidMount={dayCellDidMount}
-        editable={true} 
-        selectable={true}
-        dayMaxEvents={3}
+        dateClick={handleDateClick}
+        moreLinkClick={handleMoreLinkClick}
+        moreLinkContent={(args: { num: number }) => `+${args.num} more`}
+        dayMaxEventRows={4}
         aspectRatio={1.35}
         height="auto"
       />
       
-      {/* Appointment editing/creation modal */}
-      <AppointmentModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        appointment={selectedAppointment}
-        onSave={handleSaveAppointment}
-        doctors={doctors}
-        isNewAppointment={isNewAppointment}
-        selectedDate={selectedDate}
+      {/* Appointment Modal (Update Props) */}
+      {isModalOpen && (
+        <>
+          {/* Log the prop being passed */}
+          {console.log("<-- Passing selectedDate prop to Modal:", selectedDate)}
+          <AppointmentModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            appointment={selectedAppointment}
+            onSave={handleSaveAppointment}
+            isNew={isNewAppointment} 
+            selectedDate={selectedDate} 
+            prefilledTime={prefilledTimeForModal} 
+            doctors={doctors} 
+          />
+        </>
+      )}
+      
+      {/* ADD Day Appointments Drawer */}
+      <DayAppointmentsDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        selectedDate={selectedDateForDrawer}
+        allAppointments={appointments}
+        onAppointmentClick={handleDrawerAppointmentClick}
+        onAddSlotClick={handleDrawerAddSlotClick}
+        getStatusColorClass={getStatusColorClass}
+        workingHoursStart={DRAWER_WORKING_HOURS_START}
+        workingHoursEnd={DRAWER_WORKING_HOURS_END}
+        timeSlotIntervalMinutes={DRAWER_TIME_SLOT_INTERVAL}
       />
     </div>
   );

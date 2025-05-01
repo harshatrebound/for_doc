@@ -55,9 +55,9 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/logo.jpg" }
+      { url: "/favicon.svg" }
     ],
-    shortcut: { url: "/logo.jpg" },
+    shortcut: { url: "/favicon.svg" },
     apple: { url: "/logo.jpg" }
   },
 };
@@ -81,10 +81,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/logo.jpg" type="image/jpeg" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
-        <main className="min-h-screen">
+        <main>
           <Suspense fallback={<Loading />}>
             {children}
           </Suspense>
