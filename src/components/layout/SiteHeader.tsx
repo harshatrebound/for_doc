@@ -131,8 +131,14 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
         setCategoriesLoading(true);
         // Fetch topics and categories
         const { categories, topics } = await getBoneJointTopics();
-        // Add 'All' category for convenience
-        setBoneJointCategories(['All', ...categories.filter((cat: string | null) => cat)]); // Ensure no null/empty categories
+        
+        // Only add 'All' if it's not already in the categories
+        const categoriesWithAll = 
+          categories.includes('All') 
+            ? categories 
+            : ['All', ...categories.filter((cat: string | null) => cat)];
+            
+        setBoneJointCategories(categoriesWithAll);
         setBoneJointTopics(topics);
       } catch (error) {
         console.error("Failed to fetch Bone & Joint School categories:", error);
@@ -401,8 +407,12 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                         role="menu"
                         aria-label="Bone & Joint School Categories"
                       >
-                        {/* Only show first "All" entry */}
-                        {boneJointCategories.filter((category: string) => category !== 'All' || boneJointCategories.indexOf(category) === 0).map((category: string) => (
+                        {/* Filter out duplicate "All" entries */}
+                        {boneJointCategories
+                          .filter((category: string, index: number) => 
+                            category !== 'All' || boneJointCategories.indexOf(category) === index
+                          )
+                          .map((category: string) => (
                           <div 
                             key={category}
                             className="relative group"

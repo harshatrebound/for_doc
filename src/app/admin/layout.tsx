@@ -29,8 +29,8 @@ const menuItems = [
   { href: '/admin/appointments', label: 'Appointments', icon: Clock },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart2 },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
-  { href: '/admin/content', label: 'Content', icon: FileText },
-  { href: '/admin/gallery', label: 'Gallery', icon: ImageIcon }
+  { href: '/admin/content', label: 'Content', icon: FileText, hideOnMobile: true },
+  { href: '/admin/gallery', label: 'Gallery', icon: ImageIcon, hideOnMobile: true }
 ];
 
 export default function AdminLayout({
@@ -117,6 +117,12 @@ export default function AdminLayout({
             <ul className="space-y-1 px-2">
               {menuItems.map((item) => {
                 const isActive = pathname === item.href;
+                
+                // Skip items marked as hideOnMobile on small screens
+                if (item.hideOnMobile && typeof window !== 'undefined' && window.innerWidth < 768) {
+                  return null;
+                }
+                
                 return (
                   <li key={item.href}>
                     <a

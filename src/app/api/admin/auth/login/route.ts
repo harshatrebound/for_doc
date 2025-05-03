@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import { sign } from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
-// Predefined admin credentials (in a real app, these would be in a secure database)
-const ADMIN_EMAIL = 'admin@bookingpress.com';
-const ADMIN_PASSWORD = 'admin123';
+// Use environment variables for admin credentials instead of hardcoded values
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@bookingpress.com'; // Fallback for dev
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123'; // Fallback for dev
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function POST(request: Request) {

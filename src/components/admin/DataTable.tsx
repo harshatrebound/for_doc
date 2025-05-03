@@ -103,8 +103,8 @@ export function DataTable<TData extends object>({
                     <th
                       key={header.id}
                       className={cn(
-                        'px-4 py-3.5 text-left text-sm font-semibold text-gray-900',
-                        'whitespace-nowrap',
+                        'px-4 py-3.5 text-left text-sm font-semibold text-gray-900 sm:whitespace-nowrap',
+                        'max-sm:px-2 max-sm:py-2 max-sm:text-xs',
                         canSort && 'cursor-pointer select-none'
                       )}
                       onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
@@ -120,7 +120,7 @@ export function DataTable<TData extends object>({
                           <div className="flex flex-col">
                             <ChevronUp
                               className={cn(
-                                'h-3 w-3 transition-colors',
+                                'h-3 w-3 max-sm:h-2 max-sm:w-2 transition-colors',
                                 header.column.getIsSorted() === 'asc'
                                   ? 'text-[#8B5C9E]'
                                   : 'text-gray-400'
@@ -128,7 +128,7 @@ export function DataTable<TData extends object>({
                             />
                             <ChevronDown
                               className={cn(
-                                'h-3 w-3 transition-colors',
+                                'h-3 w-3 max-sm:h-2 max-sm:w-2 transition-colors',
                                 header.column.getIsSorted() === 'desc'
                                   ? 'text-[#8B5C9E]'
                                   : 'text-gray-400'
@@ -161,7 +161,7 @@ export function DataTable<TData extends object>({
                     {row.getVisibleCells().map((cell: Cell<TData, unknown>) => (
                       <td
                         key={cell.id}
-                        className="whitespace-nowrap px-4 py-4 text-sm text-gray-900"
+                        className="whitespace-nowrap px-4 py-4 text-sm text-gray-900 max-sm:px-2 max-sm:py-3 max-sm:text-xs"
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
@@ -170,14 +170,14 @@ export function DataTable<TData extends object>({
                       </td>
                     ))}
                     {actions && (
-                      <td className="whitespace-nowrap px-4 py-4 text-right text-sm">
+                      <td className="whitespace-nowrap px-4 py-4 text-right text-sm max-sm:px-1 max-sm:py-3">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
                               variant="ghost"
-                              className="h-8 w-8 p-0 text-gray-500 hover:text-gray-900"
+                              className="h-8 w-8 p-0 text-gray-500 hover:text-gray-900 max-sm:h-6 max-sm:w-6"
                             >
-                              <MoreVertical className="h-4 w-4" />
+                              <MoreVertical className="h-4 w-4 max-sm:h-3 max-sm:w-3" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-40">
