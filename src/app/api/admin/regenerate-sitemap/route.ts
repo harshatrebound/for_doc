@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import path from 'path';
 import { writeFile } from 'fs/promises';
-import sitemap from '../../../sitemap';
+import sitemap from '@/lib/sitemap-generator'; // Use path alias
 
 // Simple authentication check based on cookie presence
 // The full verification happens in middleware
