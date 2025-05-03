@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { format, parse, isSameDay, isWithinInterval, addMinutes } from 'date-fns';
 import { Appointment, DoctorSchedule, SpecialDate } from '@/types/schedule';
 import { z } from 'zod';
+import { formatISTDate } from '@/lib/dateUtils';
 
 // Validation schema for new appointments
 export const newAppointmentSchema = z.object({
@@ -376,7 +377,8 @@ export async function validateAndCreateAppointment(data: NewAppointment) {
       patientName: appointment.patientName,
       email: appointment.email,
       phone: appointment.phone,
-      date: appointment.date.toISOString(),
+      date: formatISTDate(appointment.date),
+      dateUTC: appointment.date.toISOString(),
       time: appointment.time,
       notes: appointment.notes,
       status: appointment.status,
