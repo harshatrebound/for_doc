@@ -127,42 +127,41 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
     // Format date for database queries
     const dateStr = format(date, 'yyyy-MM-dd');
     
-    // Use date range to handle timezone differences
-    const startOfDay = new Date(dateStr);
-    startOfDay.setHours(0, 0, 0, 0);
-    
-    const endOfDay = new Date(dateStr);
-    endOfDay.setHours(23, 59, 59, 999);
-    
-    // 1. Get all existing appointments for this doctor on this date
+    // 1. Get all existing appointments for this doctor
     const existingAppointments = await prisma.appointment.findMany({
       where: {
         doctorId: doctorId,
-        date: {
-          gte: startOfDay,
-          lte: endOfDay
-        },
         status: {
           notIn: ['CANCELLED', 'NO_SHOW'] // Only consider active appointments
         }
       },
       select: {
+        date: true,
         time: true,
       }
     });
     
-    const bookedSlots = new Set(existingAppointments.map(apt => apt.time));
+    // Filter to only appointments on the requested date
+    const sameDataAppointments = existingAppointments.filter(apt => {
+      const aptDateStr = format(new Date(apt.date), 'yyyy-MM-dd');
+      return aptDateStr === dateStr;
+    });
     
-    // 2. Get time-specific blocks for this date
+    const bookedSlots = new Set(sameDataAppointments.map(apt => apt.time));
+    
+    // 2. Get all time-specific blocks for this doctor
     const timeBlocks = await prisma.specialDate.findMany({
       where: {
         doctorId: doctorId,
-        date: {
-          gte: startOfDay,
-          lte: endOfDay
-        },
         type: 'TIME_BLOCK'
       }
+    });
+    
+    // Filter to only blocks on the requested date
+    const relevantTimeBlocks = timeBlocks.filter(block => {
+      const blockDate = new Date(block.date);
+      const blockDateStr = format(blockDate, 'yyyy-MM-dd');
+      return blockDateStr === dateStr;
     });
     
     // Filter out slots that:
@@ -199,7 +198,7 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
       
       // Check if this slot falls within any time block
       // Also check if the slot PLUS its duration overlaps with any time block
-      return !timeBlocks.some(block => {
+      return !relevantTimeBlocks.some(block => {
         // Extract time range from block.reason
         if (!block.reason?.startsWith('TIME:')) return false;
         
@@ -570,26 +569,26 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     // 2. Check for whole-day blocks on the requested date
     const dateStr = format(appointmentDate, 'yyyy-MM-dd');
     
-    // Query for special dates that might overlap with the appointment date
-    // Use date range to handle timezone differences
-    const startOfRequestedDay = new Date(dateStr);
-    startOfRequestedDay.setHours(0, 0, 0, 0);
+    // Extract just the date part for comparison (ignore time component)
+    const appointmentDateOnly = dateStr; // 'YYYY-MM-DD' format
     
-    const endOfRequestedDay = new Date(dateStr);
-    endOfRequestedDay.setHours(23, 59, 59, 999);
-    
-    const fullDayBlock = await prisma.specialDate.findFirst({
+    // Find any blocks for this doctor where the date component matches
+    const fullDayBlocks = await prisma.specialDate.findMany({
       where: {
         doctorId: doctorId,
-        date: {
-          gte: startOfRequestedDay,
-          lte: endOfRequestedDay
-        },
         type: 'UNAVAILABLE'
       }
     });
+    
+    // Check each block by comparing only the date part (ignoring time)
+    const fullDayBlock = fullDayBlocks.find(block => {
+      const blockDate = new Date(block.date);
+      const blockDateStr = format(blockDate, 'yyyy-MM-dd');
+      return blockDateStr === appointmentDateOnly;
+    });
 
     if (fullDayBlock) {
+      console.log(`Found blocking date: ${fullDayBlock.date} matching appointment date: ${appointmentDateOnly}`);
       return { 
         success: false, 
         error: `Doctor is unavailable on this date${fullDayBlock.reason ? ': ' + fullDayBlock.reason : ''}` 
@@ -621,15 +620,18 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     const timeBlocks = await prisma.specialDate.findMany({
       where: {
         doctorId: doctorId,
-        date: {
-          gte: startOfRequestedDay,
-          lte: endOfRequestedDay
-        },
         type: 'TIME_BLOCK'
       }
     });
+    
+    // Filter time blocks to only include those on the same date
+    const relevantTimeBlocks = timeBlocks.filter(block => {
+      const blockDate = new Date(block.date);
+      const blockDateStr = format(blockDate, 'yyyy-MM-dd');
+      return blockDateStr === dateStr;
+    });
 
-    for (const block of timeBlocks) {
+    for (const block of relevantTimeBlocks) {
       if (!block.reason?.startsWith('TIME:')) continue;
       
       const parts = block.reason.split(':');
@@ -665,22 +667,23 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     const existingAppointment = await prisma.appointment.findFirst({
       where: {
         doctorId,
-        date: {
-          gte: startOfRequestedDay,
-          lte: endOfRequestedDay
-        },
         time,
         status: {
           notIn: ['CANCELLED', 'NO_SHOW']
         }
       }
     });
-
+    
+    // If there's a potentially conflicting appointment, check the date manually
     if (existingAppointment) {
-      return { 
-        success: false, 
-        error: 'This time slot is already booked. Please select another time.' 
-      };
+      const existingAppointmentDate = format(existingAppointment.date, 'yyyy-MM-dd');
+      // Only consider it a conflict if it's on the same date
+      if (existingAppointmentDate === dateStr) {
+        return { 
+          success: false, 
+          error: 'This time slot is already booked. Please select another time.' 
+        };
+      }
     }
 
     const newAppointment = await prisma.appointment.create({
@@ -778,26 +781,26 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
       // 2. Check for whole-day blocks on the requested date
       const dateStr = format(appointmentDate, 'yyyy-MM-dd');
       
-      // Query for special dates that might overlap with the appointment date
-      // Use date range to handle timezone differences
-      const startOfRequestedDay = new Date(dateStr);
-      startOfRequestedDay.setHours(0, 0, 0, 0);
+      // Extract just the date part for comparison (ignore time component)
+      const appointmentDateOnly = dateStr; // 'YYYY-MM-DD' format
       
-      const endOfRequestedDay = new Date(dateStr);
-      endOfRequestedDay.setHours(23, 59, 59, 999);
-      
-      const fullDayBlock = await prisma.specialDate.findFirst({
+      // Find any blocks for this doctor where the date component matches
+      const fullDayBlocks = await prisma.specialDate.findMany({
         where: {
           doctorId: doctorId,
-          date: {
-            gte: startOfRequestedDay,
-            lte: endOfRequestedDay
-          },
           type: 'UNAVAILABLE'
         }
       });
+      
+      // Check each block by comparing only the date part (ignoring time)
+      const fullDayBlock = fullDayBlocks.find(block => {
+        const blockDate = new Date(block.date);
+        const blockDateStr = format(blockDate, 'yyyy-MM-dd');
+        return blockDateStr === appointmentDateOnly;
+      });
 
       if (fullDayBlock) {
+        console.log(`Found blocking date: ${fullDayBlock.date} matching appointment date: ${appointmentDateOnly}`);
         return { 
           success: false, 
           error: `Doctor is unavailable on this date${fullDayBlock.reason ? ': ' + fullDayBlock.reason : ''}` 
@@ -829,15 +832,18 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
       const timeBlocks = await prisma.specialDate.findMany({
         where: {
           doctorId: doctorId,
-          date: {
-            gte: startOfRequestedDay,
-            lte: endOfRequestedDay
-          },
           type: 'TIME_BLOCK'
         }
       });
+      
+      // Filter time blocks to only include those on the same date
+      const relevantTimeBlocks = timeBlocks.filter(block => {
+        const blockDate = new Date(block.date);
+        const blockDateStr = format(blockDate, 'yyyy-MM-dd');
+        return blockDateStr === dateStr;
+      });
 
-      for (const block of timeBlocks) {
+      for (const block of relevantTimeBlocks) {
         if (!block.reason?.startsWith('TIME:')) continue;
         
         const parts = block.reason.split(':');
@@ -873,10 +879,6 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
       const conflictingAppointment = await prisma.appointment.findFirst({
         where: {
           doctorId,
-          date: {
-            gte: startOfRequestedDay,
-            lte: endOfRequestedDay
-          },
           time,
           id: { not: id }, // Exclude the current appointment
           status: {
@@ -885,11 +887,16 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
         }
       });
 
+      // If there's a potentially conflicting appointment, check the date manually
       if (conflictingAppointment) {
-        return { 
-          success: false, 
-          error: 'This time slot is already booked. Please select another time.' 
-        };
+        const conflictingAppointmentDate = format(conflictingAppointment.date, 'yyyy-MM-dd');
+        // Only consider it a conflict if it's on the same date
+        if (conflictingAppointmentDate === dateStr) {
+          return { 
+            success: false, 
+            error: 'This time slot is already booked. Please select another time.' 
+          };
+        }
       }
     }
 
