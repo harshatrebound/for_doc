@@ -42,6 +42,9 @@ export default function AdminLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
+  
+  // Check if current page is login page
+  const isLoginPage = pathname === '/admin/login';
 
   // Handle sidebar visibility based on screen size
   useEffect(() => {
@@ -82,6 +85,27 @@ export default function AdminLayout({
     }
   };
 
+  // If this is the login page, render a simplified layout without the sidebar
+  if (isLoginPage) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        {/* Simple header */}
+        <header className="bg-white border-b border-gray-200 h-16 flex items-center px-6">
+          <h1 className="text-xl font-bold text-[#8B5C9E]">Sports Orthopedics Admin</h1>
+        </header>
+        
+        {/* Main content */}
+        <main className="flex-1 flex items-center justify-center">
+          {children}
+        </main>
+        
+        {/* Admin Footer */}
+        <AdminFooter />
+      </div>
+    );
+  }
+
+  // Regular admin layout with sidebar for authenticated pages
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Overlay for mobile */}
