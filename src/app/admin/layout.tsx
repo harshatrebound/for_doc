@@ -16,7 +16,8 @@ import {
   CalendarRange,
   CalendarClock,
   FileText,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -31,7 +32,8 @@ const menuItems = [
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart2 },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
   { href: '/admin/content', label: 'Content', icon: FileText, hideOnMobile: true },
-  { href: '/admin/gallery', label: 'Gallery', icon: ImageIcon, hideOnMobile: true }
+  { href: '/admin/gallery', label: 'Gallery', icon: ImageIcon, hideOnMobile: true },
+  { href: '/admin/seo', label: 'SEO', icon: Search, hideOnMobile: true }
 ];
 
 export default function AdminLayout({
