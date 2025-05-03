@@ -61,6 +61,15 @@ function timeToMinutes(timeStr: string | null): number | null {
 // Helper function to check availability based on schedule
 async function isDoctorAvailable(doctorId: string, date: Date, time: string): Promise<{ available: boolean; message: string }> {
   try {
+    // Convert date to IST for proper day of week calculation
+    const dateIST = convertToIST(date);
+    console.log(`[isDoctorAvailable] Checking date in IST:`, {
+      originalDateUTC: date.toISOString(),
+      dateInIST: dateIST.toISOString(),
+      formattedIST: formatISTDate(date),
+      time: time
+    });
+    
     const scheduleResult = await fetchDoctorSchedule(doctorId);
     if (!scheduleResult.success || !scheduleResult.data) {
       return { available: false, message: 'Could not fetch doctor schedule.' };
@@ -71,15 +80,17 @@ async function isDoctorAvailable(doctorId: string, date: Date, time: string): Pr
       return { available: false, message: 'Doctor has no defined schedule.' };
     }
 
-    const appointmentDayOfWeek = date.getDay(); // 0 (Sun) to 6 (Sat)
+    // Use IST date for day of week determination
+    const appointmentDayOfWeek = dateIST.getDay(); // 0 (Sun) to 6 (Sat)
     const relevantSchedule = schedules.find(s => s.dayOfWeek === appointmentDayOfWeek);
 
     if (!relevantSchedule) {
-      return { available: false, message: `Doctor is not scheduled to work on this day.` };
+      const dayName = format(dateIST, 'EEEE');
+      return { available: false, message: `Doctor is not scheduled to work on ${dayName}s (IST).` };
     }
 
     if (!relevantSchedule.isActive) {
-      return { available: false, message: 'Doctor is marked as inactive on this day.' };
+      return { available: false, message: 'Doctor is marked as inactive on this day (IST).' };
     }
 
     const appointmentMinutes = timeToMinutes(time);
@@ -92,9 +103,12 @@ async function isDoctorAvailable(doctorId: string, date: Date, time: string): Pr
 
     // Check if appointment time is within the scheduled work hours (inclusive start, exclusive end)
     if (appointmentMinutes >= startMinutes && appointmentMinutes < endMinutes) {
-      return { available: true, message: 'Slot available.' };
+      return { available: true, message: 'Slot available in IST timezone.' };
     } else {
-      return { available: false, message: `Doctor's schedule on this day is ${relevantSchedule.startTime} to ${relevantSchedule.endTime}.` };
+      return { 
+        available: false, 
+        message: `Doctor's schedule on this day is ${relevantSchedule.startTime} to ${relevantSchedule.endTime} (IST).` 
+      };
     }
 
   } catch (error) {
@@ -597,6 +611,17 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
 
     const { patientName, email, phone, date, time, status, doctorId, customerId } = appointmentData;
     const appointmentDate = new Date(date);
+    
+    // Log both UTC and IST representations for debugging
+    const appointmentDateIST = convertToIST(appointmentDate);
+    console.log(`[createAppointment] Processing date:`, {
+      originalUTC: appointmentDate.toISOString(),
+      convertedToIST: appointmentDateIST.toISOString(),
+      formattedIST: formatISTDate(appointmentDate),
+      appointmentDay: appointmentDateIST.getDate(),
+      appointmentMonth: appointmentDateIST.getMonth() + 1,
+      timeSlot: time
+    });
 
     if (!patientName || !email || !phone || !appointmentDate || !time || !status || !doctorId) {
       return { success: false, error: 'Missing required appointment fields (incl. email/phone)' };
@@ -613,17 +638,32 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     const dateStr = formatISTDate(appointmentDate);
     console.log(`Checking availability for date in IST: ${dateStr}`);
     
-    // Find any blocks for this doctor
+    // Find any blocks for this doctor - but get all to use IST comparison
     const fullDayBlocks = await prisma.specialDate.findMany({
       where: {
-        doctorId: doctorId,
-        type: 'UNAVAILABLE'
+        OR: [
+          { doctorId: doctorId, type: 'UNAVAILABLE' },
+          { doctorId: null, type: 'UNAVAILABLE' }  // Also check global blocks
+        ]
       }
     });
     
     // Use the new IST comparison to check for blocks
     const fullDayBlock = fullDayBlocks.find(block => {
-      return isSameDayInIST(block.date, appointmentDate);
+      const blockDate = new Date(block.date);
+      const isBlocking = isSameDayInIST(blockDate, appointmentDate);
+      
+      if (isBlocking) {
+        console.log(`[createAppointment] Block detected:`, {
+          blockDateUTC: blockDate.toISOString(),
+          blockDateIST: convertToIST(blockDate).toISOString(),
+          appointmentDateUTC: appointmentDate.toISOString(),
+          appointmentDateIST: appointmentDateIST.toISOString(),
+          isSameDay: isBlocking
+        });
+      }
+      
+      return isBlocking;
     });
 
     if (fullDayBlock) {
@@ -646,10 +686,12 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
       return { success: false, error: 'Could not fetch doctor schedule to verify appointment duration' };
     }
 
-    const dayOfWeek = appointmentDate.getDay();
+    const dayOfWeek = appointmentDateIST.getDay(); // Use IST date for day of week
+    console.log(`[createAppointment] Checking schedule for day of week ${dayOfWeek} (in IST)`);
+    
     const relevantSchedule = scheduleResult.data.find(s => s.dayOfWeek === dayOfWeek);
     if (!relevantSchedule) {
-      const dayName = format(convertToIST(appointmentDate), 'EEEE');
+      const dayName = format(appointmentDateIST, 'EEEE');
       return { success: false, error: `Doctor does not work on ${dayName}s (IST)` };
     }
 
@@ -659,8 +701,10 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     // Check for time blocks
     const timeBlocks = await prisma.specialDate.findMany({
       where: {
-        doctorId: doctorId,
-        type: 'TIME_BLOCK'
+        OR: [
+          { doctorId: doctorId, type: 'TIME_BLOCK' },
+          { doctorId: null, type: 'TIME_BLOCK' }  // Also check global time blocks
+        ]
       }
     });
     
@@ -714,7 +758,20 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     
     // Check if any existing appointment is on the same day in IST
     const conflictingAppointment = existingAppointments.find(appointment => {
-      return isSameDayInIST(new Date(appointment.date), appointmentDate);
+      const existingDate = new Date(appointment.date);
+      const isConflicting = isSameDayInIST(existingDate, appointmentDate);
+      
+      if (isConflicting) {
+        console.log(`[createAppointment] Conflicting appointment found:`, {
+          existingDateUTC: existingDate.toISOString(),
+          existingDateIST: convertToIST(existingDate).toISOString(),
+          newDateUTC: appointmentDate.toISOString(),
+          newDateIST: appointmentDateIST.toISOString(),
+          isSameDay: isConflicting
+        });
+      }
+      
+      return isConflicting;
     });
     
     if (conflictingAppointment) {
@@ -723,6 +780,14 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
         error: `Time slot ${time} on ${dateStr} (IST) is already booked. Please select another time.` 
       };
     }
+    
+    // Before creating the appointment, log the final date we're using for clarity
+    console.log(`[createAppointment] Creating appointment with finalized date:`, {
+      dateForDatabase: appointmentDate.toISOString(),
+      dateInIST: appointmentDateIST.toISOString(),
+      formattedIST: formatISTDate(appointmentDate),
+      time: time
+    });
 
     const newAppointment = await prisma.appointment.create({
       data: {
@@ -771,7 +836,15 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     // --- Webhook Logic End ---
 
     revalidatePath('/admin/appointments');
-    return { success: true, data: newAppointment };
+    return { 
+      success: true, 
+      data: {
+        ...newAppointment, 
+        // Include IST date for frontend display
+        dateInIST: formatISTDate(appointmentDate),
+        dayOfWeekIST: appointmentDateIST.getDay()
+      } 
+    };
 
   } catch (error) {
     console.error('Error creating appointment:', error);
@@ -784,9 +857,15 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
   try {
     const { id, patientName, email, phone, date, time, status, doctorId, customerId } = appointmentData;
     const appointmentDate = new Date(date);
+    const appointmentDateIST = convertToIST(appointmentDate);
 
-    console.log('Attempting to update appointment with ID:', id);
-    console.log('Update data:', appointmentData);
+    console.log('[updateAppointment] Attempting to update appointment with ID:', id);
+    console.log('[updateAppointment] Update data:', {
+      ...appointmentData,
+      dateUTC: appointmentDate.toISOString(),
+      dateIST: appointmentDateIST.toISOString(),
+      formattedIST: formatISTDate(appointmentDate)
+    });
 
     if (!id) {
       return { success: false, error: 'Appointment ID is required for update' };
@@ -804,12 +883,22 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
       return { success: false, error: `Appointment with ID ${id} not found.` };
     }
 
-    // Check if the time or date is being changed
-    const isTimeChanged = existingAppointment.time !== time || 
-                          existingAppointment.date.toISOString().split('T')[0] !== appointmentDate.toISOString().split('T')[0];
+    // Check if the time or date is being changed by comparing in IST
+    const existingDate = new Date(existingAppointment.date);
+    const isDateChanged = !isSameDayInIST(existingDate, appointmentDate);
+    const isTimeChanged = existingAppointment.time !== time;
+    
+    console.log(`[updateAppointment] Change detection:`, {
+      existingDateUTC: existingDate.toISOString(),
+      existingDateIST: convertToIST(existingDate).toISOString(),
+      newDateUTC: appointmentDate.toISOString(), 
+      newDateIST: appointmentDateIST.toISOString(),
+      isDateChanged,
+      isTimeChanged
+    });
     
     // Only do availability checks if the time, date, or doctor is changing
-    if (isTimeChanged || existingAppointment.doctorId !== doctorId) {
+    if (isDateChanged || isTimeChanged || existingAppointment.doctorId !== doctorId) {
       // 1. Check if doctor works on this day and time (basic availability)
       const availability = await isDoctorAvailable(doctorId, appointmentDate, time);
       if (!availability.available) {
@@ -853,7 +942,7 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
         return { success: false, error: 'Could not fetch doctor schedule to verify appointment duration' };
       }
 
-      const dayOfWeek = appointmentDate.getDay();
+      const dayOfWeek = appointmentDateIST.getDay();
       const relevantSchedule = scheduleResult.data.find(s => s.dayOfWeek === dayOfWeek);
       if (!relevantSchedule) {
         const dayName = format(convertToIST(appointmentDate), 'EEEE');
@@ -950,6 +1039,13 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
       }
     }
 
+    console.log(`[updateAppointment] Updating appointment with finalized date:`, {
+      dateForDatabase: appointmentDate.toISOString(),
+      dateInIST: appointmentDateIST.toISOString(),
+      formattedIST: formatISTDate(appointmentDate),
+      time: time
+    });
+
     const updatedAppointment = await prisma.appointment.update({
       where: { id: id },
       data: {
@@ -969,7 +1065,14 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
 
     console.log('Successfully updated appointment:', updatedAppointment);
     revalidatePath('/admin/appointments');
-    return { success: true, data: updatedAppointment };
+    return { 
+      success: true, 
+      data: {
+        ...updatedAppointment,
+        dateInIST: formatISTDate(appointmentDate),
+        dayOfWeekIST: appointmentDateIST.getDay()
+      }
+    };
 
   } catch (error) {
     console.error('Error updating appointment:', error);
