@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useBookingForm } from '@/contexts/BookingFormContext';
 import { ChevronLeft } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
@@ -13,8 +14,7 @@ interface PatientDetailsProps {
 const PatientDetails = ({ onBack }: PatientDetailsProps) => {
   const { state, dispatch } = useBookingForm();
 
-  const handleChange = (field: string, value: string) => {
-    // No special processing needed for phone here anymore, library handles it
+  const handleChange = (field: string, value: string | undefined) => {
     dispatch({
       type: 'SET_PATIENT_INFO',
       payload: {
@@ -99,29 +99,12 @@ const PatientDetails = ({ onBack }: PatientDetailsProps) => {
             international
             countryCallingCodeEditable={false}
             defaultCountry="IN"
-            countries={["IN"]} // Only allow India
+            countries={["IN"]}
             value={state.phone}
-            onChange={(value: string | undefined) => handleChange('phone', value || '')} // Add type for value
+            onChange={(value: string | undefined) => handleChange('phone', value)}
             className={cn(
-              'phone-input-container', // Add a base class for potential custom styling
-              state.errors.phone
-                ? 'phone-input-error' // Class for error state
-                : ''
-            )}
-            // Apply styles directly to the input element within the component
-            inputComponent={(props: React.InputHTMLAttributes<HTMLInputElement>) => ( // Add type for props
-              <input
-                {...props}
-                className={`
-                  w-full px-4 py-2.5 rounded-xl border transition-colors
-                  focus:border-[#8B5C9E] focus:ring-[#8B5C9E]
-                  ${state.errors.phone
-                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                    : 'border-gray-300'
-                  }
-                  phone-input-base // Add base class for input itself
-                `}
-              />
+              'phone-input-container w-full rounded-xl border border-gray-300 focus-within:border-[#8B5C9E] focus-within:ring-1 focus-within:ring-[#8B5C9E]',
+              state.errors.phone ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-500' : ''
             )}
             placeholder="Enter your phone number"
           />

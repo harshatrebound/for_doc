@@ -532,4 +532,20 @@ button.h-8.w-8 svg {
 /* Prevent clicking the country select part when it's disabled */
 .PhoneInputCountry {
   pointer-events: none; 
+  padding-left: 0.75rem !important;
+}
+
+/* Style the actual input field within react-phone-number-input */
+.PhoneInputInput {
+  /* Match padding and remove default border/outline */
+  padding-top: 0.625rem !important; /* py-2.5 */
+  padding-bottom: 0.625rem !important; /* py-2.5 */
+  padding-left: 0.5rem !important; /* Reduced px-2 - Adjust as needed */
+  padding-right: 1rem !important; /* px-4 */
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important; 
+  background-color: transparent !important; /* Make input transparent */
+  width: 100%; /* Ensure it fills container */
+  height: auto; /* Let container height dictate */
 }
