@@ -297,7 +297,7 @@ const DateTimeSelection = ({ onBack }: Omit<DateTimeSelectionProps, 'formData' |
           )}
         >
           <p className="text-sm text-gray-600">
-             Selected: {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+             Selected: {format(selectedDate, 'EEEE, MMMM d, yyyy')} <span className="text-xs bg-gray-100 px-1 rounded">IST</span>
              {state.selectedTime ? ` at ${state.selectedTime}` : (slots && slots.length === 0 && !isLoadingSlots) ? ' - No slots available' : ''}
           </p>
         </div>
@@ -306,7 +306,7 @@ const DateTimeSelection = ({ onBack }: Omit<DateTimeSelectionProps, 'formData' |
       <MobileSheet
         isOpen={showTimeSheet}
         onClose={() => setShowTimeSheet(false)}
-         title={`Select Time - ${selectedDate ? format(selectedDate, 'MMMM d, yyyy') : ''}`}
+         title={`Select Time - ${selectedDate ? format(selectedDate, 'MMMM d, yyyy') : ''} (IST)`}
       >
         <div className="space-y-6 p-4">
           {isLoadingSlots ? (

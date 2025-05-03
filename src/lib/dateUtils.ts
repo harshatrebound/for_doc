@@ -1,3 +1,6 @@
+// Import format from date-fns at the top of the file
+import { format } from 'date-fns';
+
 // Create a new utility file for consistent date handling
 
 // Format a Date object to YYYY-MM-DD string, preserving the actual day regardless of timezone
@@ -60,16 +63,41 @@ export function formatISTDate(date: Date): string {
 }
 
 /**
- * Compares two dates based on their calendar day in IST timezone
- * regardless of their time components
+ * Compares two dates to check if they represent the same day in IST timezone
+ * This is crucial for appointment scheduling to ensure dates are compared in the doctor's timezone
  */
 export function isSameDayInIST(date1: Date, date2: Date): boolean {
-  const ist1 = convertToIST(date1);
-  const ist2 = convertToIST(date2);
+  const date1IST = convertToIST(date1);
+  const date2IST = convertToIST(date2);
   
   return (
-    ist1.getFullYear() === ist2.getFullYear() &&
-    ist1.getMonth() === ist2.getMonth() &&
-    ist1.getDate() === ist2.getDate()
+    date1IST.getFullYear() === date2IST.getFullYear() &&
+    date1IST.getMonth() === date2IST.getMonth() &&
+    date1IST.getDate() === date2IST.getDate()
   );
+}
+
+/**
+ * Formats a date string into IST format for display with time
+ */
+export function formatISTDateTime(date: Date): string {
+  const istDate = convertToIST(date);
+  return `${formatISTDate(date)} ${String(istDate.getHours()).padStart(2, '0')}:${String(istDate.getMinutes()).padStart(2, '0')}`;
+}
+
+/**
+ * Returns a user-friendly formatted date string with IST timezone indicator
+ */
+export function getFormattedISTDateForDisplay(date: Date): string {
+  // Use date-fns format with IST timezone
+  const istDate = convertToIST(date);
+  return `${format(istDate, 'EEEE, MMMM d, yyyy')} (IST)`;
+}
+
+/**
+ * Gets the day of week in IST timezone (0 = Sunday, 6 = Saturday)
+ */
+export function getDayOfWeekInIST(date: Date): number {
+  const istDate = convertToIST(date);
+  return istDate.getDay();
 } 

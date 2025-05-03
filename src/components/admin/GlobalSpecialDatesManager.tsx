@@ -108,7 +108,13 @@ export default function GlobalSpecialDatesManager() {
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                    {selectedDate ? (
+                      <span>
+                        {format(selectedDate, "PPP")} <span className="text-xs bg-gray-100 px-1 rounded">IST</span>
+                      </span>
+                    ) : (
+                      <span>Pick a date (IST)</span>
+                    )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -172,7 +178,7 @@ export default function GlobalSpecialDatesManager() {
                   <TableBody>
                     {specialDates.map((item) => (
                       <TableRow key={item.id}>
-                        <TableCell>{format(new Date(item.date), 'PPP')}</TableCell>
+                        <TableCell>{format(new Date(item.date), 'PPP')} <span className="text-xs bg-gray-100 px-1 rounded">IST</span></TableCell>
                         <TableCell>{item.name}</TableCell>
                         <TableCell>
                           {SPECIAL_DATE_TYPES.find(t => t.value === item.type)?.label || item.type}

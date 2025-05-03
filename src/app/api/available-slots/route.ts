@@ -184,8 +184,12 @@ export async function GET(request: Request) {
       },
     });
     if (!schedule) {
-      console.log(`[Available Slots API] No active schedule found for doctor ${doctorId} on date ${dateStringForCheck} (Day ${dayOfWeek}).`);
-      return NextResponse.json({ disabledDates, slots: [] });
+      console.log(`[Available Slots API] No active schedule found for doctor ${doctorId} on date ${dateStringForCheck} (IST) (Day ${dayOfWeek}).`);
+      return NextResponse.json({ 
+        disabledDates, 
+        slots: [],
+        error: `Doctor is not available on ${format(istDate, 'EEEE')}s (IST)` 
+      });
     }
 
     // Check 3: Is it blocked by a SpecialDate (global or specific)?

@@ -630,7 +630,7 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
       console.log(`Found blocking date: ${fullDayBlock.date} matching appointment date in IST: ${dateStr}`);
       return { 
         success: false, 
-        error: `Doctor is unavailable on this date${fullDayBlock.reason ? ': ' + fullDayBlock.reason : ''}` 
+        error: `Doctor is unavailable on ${dateStr} (IST)${fullDayBlock.reason ? ': ' + fullDayBlock.reason : ''}` 
       };
     }
 
@@ -649,7 +649,8 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     const dayOfWeek = appointmentDate.getDay();
     const relevantSchedule = scheduleResult.data.find(s => s.dayOfWeek === dayOfWeek);
     if (!relevantSchedule) {
-      return { success: false, error: 'Doctor does not work on this day' };
+      const dayName = format(convertToIST(appointmentDate), 'EEEE');
+      return { success: false, error: `Doctor does not work on ${dayName}s (IST)` };
     }
 
     const slotDuration = relevantSchedule.slotDuration;
@@ -719,7 +720,7 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     if (conflictingAppointment) {
       return { 
         success: false, 
-        error: 'This time slot is already booked. Please select another time.' 
+        error: `Time slot ${time} on ${dateStr} (IST) is already booked. Please select another time.` 
       };
     }
 
@@ -836,7 +837,7 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
         console.log(`Found blocking date: ${fullDayBlock.date} matching appointment date in IST: ${dateStr}`);
         return { 
           success: false, 
-          error: `Doctor is unavailable on this date${fullDayBlock.reason ? ': ' + fullDayBlock.reason : ''}` 
+          error: `Doctor is unavailable on ${dateStr} (IST)${fullDayBlock.reason ? ': ' + fullDayBlock.reason : ''}` 
         };
       }
 
@@ -855,7 +856,8 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
       const dayOfWeek = appointmentDate.getDay();
       const relevantSchedule = scheduleResult.data.find(s => s.dayOfWeek === dayOfWeek);
       if (!relevantSchedule) {
-        return { success: false, error: 'Doctor does not work on this day' };
+        const dayName = format(convertToIST(appointmentDate), 'EEEE');
+        return { success: false, error: `Doctor does not work on ${dayName}s (IST)` };
       }
 
       const slotDuration = relevantSchedule.slotDuration;
