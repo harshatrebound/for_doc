@@ -85,6 +85,9 @@ export default function DoctorSchedulePage() {
   const [blockReason, setBlockReason] = useState('');
   const [isSubmittingBlock, setIsSubmittingBlock] = useState(false);
   const [deletingBlockId, setDeletingBlockId] = useState<string | null>(null);
+  const [isTimeBlock, setIsTimeBlock] = useState(false);
+  const [blockStartTime, setBlockStartTime] = useState('09:00');
+  const [blockEndTime, setBlockEndTime] = useState('12:00');
 
   const loadData = useCallback(async (id: string) => {
     if (!id) return;
@@ -220,25 +223,42 @@ export default function DoctorSchedulePage() {
     }
 
     setIsSubmittingBlock(true);
-    const result = await createSpecialDate({ 
-      doctorId: doctorId,
-      date: formattedDate,
-      reason: blockReason || undefined,
-      type: 'UNAVAILABLE',
-      name: blockReason || 'Doctor Unavailable'
-    });
+    
+    let result;
+    
+    if (isTimeBlock) {
+      result = await createSpecialDate({ 
+        doctorId: doctorId,
+        date: formattedDate,
+        reason: `TIME:${blockStartTime}-${blockEndTime}:${blockReason || 'Time Block'}`,
+        type: 'TIME_BLOCK',
+        name: `${blockStartTime}-${blockEndTime}: ${blockReason || 'Time Block'}`
+      });
+    } else {
+      result = await createSpecialDate({ 
+        doctorId: doctorId,
+        date: formattedDate,
+        reason: blockReason || undefined,
+        type: 'UNAVAILABLE',
+        name: blockReason || 'Doctor Unavailable'
+      });
+    }
 
     if (result.success) {
-      toast.success('Availability block added successfully.');
+      toast.success(isTimeBlock ? 'Time block added successfully.' : 'Availability block added successfully.');
       const refreshResult = await fetchSpecialDates(doctorId);
       if (refreshResult.success && refreshResult.data) {
          setBlocks(refreshResult.data as SpecialDateEntry[]); 
       }
       setSelectedBlockDate(undefined);
       setBlockReason('');
+      setBlockStartTime('09:00');
+      setBlockEndTime('12:00');
+      setIsTimeBlock(false);
     } else {
       toast.error(result.error || 'Failed to add block.');
     }
+    
     setIsSubmittingBlock(false);
   };
 
@@ -456,6 +476,52 @@ export default function DoctorSchedulePage() {
                   </PopoverContent>
                 </Popover>
               </div>
+
+              <div>
+                <label className="text-sm font-medium block mb-1">Block Type</label>
+                <div className="flex items-center gap-2 mb-4">
+                  <Button
+                    type="button"
+                    variant={!isTimeBlock ? "default" : "outline"}
+                    className={!isTimeBlock ? "bg-[#8B5C9E]" : ""}
+                    onClick={() => setIsTimeBlock(false)}
+                  >
+                    Full Day
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={isTimeBlock ? "default" : "outline"}
+                    className={isTimeBlock ? "bg-[#8B5C9E]" : ""}
+                    onClick={() => setIsTimeBlock(true)}
+                  >
+                    Specific Hours
+                  </Button>
+                </div>
+              </div>
+
+              {isTimeBlock && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Start Time</label>
+                    <Input
+                      type="time"
+                      value={blockStartTime}
+                      onChange={(e) => setBlockStartTime(e.target.value)}
+                      className="w-full bg-white border-[#8B5C9E]/20 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">End Time</label>
+                    <Input
+                      type="time"
+                      value={blockEndTime}
+                      onChange={(e) => setBlockEndTime(e.target.value)}
+                      className="w-full bg-white border-[#8B5C9E]/20 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
+                    />
+                  </div>
+                </div>
+              )}
+              
               <div>
                 <label htmlFor="blockReason" className="text-sm font-medium block mb-1">Reason (Optional)</label>
                 <Input 
@@ -484,33 +550,50 @@ export default function DoctorSchedulePage() {
                     <TableHeader className="sticky top-0 bg-gray-50 z-10">
                       <TableRow>
                         <TableHead>Date</TableHead>
+                        <TableHead>Time</TableHead>
                         <TableHead>Reason</TableHead>
                         <TableHead className="text-right">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {blocks.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell>{format(new Date(item.date), 'PPP')}</TableCell>
-                          <TableCell>{item.reason || '-'}</TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteBlock(item.id)}
-                              disabled={deletingBlockId === item.id}
-                              aria-label="Delete block"
-                              className="hover:bg-red-100/50"
-                            >
-                              {deletingBlockId === item.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
-                              ) : (
-                                <Trash2 className="h-4 w-4 text-red-500 hover:text-red-700" />
-                              )}
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {blocks.map((item) => {
+                        const isTimeBlock = item.type === 'TIME_BLOCK';
+                        
+                        let displayTime = 'All Day';
+                        let displayReason = item.reason || '-';
+                        
+                        if (isTimeBlock && item.reason?.startsWith('TIME:')) {
+                          const parts = item.reason.split(':');
+                          if (parts.length >= 3) {
+                            displayTime = `${parts[1]}-${parts[2]}`;
+                            displayReason = parts.slice(3).join(':') || '-';
+                          }
+                        }
+                        
+                        return (
+                          <TableRow key={item.id}>
+                            <TableCell>{format(new Date(item.date), 'PPP')}</TableCell>
+                            <TableCell>{displayTime}</TableCell>
+                            <TableCell>{displayReason}</TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteBlock(item.id)}
+                                disabled={deletingBlockId === item.id}
+                                aria-label="Delete block"
+                                className="hover:bg-red-100/50"
+                              >
+                                {deletingBlockId === item.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4 text-red-500 hover:text-red-700" />
+                                )}
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>

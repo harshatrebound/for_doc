@@ -123,10 +123,42 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
       currentTime = addMinutes(currentTime, totalSlotTime); // Increment by TOTAL slot time
     }
     
-    // TODO: Optionally filter out already booked slots for this doctor/date (similar to main API)
-    // For now, returning all potential slots based on schedule.
-    const availableSlots = slots; // Assign the generated slots
-
+    // Check for time-specific blocks for this date
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const timeBlocks = await prisma.specialDate.findMany({
+      where: {
+        doctorId: doctorId,
+        date: new Date(dateStr),
+        type: 'TIME_BLOCK'
+      }
+    });
+    
+    // Filter out slots that fall within time blocks
+    const availableSlots = slots.filter(slot => {
+      const slotMinutes = timeToMinutes(slot);
+      if (slotMinutes === null) return false;
+      
+      // Check if this slot falls within any time block
+      return !timeBlocks.some(block => {
+        // Extract time range from block.reason
+        if (!block.reason?.startsWith('TIME:')) return false;
+        
+        const parts = block.reason.split(':');
+        if (parts.length < 3) return false;
+        
+        const timeRange = parts[1];
+        const [startTimeStr, endTimeStr] = timeRange.split('-');
+        
+        const blockStartMinutes = timeToMinutes(startTimeStr);
+        const blockEndMinutes = timeToMinutes(endTimeStr);
+        
+        if (blockStartMinutes === null || blockEndMinutes === null) return false;
+        
+        // Check if slot is within the blocked time range
+        return slotMinutes >= blockStartMinutes && slotMinutes < blockEndMinutes;
+      });
+    });
+    
     return { success: true, data: availableSlots };
 
   } catch (error) {
