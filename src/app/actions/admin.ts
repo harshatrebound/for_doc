@@ -127,11 +127,21 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
     // Format date for database queries
     const dateStr = format(date, 'yyyy-MM-dd');
     
+    // Use date range to handle timezone differences
+    const startOfDay = new Date(dateStr);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(dateStr);
+    endOfDay.setHours(23, 59, 59, 999);
+    
     // 1. Get all existing appointments for this doctor on this date
     const existingAppointments = await prisma.appointment.findMany({
       where: {
         doctorId: doctorId,
-        date: new Date(dateStr),
+        date: {
+          gte: startOfDay,
+          lte: endOfDay
+        },
         status: {
           notIn: ['CANCELLED', 'NO_SHOW'] // Only consider active appointments
         }
@@ -147,7 +157,10 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
     const timeBlocks = await prisma.specialDate.findMany({
       where: {
         doctorId: doctorId,
-        date: new Date(dateStr),
+        date: {
+          gte: startOfDay,
+          lte: endOfDay
+        },
         type: 'TIME_BLOCK'
       }
     });
@@ -556,10 +569,22 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
 
     // 2. Check for whole-day blocks on the requested date
     const dateStr = format(appointmentDate, 'yyyy-MM-dd');
+    
+    // Query for special dates that might overlap with the appointment date
+    // Use date range to handle timezone differences
+    const startOfRequestedDay = new Date(dateStr);
+    startOfRequestedDay.setHours(0, 0, 0, 0);
+    
+    const endOfRequestedDay = new Date(dateStr);
+    endOfRequestedDay.setHours(23, 59, 59, 999);
+    
     const fullDayBlock = await prisma.specialDate.findFirst({
       where: {
         doctorId: doctorId,
-        date: new Date(dateStr),
+        date: {
+          gte: startOfRequestedDay,
+          lte: endOfRequestedDay
+        },
         type: 'UNAVAILABLE'
       }
     });
@@ -596,7 +621,10 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     const timeBlocks = await prisma.specialDate.findMany({
       where: {
         doctorId: doctorId,
-        date: new Date(dateStr),
+        date: {
+          gte: startOfRequestedDay,
+          lte: endOfRequestedDay
+        },
         type: 'TIME_BLOCK'
       }
     });
@@ -637,7 +665,10 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     const existingAppointment = await prisma.appointment.findFirst({
       where: {
         doctorId,
-        date: appointmentDate,
+        date: {
+          gte: startOfRequestedDay,
+          lte: endOfRequestedDay
+        },
         time,
         status: {
           notIn: ['CANCELLED', 'NO_SHOW']
@@ -746,10 +777,22 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
 
       // 2. Check for whole-day blocks on the requested date
       const dateStr = format(appointmentDate, 'yyyy-MM-dd');
+      
+      // Query for special dates that might overlap with the appointment date
+      // Use date range to handle timezone differences
+      const startOfRequestedDay = new Date(dateStr);
+      startOfRequestedDay.setHours(0, 0, 0, 0);
+      
+      const endOfRequestedDay = new Date(dateStr);
+      endOfRequestedDay.setHours(23, 59, 59, 999);
+      
       const fullDayBlock = await prisma.specialDate.findFirst({
         where: {
           doctorId: doctorId,
-          date: new Date(dateStr),
+          date: {
+            gte: startOfRequestedDay,
+            lte: endOfRequestedDay
+          },
           type: 'UNAVAILABLE'
         }
       });
@@ -786,7 +829,10 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
       const timeBlocks = await prisma.specialDate.findMany({
         where: {
           doctorId: doctorId,
-          date: new Date(dateStr),
+          date: {
+            gte: startOfRequestedDay,
+            lte: endOfRequestedDay
+          },
           type: 'TIME_BLOCK'
         }
       });
@@ -827,7 +873,10 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
       const conflictingAppointment = await prisma.appointment.findFirst({
         where: {
           doctorId,
-          date: appointmentDate,
+          date: {
+            gte: startOfRequestedDay,
+            lte: endOfRequestedDay
+          },
           time,
           id: { not: id }, // Exclude the current appointment
           status: {
