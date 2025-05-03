@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verify } from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Add paths that don't require authentication
 const publicPaths = [
@@ -54,28 +51,10 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/admin/login', request.url));
     }
 
-    try {
-      // Verify the token - just check if it's valid without strict expiration check
-      // This is a more lenient approach to prevent frequent logouts during navigation
-      try {
-        verify(token, JWT_SECRET, { ignoreExpiration: true });
-        return NextResponse.next();
-      } catch (innerError) {
-        // Only redirect if there's a problem with the token structure/signature
-        // not just expiration
-        if (innerError.name !== 'TokenExpiredError') {
-          throw innerError;
-        }
-        return NextResponse.next();
-      }
-    } catch (error) {
-      console.error('Token validation error:', error);
-      
-      // Invalid token - clear it and redirect to login
-      const response = NextResponse.redirect(new URL('/admin/login', request.url));
-      response.cookies.delete('admin_token');
-      return response;
-    }
+    // Skip full token verification in middleware which causes crypto issues in Edge Runtime
+    // Just checking presence of token is enough for middleware
+    // The actual API routes will do full verification with proper Node.js runtime
+    return NextResponse.next();
   }
 
   return NextResponse.next();

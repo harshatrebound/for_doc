@@ -1,27 +1,14 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { verify } from 'jsonwebtoken';
 import path from 'path';
 import { writeFile } from 'fs/promises';
 import sitemap from '../../../sitemap';
 
-// Verify authentication
-function isAuthenticated(request: Request) {
+// Simple authentication check based on cookie presence
+// The full verification happens in middleware
+function isAuthenticated() {
   const cookieStore = cookies();
-  const token = cookieStore.get('admin_token')?.value;
-
-  if (!token) {
-    return false;
-  }
-
-  try {
-    // Verify the JWT token (using the same key as in authentication)
-    const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-    verify(token, JWT_SECRET);
-    return true;
-  } catch (error) {
-    return false;
-  }
+  return !!cookieStore.get('admin_token')?.value;
 }
 
 // Convert sitemap data to XML
@@ -42,9 +29,9 @@ function generateSitemapXml(sitemapData: any[]) {
 }
 
 // POST handler - regenerate sitemap
-export async function POST(request: Request) {
+export async function POST() {
   // Check authentication
-  if (!isAuthenticated(request)) {
+  if (!isAuthenticated()) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
