@@ -5,7 +5,7 @@ import { PlusCircle, Edit, Trash2, FileText, Search, Filter, Image as ImageIcon,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { 
@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/select';
 import { Pagination, PaginationData } from '@/components/admin/Pagination';
 import { cn } from '@/lib/utils';
+import { format } from "date-fns";
 
 type Category = {
   id: string;
@@ -96,8 +97,8 @@ export default function ContentManagementPage() {
           console.log(`📊 Found 'pages' (${data.pages.length}) and 'pagination' keys.`);
           const typedData: PageData[] = data.pages.map((page: any) => ({
               ...page,
-              updatedAt: page.updatedAt ? new Date(page.updatedAt) : new Date(),
-              publishedAt: page.publishedAt ? new Date(page.publishedAt) : null,
+              updatedAt: page.updatedAt || '',
+              publishedAt: page.publishedAt || null,
               categoryId: page.category?.id || null
           }));
           setPages(typedData);
@@ -108,8 +109,8 @@ export default function ContentManagementPage() {
           console.warn(`⚠️ API for ${pageType} returned an array directly. Handling as old format.`);
           const typedData: PageData[] = data.map((page: any) => ({ 
               ...page,
-              updatedAt: page.updatedAt ? new Date(page.updatedAt) : new Date(),
-              publishedAt: page.publishedAt ? new Date(page.publishedAt) : null,
+              updatedAt: page.updatedAt || '',
+              publishedAt: page.publishedAt || null,
               categoryId: page.category?.id || null
            }));
            setPages(typedData);
@@ -201,7 +202,7 @@ export default function ContentManagementPage() {
   };
 
   return (
-    <div className="space-y-6 p-6 max-w-full">
+    <div className="space-y-6 p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Content Management</h1>
@@ -298,17 +299,17 @@ export default function ContentManagementPage() {
         </TabsList>
         
         <TabsContent value={activeTab} className="space-y-6">
-          <Card>
-            <Card.Header>
-              <Card.Title>
+          <Card className="overflow-hidden border-0 shadow-none bg-transparent">
+            <CardHeader>
+              <CardTitle>
                 {pageTypeMap[activeTab]
                   .split('-')
                   .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                   .join(' ')}
                  Pages
-              </Card.Title>
-            </Card.Header>
-            <Card.Content>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
                 <div className="relative flex-1">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
@@ -369,7 +370,7 @@ export default function ContentManagementPage() {
                                 </div>
                               )}
                             </div>
-                            <Card.Content className="p-3 flex-1 flex flex-col justify-between">
+                            <CardContent className="p-3 flex-1 flex flex-col justify-between">
                               <div>
                                 <h3 className="font-semibold text-sm mb-1 truncate" title={page.title}>{page.title}</h3>
                               </div>
@@ -384,7 +385,7 @@ export default function ContentManagementPage() {
                                   <Trash2 className="h-3.5 w-3.5 text-red-500" />
                                 </Button>
                               </div>
-                            </Card.Content>
+                            </CardContent>
                           </Card>
                         ))
                       ) : (
@@ -394,7 +395,7 @@ export default function ContentManagementPage() {
                       )}
                     </div>
                   ) : (
-                    <div className="border rounded-lg overflow-hidden">
+                    <div className="border rounded-lg w-full bg-white">
                       <table className="min-w-full divide-y divide-gray-200 table-fixed">
                         <thead className="bg-gray-50">
                           <tr>
@@ -429,7 +430,9 @@ export default function ContentManagementPage() {
                                   {page.category?.name || '-'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {page.updatedAt instanceof Date ? page.updatedAt.toLocaleDateString() : (page.updatedAt ? new Date(page.updatedAt).toLocaleDateString() : '-')}
+                                  {typeof page.updatedAt === 'string' && page.updatedAt 
+                                    ? format(new Date(page.updatedAt), 'MMM d, yyyy')
+                                    : '-'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                   <div className="flex justify-end gap-2">
@@ -475,7 +478,7 @@ export default function ContentManagementPage() {
                   )}
                 </>
               )}
-            </Card.Content>
+            </CardContent>
           </Card>
         </TabsContent>
       </Tabs>

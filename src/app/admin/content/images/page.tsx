@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { toast } from 'react-hot-toast';
 
 interface PageWithImage {
@@ -113,13 +113,13 @@ export default function ManageImagesPage() {
       </div>
 
       <Card className="mb-6">
-        <Card.Header>
-          <Card.Title>Image Management</Card.Title>
-          <Card.Description>
+        <CardHeader>
+          <CardTitle>Image Management</CardTitle>
+          <CardDescription>
             Manage external images used in your content pages. Import external images to your server for better performance and reliability.
-          </Card.Description>
-        </Card.Header>
-        <Card.Content>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <p className="mb-4">
             This tool helps you identify content with external images and import them to your server.
             External images may cause slow page load or break if the source site changes.
@@ -134,7 +134,7 @@ export default function ManageImagesPage() {
               <span>Local image</span>
             </div>
           </div>
-        </Card.Content>
+        </CardContent>
       </Card>
 
       {loading ? (
@@ -175,7 +175,7 @@ export default function ManageImagesPage() {
                   </div>
                 )}
               </div>
-              <Card.Content className="p-4 flex-1 flex flex-col justify-between">
+              <CardContent className="p-4 flex-1 flex flex-col justify-between">
                 <div>
                   <h3 className="font-semibold text-lg mb-1 truncate">{page.title}</h3>
                   <p className="text-sm text-gray-500 mb-2">{getPageTypeName(page.pageType)}</p>
@@ -217,7 +217,7 @@ export default function ManageImagesPage() {
                     </Button>
                   </Link>
                 </div>
-              </Card.Content>
+              </CardContent>
             </Card>
           ))}
         </div>

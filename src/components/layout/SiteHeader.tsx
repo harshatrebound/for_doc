@@ -588,7 +588,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                     : 'bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]'
                 }`}
                 icon={<Calendar className="w-5 h-5 mr-2" />}
-                text="Request Consultation"
+                text="Book an Appointment"
               />
             </div>
             
@@ -603,7 +603,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                 }`}
                 icon={<Calendar className="w-4 h-4" />}
                 text=""
-                ariaLabel="Request consultation"
+                ariaLabel="Book an Appointment"
               />
               
               {/* Mobile Menu Button - with consistent styling */}
@@ -805,7 +805,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                 <BookingButton 
                   className="w-full py-3 px-4 rounded-md font-medium transition-colors duration-300 shadow-md hover:shadow-lg flex items-center justify-center bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]"
                   icon={<Calendar className="w-5 h-5 mr-2" />}
-                  text="Request Consultation"
+                  text="Book an Appointment"
                 />
               </div>
             </motion.div>

@@ -1,35 +1,25 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { format, addDays, isSameDay, isAfter, startOfToday, isWeekend, parse, addMinutes, setHours, setMinutes, getDay, startOfDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, Loader2, Calendar, Sun, Cloud, Moon } from 'lucide-react';
-import type { SpecialDate } from '@/types/schedule';
-import type { DateTimeSelectionProps } from '@/types/booking';
+import { format, startOfDay, isBefore } from 'date-fns';
+import { ChevronLeft, ChevronRight, Loader2, Sun, Cloud, Moon } from 'lucide-react';
+import { fetchSpecialDates, fetchDoctorSchedule } from '@/app/actions/admin';
+import type { DateTimeSelectionProps, Doctor, DoctorSchedule, SpecialDate } from '@/types/booking';
 import { useTimeSlots } from '@/hooks/useTimeSlots';
 import { useBookingForm } from '@/contexts/BookingFormContext';
 import { MobileSheet } from '@/components/ui/MobileSheet';
 import { cn } from '@/lib/utils';
+import { Calendar as ShadcnCalendar } from "@/components/ui/calendar";
+import type { DayPickerSingleProps } from 'react-day-picker';
 
-interface DoctorSchedule {
-  id: string;
-  dayOfWeek: number;
-  startTime: string;
-  endTime: string;
-  isActive: boolean;
-  slotDuration: number;
-  bufferTime: number;
-  breakStart?: string;
-  breakEnd?: string;
-}
-
-interface TimeSlot {
+interface TimeSlotDisplay {
   time: string;
   period: 'morning' | 'afternoon' | 'evening';
   label: string;
 }
 
-const categorizeTimes = (slots: string[]): TimeSlot[] => {
+const categorizeTimes = (slots: string[]): TimeSlotDisplay[] => {
   return slots.map(time => {
     const [hours] = time.split(':');
     const hour = parseInt(hours, 10);
@@ -53,137 +43,163 @@ const categorizeTimes = (slots: string[]): TimeSlot[] => {
 
 const DateTimeSelection = ({ onBack }: Omit<DateTimeSelectionProps, 'formData' | 'onChange' | 'onSubmit'>) => {
   const { state, dispatch } = useBookingForm();
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const { doctor, selectedDate } = state;
+  const doctorId = doctor?.id;
+
   const [showTimeSheet, setShowTimeSheet] = useState(false);
-  const specialDatesRef = useRef<SpecialDate[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const [schedule, setSchedule] = useState<DoctorSchedule[]>([]);
-  const [visibleDates, setVisibleDates] = useState<Date[]>([]);
+  const [globalBlockedDates, setGlobalBlockedDates] = useState<string[]>([]);
+  const [doctorBlockedDates, setDoctorBlockedDates] = useState<string[]>([]);
+  const [showDebug, setShowDebug] = useState(false);
 
-  const { slots, isLoading, error } = useTimeSlots({
-    doctorId: state.doctor?.id || '',
-    date: state.selectedDate,
-    onError: (error) => {
-      dispatch({ 
-        type: 'SET_ERROR', 
-        payload: { field: 'timeSlots', message: error.message } 
-      });
-    }
-  });
-
-  // Fetch doctor's schedule
   useEffect(() => {
-    const doctorId = state.doctor?.id;
-    if (!doctorId) return;
+    console.log('[DateTimeSelection] Doctor in state:', doctor);
+    if (!doctor) {
+       console.warn("[DateTimeSelection] No doctor selected for this step!");
+              }
+  }, [doctor]);
 
-    const fetchSchedule = async () => {
-      try {
-        const response = await fetch(`/api/doctor-schedule/${doctorId}`);
-        if (!response.ok) throw new Error('Failed to fetch schedule');
-        const data = await response.json();
-        setSchedule(data.schedule || []);
-      } catch (error) {
-        console.error('Error fetching schedule:', error);
+  useEffect(() => {
+    const loadAvailabilityData = async () => {
+      if (!doctorId) { 
+        console.log('[DateTimeSelection] No doctorId, skipping data fetch.');
         setSchedule([]);
+        setDoctorBlockedDates([]);
+        setGlobalBlockedDates([]);
+        setIsLoadingData(false);
+        return;
+      }
+      
+      console.log(`[DateTimeSelection] Fetching data for doctorId: ${doctorId}`);
+      setIsLoadingData(true);
+      try {
+        const [scheduleResult, globalDatesResult, doctorDatesResult] = await Promise.all([
+          fetchDoctorSchedule(doctorId),
+          fetchSpecialDates(),
+          fetchSpecialDates(doctorId)
+        ]);
+
+        if (scheduleResult.success && scheduleResult.data) {
+          setSchedule(scheduleResult.data);
+          console.log('[DateTimeSelection] Fetched schedule:', scheduleResult.data);
+                } else {
+          console.error("Failed to fetch schedule:", scheduleResult.error);
+          setSchedule([]);
+        }
+
+        if (globalDatesResult.success && globalDatesResult.data) {
+           const blocked = globalDatesResult.data
+            .filter((d: SpecialDate) => d.type === 'BLOCKED' || d.type === 'UNAVAILABLE')
+            .map((d: SpecialDate) => format(new Date(d.date), 'yyyy-MM-dd'))
+            .filter((d): d is string => d !== null);
+          setGlobalBlockedDates(blocked);
+          console.log('[DateTimeSelection] Processed global blocked dates:', blocked);
+        } else {
+          console.error("Failed to fetch global special dates:", globalDatesResult.error);
+          setGlobalBlockedDates([]);
+        }
+
+        if (doctorDatesResult.success && doctorDatesResult.data) {
+           const blocked = doctorDatesResult.data
+             .filter((d: SpecialDate) => d.type === 'BLOCKED' || d.type === 'UNAVAILABLE')
+             .map((d: SpecialDate) => format(new Date(d.date), 'yyyy-MM-dd'))
+             .filter((d): d is string => d !== null);
+          setDoctorBlockedDates(blocked);
+           console.log(`[DateTimeSelection] Processed blocked dates for doctor ${doctorId}:`, blocked);
+        } else {
+          console.error(`Failed to fetch special dates for doctor ${doctorId}:`, doctorDatesResult.error);
+          setDoctorBlockedDates([]);
+        }
+
+      } catch (error) {
+        console.error("[DateTimeSelection] Error fetching availability data:", error);
+        setSchedule([]);
+        setGlobalBlockedDates([]);
+        setDoctorBlockedDates([]);
+      } finally {
+        setIsLoadingData(false);
       }
     };
 
-    fetchSchedule();
-  }, [state.doctor?.id]);
+    loadAvailabilityData();
+  }, [doctorId]);
 
-  // Safe methods to access and set specialDates
-  const setSpecialDates = (data: any) => {
-    try {
-      if (data === null || data === undefined) {
-        specialDatesRef.current = [];
-      } else if (Array.isArray(data)) {
-        specialDatesRef.current = data;
-      } else if (typeof data === 'object' && 'data' in data && Array.isArray(data.data)) {
-        specialDatesRef.current = data.data;
-      } else {
-        console.warn('Non-array data provided to setSpecialDates:', data);
-        specialDatesRef.current = [];
-      }
-    } catch (err) {
-      console.error('Error setting specialDates:', err);
-      specialDatesRef.current = [];
+  const isDateDisabled = useCallback((date: Date): boolean => {
+    const today = startOfDay(new Date());
+    const dateToCheck = startOfDay(date);
+
+    if (isBefore(dateToCheck, today)) {
+      return true;
     }
-  };
 
-  const findSpecialDate = (predicate: (item: SpecialDate) => boolean): SpecialDate | undefined => {
-    try {
-      if (!Array.isArray(specialDatesRef.current)) {
-        console.warn('specialDatesRef.current is not an array:', specialDatesRef.current);
-        return undefined;
-      }
-      return specialDatesRef.current.find(predicate);
-    } catch (err) {
-      console.error('Error finding in specialDates:', err);
-      return undefined;
+    const dayOfWeek = dateToCheck.getDay();
+    const isWorkingDay = schedule.some(s => s.dayOfWeek === dayOfWeek && s.isActive);
+    if (!isWorkingDay) {
+        return true;
     }
-  };
 
-  const isDateSelectable = (date: Date): boolean => {
-    if (isAfter(startOfToday(), date)) return false;
-    if (isWeekend(date)) return false;
+    const dateString = format(dateToCheck, 'yyyy-MM-dd');
+    const isGlobalBlock = globalBlockedDates.includes(dateString);
+    if (isGlobalBlock) {
+        return true;
+    }
 
-    const specialDate = findSpecialDate(sd => 
-      Boolean(sd.date) && isSameDay(new Date(sd.date), date)
-    );
+    const isDoctorBlock = doctorBlockedDates.includes(dateString);
+    if (isDoctorBlock) {
+        return true;
+    }
     
-    if (specialDate?.type === 'HOLIDAY') return false;
+    return false;
+  }, [schedule, globalBlockedDates, doctorBlockedDates]);
 
-    const dayOfWeek = getDay(date);
-    const isTestDoctor = Boolean(state.doctor?.id === 'dr-sameer' || state.doctor?.id === 'other-doctors');
+  const handleTimeSlotError = useCallback((error: Error) => {
+    dispatch({
+      type: 'SET_ERROR',
+      payload: { field: 'timeSlots', message: error.message }
+    });
+  }, [dispatch]);
+
+  const { slots, isLoading: isLoadingSlots, error: timeSlotError, refetch } = useTimeSlots({
+    doctorId: doctorId || '',
+    date: selectedDate,
+    onError: handleTimeSlotError,
+  });
     
-    return isTestDoctor || Boolean(schedule.find(s => s.dayOfWeek === dayOfWeek)?.isActive);
-  };
+  const handleDateSelect = useCallback((date: Date | undefined) => {
+    if (!date) return;
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = direction === 'left' ? -200 : 200;
-      scrollRef.current.scrollBy({ 
-        left: scrollAmount, 
-        behavior: 'smooth' 
-      });
+    if (isDateDisabled(date)) {
+        console.warn("[handleDateSelect] Attempted to select a disabled date:", date);
+        return;
     }
-  };
 
-  const dates = useMemo(() => {
-    const today = startOfToday();
-    return Array.from({ length: 14 }, (_, i) => addDays(today, i));
-  }, []);
-
-  const handleDateSelect = (date: Date) => {
-    dispatch({ type: 'SET_DATE', payload: date });
+    const normalizedDate = startOfDay(date);
+    console.log(`[handleDateSelect] Selected date: ${format(normalizedDate, 'yyyy-MM-dd')}`);
+    dispatch({ type: 'SET_DATE', payload: normalizedDate });
     setShowTimeSheet(true);
-  };
+  }, [dispatch, isDateDisabled]);
 
   const handleTimeSelect = (time: string) => {
     dispatch({ type: 'SET_TIME', payload: time });
     setShowTimeSheet(false);
   };
 
-  const categorizedSlots = categorizeTimes(slots);
+  const categorizedSlots = useMemo(() => categorizeTimes(slots || []), [slots]);
 
-  useEffect(() => {
-    // Generate next 14 days
-    const dates = Array.from({ length: 14 }, (_, i) => addDays(startOfDay(new Date()), i));
-    setVisibleDates(dates);
-  }, []);
-
-  if (isLoading) {
+  if (isLoadingData) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <Loader2 className="w-8 h-8 text-[#8B5C9E] animate-spin" />
-        <p className="mt-4 text-gray-600">Loading schedule...</p>
+        <p className="mt-4 text-gray-600">Loading doctor's availability...</p>
       </div>
     );
   }
 
-  const TimeSlotSection = ({ title, icon, slots }: { 
+  const TimeSlotSection = ({ title, icon, slots: timeSlots }: {
     title: string; 
-    icon: React.ReactNode; 
-    slots: TimeSlot[];
+    icon: ReactNode;
+    slots: TimeSlotDisplay[];
   }) => (
     <div className="space-y-3">
       <div className="flex items-center gap-2 px-1">
@@ -191,7 +207,7 @@ const DateTimeSelection = ({ onBack }: Omit<DateTimeSelectionProps, 'formData' |
         <h3 className="text-sm font-medium text-gray-900">{title}</h3>
       </div>
       <div className="grid grid-cols-3 gap-2">
-        {slots.map(({ time, label }) => (
+         {timeSlots.map(({ time, label }) => (
           <button
             key={time}
             onClick={() => handleTimeSelect(time)}
@@ -228,121 +244,79 @@ const DateTimeSelection = ({ onBack }: Omit<DateTimeSelectionProps, 'formData' |
           Select Date & Time
         </h1>
         <p className="text-sm sm:text-base text-gray-600">
-          Choose your preferred appointment slot
+            {doctor ? `For ${doctor.name}` : 'Choose your preferred appointment slot'}
         </p>
       </div>
 
-      {/* Date Selection */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900">Select Date</h3>
-          <div className="flex items-center space-x-2">
-            <motion.button 
-              onClick={() => scroll('left')} 
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-1.5 rounded-full hover:bg-[#8B5C9E]/10 text-gray-600 hover:text-[#8B5C9E] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#8B5C9E]/30"
-              aria-label="Previous dates"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </motion.button>
-            <motion.button 
-              onClick={() => scroll('right')} 
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-1.5 rounded-full hover:bg-[#8B5C9E]/10 text-gray-600 hover:text-[#8B5C9E] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#8B5C9E]/30"
-              aria-label="Next dates"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </motion.button>
-          </div>
-        </div>
-
-        <div className="date-scroller-container">
-          <motion.div
-            ref={scrollRef}
-            className="flex space-x-2 sm:space-x-3 overflow-x-auto pb-2 date-scroller"
-          >
-            {visibleDates.map((date: Date) => {
-              const isSelected = state.selectedDate && isSameDay(date, state.selectedDate);
-              const selectable = isDateSelectable(date);
-              const dayOfMonth = format(date, 'd');
-              const dayOfWeek = format(date, 'EEE');
-              const isToday = isSameDay(date, startOfToday());
-
-              return (
-                <motion.button
-                  key={date.toISOString()}
-                  whileHover={selectable ? { scale: 1.05, y: -2 } : {}}
-                  whileTap={selectable ? { scale: 0.95 } : {}}
-                  disabled={!selectable}
-                  onClick={() => selectable && handleDateSelect(date)}
-                  className={cn(
-                    'min-w-[4.5rem] sm:min-w-[5rem] h-20 sm:h-24 rounded-xl flex flex-col items-center justify-center',
-                    'transition-all duration-300 touch-manipulation',
-                    isSelected
-                      ? 'bg-gradient-to-br from-[#8B5C9E] to-[#6B4A7E] text-white shadow-lg'
-                      : selectable
-                        ? 'border border-gray-200 hover:border-[#8B5C9E] bg-white hover:bg-[#F9F5FF]'
-                        : 'border border-gray-200 bg-gray-50 opacity-60'
-                  )}
-                >
-                  <span className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-gray-500'}`}>
-                    {dayOfWeek}
-                  </span>
-                  <span className={`text-xl sm:text-2xl font-bold mt-1 ${isSelected ? 'text-white' : 'text-gray-900'}`}>
-                    {dayOfMonth}
-                  </span>
-                  {isToday && (
-                    <span className={`text-xs font-medium mt-1 ${
-                      isSelected 
-                        ? 'bg-white/20 text-white px-2 py-0.5 rounded-full' 
-                        : 'bg-[#8B5C9E]/10 text-[#8B5C9E] px-2 py-0.5 rounded-full'
-                    }`}>
-                      Today
-                    </span>
-                  )}
-                </motion.button>
-              );
-            })}
-          </motion.div>
-          
-          {/* Fade indicators for better UX */}
-          <div className="date-scroller-fade-left"></div>
-          <div className="date-scroller-fade-right"></div>
-        </div>
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900">Select Date</h3>
+        <ShadcnCalendar
+          mode="single"
+            selected={selectedDate ?? undefined}
+            onSelect={handleDateSelect}
+          disabled={isDateDisabled}
+          className="rounded-md border p-0 mx-auto w-full max-w-md shadow-sm bg-white"
+          classNames={{
+            months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 p-4",
+            month: "space-y-4 w-full",
+            caption: "flex justify-center pt-1 relative items-center",
+            caption_label: "text-sm font-medium text-gray-700",
+            nav: "space-x-1 flex items-center",
+            nav_button: cn(
+              "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+              "text-gray-600 hover:text-[#8B5C9E]"
+            ),
+            nav_button_previous: "absolute left-1",
+            nav_button_next: "absolute right-1",
+            table: "w-full border-collapse space-y-1",
+            head_row: "flex justify-around",
+            head_cell: "text-gray-500 rounded-md w-9 font-normal text-[0.8rem]",
+            row: "flex w-full mt-2 justify-around",
+            cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-[#8B5C9E]/10 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+            day: cn(
+              "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
+              "hover:bg-[#8B5C9E]/10 rounded-md",
+                  "transition-colors duration-150",
+                  "disabled:text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+            ),
+            day_selected: "bg-[#8B5C9E] text-white hover:bg-[#8B5C9E] hover:text-white focus:bg-[#8B5C9E] focus:text-white",
+            day_today: "bg-accent text-accent-foreground",
+            day_outside: "text-muted-foreground opacity-50",
+            day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+            day_hidden: "invisible",
+          }}
+        />
       </div>
 
-      {/* Selected Date & Time Display */}
-      {state.selectedDate && (
+       {selectedDate && (
         <div 
-          onClick={() => setShowTimeSheet(true)}
+           onClick={() => !isLoadingSlots && slots && slots.length > 0 && setShowTimeSheet(true)}
           className={cn(
-            'p-4 bg-gray-50 rounded-xl cursor-pointer transition-colors',
-            'hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20'
+             'p-4 bg-gray-50 rounded-xl transition-colors',
+             slots && slots.length > 0 ? 'cursor-pointer hover:bg-gray-100' : 'cursor-default',
+             'focus:outline-none focus:ring-2 focus:ring-primary/20'
           )}
         >
           <p className="text-sm text-gray-600">
-            Selected: {format(state.selectedDate, 'EEEE, MMMM d, yyyy')}
-            {state.selectedTime && ` at ${state.selectedTime}`}
+             Selected: {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+             {state.selectedTime ? ` at ${state.selectedTime}` : (slots && slots.length === 0 && !isLoadingSlots) ? ' - No slots available' : ''}
           </p>
         </div>
       )}
 
-      {/* Time Selection Sheet */}
       <MobileSheet
         isOpen={showTimeSheet}
         onClose={() => setShowTimeSheet(false)}
-        title={`Select Time - ${state.selectedDate ? format(state.selectedDate, 'MMMM d, yyyy') : ''}`}
+         title={`Select Time - ${selectedDate ? format(selectedDate, 'MMMM d, yyyy') : ''}`}
       >
         <div className="space-y-6 p-4">
-          {isLoading ? (
+          {isLoadingSlots ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
             </div>
-          ) : error ? (
+           ) : timeSlotError ? (
             <div className="text-center py-8 text-red-500">
-              {error.message || 'Failed to load time slots'}
+               {timeSlotError.message || 'Failed to load time slots'}
             </div>
           ) : categorizedSlots.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
@@ -350,7 +324,6 @@ const DateTimeSelection = ({ onBack }: Omit<DateTimeSelectionProps, 'formData' |
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Morning Slots */}
               {categorizedSlots.some(slot => slot.period === 'morning') && (
                 <TimeSlotSection
                   title="Morning"
@@ -358,8 +331,6 @@ const DateTimeSelection = ({ onBack }: Omit<DateTimeSelectionProps, 'formData' |
                   slots={categorizedSlots.filter(slot => slot.period === 'morning')}
                 />
               )}
-
-              {/* Afternoon Slots */}
               {categorizedSlots.some(slot => slot.period === 'afternoon') && (
                 <TimeSlotSection
                   title="Afternoon"
@@ -367,8 +338,6 @@ const DateTimeSelection = ({ onBack }: Omit<DateTimeSelectionProps, 'formData' |
                   slots={categorizedSlots.filter(slot => slot.period === 'afternoon')}
                 />
               )}
-
-              {/* Evening Slots */}
               {categorizedSlots.some(slot => slot.period === 'evening') && (
                 <TimeSlotSection
                   title="Evening"
@@ -380,6 +349,32 @@ const DateTimeSelection = ({ onBack }: Omit<DateTimeSelectionProps, 'formData' |
           )}
         </div>
       </MobileSheet>
+
+       <button
+         className="text-xs text-blue-600 underline mb-2"
+         onClick={() => setShowDebug((v) => !v)}
+       >
+         {showDebug ? 'Hide' : 'Show'} Debug Info
+       </button>
+       {showDebug && (
+         <div className="p-3 mb-4 bg-gray-100 rounded text-xs text-gray-800 space-y-1">
+           <div><b>Doctor ID:</b> {doctorId || <span className='text-red-500'>N/A (Required)</span>}</div>
+           <div><b>Global Blocked (Local):</b> {globalBlockedDates.join(', ') || 'None'}</div>
+           <div><b>Doctor Blocked (Local):</b> {doctorBlockedDates.join(', ') || 'None'}</div>
+           <div><b>Doctor Schedule:</b></div>
+           <ul className="ml-4 list-disc">
+             {schedule.length === 0 ? <li>None fetched</li> : schedule.map(s => (
+               <li key={s.id}>
+                 Day: {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][s.dayOfWeek]},
+                 {s.isActive ? ` ${s.startTime}–${s.endTime}` : <span className='text-orange-500'> Not working</span>}
+               </li>
+             ))}
+           </ul>
+           <div><b>Selected Date Obj:</b> {selectedDate ? selectedDate.toISOString() : 'None'}</div>
+           <div><b>isLoadingData:</b> {isLoadingData.toString()}</div>
+           <div><b>isLoadingSlots:</b> {isLoadingSlots.toString()}</div>
+         </div>
+       )}
     </div>
   );
 };

@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { format, addMinutes, isBefore } from 'date-fns';
 
 // Helper function to convert HH:MM time string to minutes since midnight
 function timeToMinutes(timeStr: string | null): number | null {
@@ -97,15 +98,34 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
       return { success: true, data: [] }; // Not working or not active on this day
     }
 
-    // Generate slots based on schedule times and duration (defaulting to 30 mins if not set)
-    const slotDuration = relevantSchedule.slotDuration || 30;
-    const availableSlots = generateTimeSlots(
-      relevantSchedule.startTime,
-      relevantSchedule.endTime,
-      slotDuration
-    );
+    // Generate slots based on schedule times, duration, and buffer
+    const slotDuration = relevantSchedule.slotDuration;
+    const bufferTime = relevantSchedule.bufferTime; // Get buffer time
+    const totalSlotTime = slotDuration + bufferTime; // Calculate total interval
+
+    // Re-use logic similar to the main API route, but simplified for this action
+    const slots: string[] = [];
+    const [startH, startM] = relevantSchedule.startTime.split(':').map(Number);
+    const [endH, endM] = relevantSchedule.endTime.split(':').map(Number);
+
+    let currentTime = new Date(date); // Use the passed date
+    currentTime.setHours(startH, startM, 0, 0); // Set start time (local to server is okay here if consistent)
+
+    const endTime = new Date(date);
+    endTime.setHours(endH, endM, 0, 0); // Set end time
+
+    // TODO: Consider breaks and booked slots if needed for the *modal* display
+    // Currently, this action only generates based on work hours/interval
+
+    while (isBefore(currentTime, endTime)) {
+      const timeStr = format(currentTime, 'HH:mm');
+      slots.push(timeStr);
+      currentTime = addMinutes(currentTime, totalSlotTime); // Increment by TOTAL slot time
+    }
     
-    // TODO: Optionally filter out already booked slots for this doctor/date
+    // TODO: Optionally filter out already booked slots for this doctor/date (similar to main API)
+    // For now, returning all potential slots based on schedule.
+    const availableSlots = slots; // Assign the generated slots
 
     return { success: true, data: availableSlots };
 
@@ -163,7 +183,20 @@ export async function fetchAppointments(
 
     const appointments = await prisma.appointment.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        patientName: true,
+        email: true,
+        phone: true,
+        date: true,
+        time: true,
+        status: true,
+        doctorId: true,
+        customerId: true,
+        createdAt: true,
+        updatedAt: true,
+        notes: true,
+        timeSlot: true,
         doctor: {
           select: {
             name: true,
@@ -194,6 +227,39 @@ export async function fetchAppointments(
   } catch (error) {
     console.error('Error fetching appointments:', error);
     return { success: false, error: 'Failed to fetch appointments' };
+  }
+}
+
+// NEW: Action to fetch all appointments specifically for the calendar view
+export async function fetchAllAppointmentsForCalendar(): Promise<ApiResponse<any[]>> {
+  try {
+    const appointments = await prisma.appointment.findMany({
+      select: { // Select fields needed by FullCalendarView AND AppointmentModal
+        id: true,
+        patientName: true,
+        date: true,
+        time: true,
+        status: true,
+        doctorId: true,
+        customerId: true,
+        email: true, // Add email
+        phone: true, // Add phone
+        doctor: {
+          select: {
+            name: true,
+            speciality: true
+          }
+        }
+      },
+      orderBy: {
+        date: 'asc' // Order chronologically for calendar
+      }
+      // No skip or take - fetch all
+    });
+    return { success: true, data: appointments };
+  } catch (error) {
+    console.error('Error fetching all appointments for calendar:', error);
+    return { success: false, error: 'Failed to fetch all appointments for calendar' };
   }
 }
 
@@ -383,11 +449,11 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
   try {
     console.log('Attempting to create appointment with data:', appointmentData);
 
-    const { patientName, date, time, status, doctorId, customerId } = appointmentData;
+    const { patientName, email, phone, date, time, status, doctorId, customerId } = appointmentData;
     const appointmentDate = new Date(date);
 
-    if (!patientName || !appointmentDate || !time || !status || !doctorId) {
-      return { success: false, error: 'Missing required appointment fields' };
+    if (!patientName || !email || !phone || !appointmentDate || !time || !status || !doctorId) {
+      return { success: false, error: 'Missing required appointment fields (incl. email/phone)' };
     }
 
     // *** Check doctor availability ***
@@ -400,6 +466,8 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     const newAppointment = await prisma.appointment.create({
       data: {
         patientName,
+        email,
+        phone,
         date: appointmentDate,
         time,
         status,
@@ -412,6 +480,35 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     });
 
     console.log('Successfully created appointment:', newAppointment);
+
+    // --- Webhook Logic Start ---
+    const webhookUrl = process.env.BOOKING_WEBHOOK_URL;
+    if (webhookUrl) {
+      console.log(`Webhook URL found, attempting to send POST request to: ${webhookUrl}`)
+      try {
+        const webhookResponse = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newAppointment), // Send the newly created appointment object
+        });
+
+        if (!webhookResponse.ok) {
+          // Log error if webhook request failed
+          console.error(`Webhook failed with status: ${webhookResponse.status}`, await webhookResponse.text());
+        } else {
+          console.log('Successfully sent booking webhook for appointment:', newAppointment.id);
+        }
+      } catch (webhookError) {
+        console.error('Error sending booking webhook:', webhookError);
+        // Non-fatal error: Log it but don't prevent the success response for appointment creation
+      }
+    } else {
+      console.log('BOOKING_WEBHOOK_URL not found in environment variables. Skipping webhook.')
+    }
+    // --- Webhook Logic End ---
+
     revalidatePath('/admin/appointments');
     return { success: true, data: newAppointment };
 
@@ -470,4 +567,139 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
     }
     return { success: false, error: 'Failed to update appointment in database' };
   }
-}; 
+};
+
+// --- Special Date / Availability Management Actions ---
+
+// Fetches special dates. If doctorId provided, fetch specific, otherwise fetch global.
+export async function fetchSpecialDates(doctorId?: string): Promise<ApiResponse<any[]>> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    let url = `${baseUrl}/api/admin/special-dates`;
+    if (doctorId) {
+      url += `?doctorId=${encodeURIComponent(doctorId)}`;
+    }
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Failed to fetch special dates: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error fetching special dates:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+// Updated Payload for creating global or doctor-specific dates
+interface CreateSpecialDatePayload {
+  date: Date | string;
+  name?: string; // Optional: Required for global
+  type?: string; // Optional: Required for global
+  reason?: string; // Optional: Used for doctor-specific blocks
+  doctorId?: string; // Optional: ID of the doctor if not global
+}
+
+// Creates a special date (global or doctor-specific)
+export async function createSpecialDate(payload: CreateSpecialDatePayload): Promise<ApiResponse<any>> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'; 
+    const response = await fetch(`${baseUrl}/api/admin/special-dates`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // Send the full payload (API will handle logic based on doctorId presence)
+      body: JSON.stringify(payload), 
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('API Error creating special date:', errorData);
+      throw new Error(errorData.error || `Failed to create special date: ${response.statusText}`);
+    }
+    const data = await response.json();
+    // Revalidate relevant paths
+    revalidatePath('/admin/special-dates');
+    if (payload.doctorId) {
+      revalidatePath(`/admin/doctors/${payload.doctorId}/schedule`);
+    }
+    revalidatePath('/admin/schedule'); // Revalidate main schedule page too
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error creating special date:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+// deleteSpecialDate action remains the same, uses ID
+export async function deleteSpecialDate(specialDateId: string): Promise<ApiResponse> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'; 
+    const response = await fetch(`${baseUrl}/api/admin/special-dates/${specialDateId}`, { 
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Failed to delete special date: ${response.statusText}`);
+    }
+    // Revalidate paths after delete
+    revalidatePath('/admin/special-dates');
+    // We don't know the doctorId here easily, so revalidating broadly might be needed,
+    // or the component calling delete could trigger its own data refresh.
+    revalidatePath('/admin/schedule'); 
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting special date:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+// New action to fetch a single doctor by ID
+export async function fetchDoctorById(doctorId: string) {
+  try {
+    const doctor = await prisma.doctor.findUnique({
+      where: { id: doctorId },
+    });
+    if (!doctor) {
+      return { success: false, error: 'Doctor not found' };
+    }
+    return { success: true, data: doctor };
+  } catch (error) {
+    console.error(`Error fetching doctor with ID ${doctorId}:`, error);
+    return { success: false, error: 'Failed to fetch doctor details' };
+  }
+}
+
+// --- Doctor Management Actions ---
+
+// Action to delete a doctor
+export async function deleteDoctor(doctorId: string): Promise<ApiResponse> {
+  try {
+    // Check if the doctor exists (optional, delete operation will fail safely if not found)
+    const doctor = await prisma.doctor.findUnique({ where: { id: doctorId } });
+    if (!doctor) {
+      return { success: false, error: 'Doctor not found' };
+    }
+
+    // Perform the deletion
+    await prisma.doctor.delete({ 
+      where: { id: doctorId } 
+    });
+
+    console.log(`Successfully deleted doctor with ID: ${doctorId}`);
+    revalidatePath('/admin/doctors'); // Revalidate the doctors list page
+    return { success: true, message: 'Doctor deleted successfully' };
+
+  } catch (error) {
+    console.error(`Error deleting doctor with ID ${doctorId}:`, error);
+    // Check for specific Prisma error related to foreign key constraints
+    if (error instanceof Error && (error as any).code === 'P2003') { 
+      // Foreign key constraint violation (e.g., doctor has appointments)
+      return { success: false, error: 'Cannot delete doctor: They have existing appointments or schedules associated. Please reassign or remove them first.' };
+    }
+    return { success: false, error: 'Failed to delete doctor' };
+  }
+}

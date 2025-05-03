@@ -11,11 +11,12 @@ import {
   Edit3, 
   ChevronRight,
   Users,
-  Loader2
+  Loader2,
+  Trash2
 } from 'lucide-react';
 import DoctorModal from './components/DoctorModal';
 import { toast } from 'react-hot-toast';
-import { fetchDoctors } from '@/app/actions/admin';
+import { fetchDoctors, deleteDoctor } from '@/app/actions/admin';
 import { Card } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import {
   Sheet,
@@ -32,6 +34,16 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Doctor {
   id: string;
@@ -58,6 +70,8 @@ export default function DoctorsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [doctorToDelete, setDoctorToDelete] = useState<Doctor | null>(null);
 
   const loadDoctors = async () => {
     try {
@@ -94,6 +108,26 @@ export default function DoctorsPage() {
 
   const specialties = Array.from(new Set(doctors.map(d => d.speciality)));
 
+  const handleDeleteDoctor = async () => {
+    if (!doctorToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      const result = await deleteDoctor(doctorToDelete.id);
+      if (result.success) {
+        toast.success(result.message || 'Doctor deleted successfully');
+        setDoctorToDelete(null);
+        loadDoctors();
+      } else {
+        toast.error(result.error || 'Failed to delete doctor');
+      }
+    } catch (error) {
+      toast.error('An unexpected error occurred while deleting the doctor.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-4 space-y-4">
@@ -117,30 +151,28 @@ export default function DoctorsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Sticky Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
         <div className="px-4 py-4">
           <div className="flex items-center justify-between mb-4">
-        <div>
+            <div>
               <h1 className="text-xl font-bold text-gray-900">Doctors</h1>
-          <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500">
                 Manage your clinic's doctors
-          </p>
-        </div>
-        <Button
-          onClick={() => {
-            setSelectedDoctor(null);
-            setIsModalOpen(true);
-          }}
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                setSelectedDoctor(null);
+                setIsModalOpen(true);
+              }}
               size="sm"
               className="bg-[#8B5C9E] hover:bg-[#8B5C9E]/90"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Doctor
-        </Button>
-      </div>
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Doctor
+            </Button>
+          </div>
 
-          {/* Search and Filter */}
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -208,7 +240,6 @@ export default function DoctorsPage() {
         </div>
       </div>
 
-      {/* Doctor Cards */}
       <div className="p-4 space-y-4">
         <AnimatePresence>
           {filteredDoctors.map((doctor, index) => (
@@ -252,33 +283,27 @@ export default function DoctorsPage() {
                         </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                            >
-                              <MoreVertical className="h-4 w-4" />
+                            <Button variant="ghost" size="icon" className="w-8 h-8 flex-shrink-0">
+                              <MoreVertical className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuContent align="end">
                             <DropdownMenuItem
                               onClick={() => {
                                 setSelectedDoctor(doctor);
                                 setIsModalOpen(true);
                               }}
-                              className="text-gray-700"
                             >
-                              <Edit3 className="w-4 h-4 mr-2" />
-                              Edit Details
+                              <Edit3 className="mr-2 h-4 w-4" />
+                              Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => {
-                                window.location.href = `/admin/doctors/${doctor.id}/schedule`;
-                              }}
-                              className="text-gray-700"
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => setDoctorToDelete(doctor)} 
+                              className="text-red-600 hover:!bg-red-50 hover:!text-red-700 cursor-pointer"
                             >
-                              <Calendar className="w-4 h-4 mr-2" />
-                              Manage Schedule
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -310,35 +335,14 @@ export default function DoctorsPage() {
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                 </div>
-      </Card>
+              </Card>
             </motion.div>
           ))}
         </AnimatePresence>
-
         {filteredDoctors.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8 text-[#8B5C9E]" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-1">No doctors found</h3>
-            <p className="text-sm text-gray-500">
-              {searchQuery || selectedSpecialty
-                ? 'Try adjusting your search or filters'
-                : 'Add your first doctor to get started'}
-            </p>
-            {!searchQuery && !selectedSpecialty && (
-              <Button
-                onClick={() => {
-                  setSelectedDoctor(null);
-                  setIsModalOpen(true);
-                }}
-                className="mt-4 bg-[#8B5C9E] hover:bg-[#8B5C9E]/90"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Doctor
-              </Button>
-            )}
-          </div>
+           <div className="text-center py-12 text-gray-500">
+            No doctors found matching your criteria.
+           </div>
         )}
       </div>
 
@@ -354,6 +358,34 @@ export default function DoctorsPage() {
           );
         }}
       />
+
+      <AlertDialog open={!!doctorToDelete} onOpenChange={(open) => !open && setDoctorToDelete(null)}>
+        <AlertDialogContent className="bg-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the doctor
+              <strong className="text-gray-900"> {doctorToDelete?.name} </strong> 
+              and all associated data (like their schedule).
+              Appointments might remain but will reference a deleted doctor.
+              Consider reassigning data before deleting.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDoctorToDelete(null)} disabled={isDeleting}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteDoctor}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Yes, delete doctor
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 } 

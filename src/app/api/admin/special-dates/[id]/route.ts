@@ -1,36 +1,52 @@
+'use server';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 
+// DELETE: Delete a specific special date entry
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { id } = params; // This is the specialDate ID
 
-    const { id } = params;
     if (!id) {
       return NextResponse.json(
-        { error: 'Missing special date ID' },
+        { error: 'Special date ID is required in the path' },
         { status: 400 }
       );
     }
 
-    await prisma.specialDate.delete({
+    // Check if the entry exists before attempting delete
+    const existingEntry = await prisma.specialDate.findUnique({
       where: { id },
     });
 
-    return NextResponse.json({ success: true });
+    if (!existingEntry) {
+      return NextResponse.json(
+        { error: `Special date entry with ID ${id} not found` },
+        { status: 404 }
+      );
+    }
+
+    await prisma.specialDate.delete({
+      where: { id: id },
+    });
+
+    return NextResponse.json({ message: 'Special date entry deleted successfully' }, { status: 200 });
   } catch (error) {
     console.error('Failed to delete special date:', error);
+    // Handle potential Prisma errors (like record not found if checked elsewhere)
+    if (error instanceof Error && (error as any).code === 'P2025') {
+      return NextResponse.json(
+          { error: `Special date entry with ID ${params.id} not found.` },
+          { status: 404 }
+        );
+    }
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to delete special date entry' },
       { status: 500 }
     );
   }
-} 
+}

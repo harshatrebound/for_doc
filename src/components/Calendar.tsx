@@ -1,3 +1,5 @@
+// UNUSED: This file is obsolete and can be deleted or archived.
+
 'use client';
 
 import { useState } from 'react';

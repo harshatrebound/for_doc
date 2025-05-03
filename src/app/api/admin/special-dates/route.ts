@@ -1,118 +1,112 @@
+'use server';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { headers } from 'next/headers';
+import { z } from 'zod';
+import { format } from 'date-fns';
 
 // Cache special dates for 5 minutes
 const CACHE_TIME = 5 * 60 * 1000;
 const cache = new Map();
 
+// Updated schema using refine for date validation
+const specialDateSchema = z.object({
+  date: z.string()
+    .refine((val) => !isNaN(Date.parse(val + 'T00:00:00Z')), { // Try parsing as UTC date
+      message: "Invalid date format or value",
+    }), 
+  name: z.string().optional(),
+  type: z.string().optional(),
+  reason: z.string().optional(),
+  doctorId: z.string().optional(),
+});
+
+// GET: Fetch special dates. If doctorId provided, fetch for that doctor. Otherwise, fetch global (doctorId IS NULL).
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const doctorId = searchParams.get('doctorId'); // Check for optional doctorId
+
   try {
-    const { searchParams } = new URL(request.url);
-    const doctorId = searchParams.get('doctorId');
-    const start = searchParams.get('start');
-    const end = searchParams.get('end');
-
-    if (!doctorId || !start || !end) {
-      return NextResponse.json(
-        { error: 'Missing required parameters' },
-        { status: 400 }
-      );
+    const whereClause: any = {};
+    if (doctorId) {
+      // Fetch dates specific to this doctor
+      whereClause.doctorId = doctorId;
+    } else {
+      // Fetch only global dates (doctorId is null)
+      whereClause.doctorId = null;
     }
-
-    // Create cache key
-    const cacheKey = `${doctorId}-${start}-${end}`;
-    const cachedData = cache.get(cacheKey);
-    
-    // Return cached data if available and not expired
-    if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_TIME) {
-      return NextResponse.json(cachedData.data);
-    }
-
-    console.log('Fetching special dates:', { doctorId, start, end });
 
     const specialDates = await prisma.specialDate.findMany({
-      where: {
-        doctorId,
-        date: {
-          gte: new Date(start),
-          lte: new Date(end),
-        },
-      },
+      where: whereClause,
       orderBy: {
         date: 'asc',
       },
     });
-
-    console.log('Found special dates:', specialDates);
-
-    // Update cache
-    cache.set(cacheKey, {
-      data: specialDates,
-      timestamp: Date.now()
-    });
-
     return NextResponse.json(specialDates);
   } catch (error) {
     console.error('Failed to fetch special dates:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error fetching special dates' },
       { status: 500 }
     );
   }
 }
 
+// POST: Create a new special date (either global or doctor-specific)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { doctorId, date, type, reason, breakStart, breakEnd } = body;
+    console.log("[API /special-dates POST] Received body:", body); // Log received body
+    const validationResult = specialDateSchema.safeParse(body);
 
-    if (!doctorId || !date || !type) {
+    if (!validationResult.success) {
+      console.error("[API /special-dates POST] Zod Validation Failed:", validationResult.error.flatten()); // Log validation error
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Invalid input data', details: validationResult.error.flatten() },
         { status: 400 }
       );
     }
 
-    // Check if a special date already exists for this date and doctor
-    const existingDate = await prisma.specialDate.findFirst({
-      where: {
-        doctorId,
-        date: new Date(date),
-      },
-    });
+    const { date, name, type, reason, doctorId } = validationResult.data;
 
-    if (existingDate) {
-      // Update existing special date
-      const updatedDate = await prisma.specialDate.update({
-        where: { id: existingDate.id },
-        data: {
-          type,
-          reason,
-          breakStart,
-          breakEnd,
-        },
-      });
-      return NextResponse.json(updatedDate);
+    // Strict UTC date creation - force midnight UTC
+    // This guarantees the date is stored as the exact day specified regardless of timezone
+    const [year, month, day] = date.split('-').map(Number);
+    const dateObject = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+    
+    console.log(`[API /special-dates POST] Creating date for: ${date} → UTC: ${dateObject.toISOString()}`);
+
+    // Basic validation: Need name/type for global, potentially reason for doctor-specific
+    if (!doctorId && (!name || !type)) {
+      return NextResponse.json(
+        { error: 'Global special dates require a name and type.' },
+        { status: 400 }
+      );
+    }
+    if (doctorId && !reason && !name) { // Allow name as reason fallback
+      // Maybe allow blocks without a reason, adjust if needed
+      // return NextResponse.json(
+      //   { error: 'Doctor-specific blocks require a reason.' },
+      //   { status: 400 }
+      // );
     }
 
-    // Create new special date
-    const specialDate = await prisma.specialDate.create({
+    const newSpecialDate = await prisma.specialDate.create({
       data: {
-        doctorId,
-        date: new Date(date),
-        type,
-        reason,
-        breakStart,
-        breakEnd,
+        date: dateObject, // Use the correctly constructed UTC date object
+        name: name || (doctorId ? (reason || 'Blocked') : 'Unnamed Date'),
+        type: type || (doctorId ? 'UNAVAILABLE' : 'OTHER'),
+        reason: reason, 
+        doctorId: doctorId || null,
       },
     });
 
-    return NextResponse.json(specialDate);
+    return NextResponse.json(newSpecialDate, { status: 201 });
   } catch (error) {
-    console.error('Failed to create special date:', error);
+    console.error('[API /special-dates POST] Error creating special date:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error creating special date' },
       { status: 500 }
     );
   }
@@ -131,12 +125,20 @@ export async function PUT(request: NextRequest) {
     
     const { id, doctorId, date, type, reason } = body;
     
-    // Validate date format
-    if (date && isNaN(new Date(date).getTime())) {
-      return NextResponse.json(
-        { error: 'Invalid date format' },
-        { status: 400 }
-      );
+    // Validate date format and create proper UTC date
+    let dateObject = undefined;
+    if (date) {
+      if (isNaN(new Date(date).getTime())) {
+        return NextResponse.json(
+          { error: 'Invalid date format' },
+          { status: 400 }
+        );
+      }
+      
+      // Strict UTC date creation for consistent handling
+      const [year, month, day] = date.split('-').map(Number);
+      dateObject = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+      console.log(`[API /special-dates PUT] Updating date to: ${date} → UTC: ${dateObject.toISOString()}`);
     }
     
     // Check if the special date exists
@@ -156,7 +158,7 @@ export async function PUT(request: NextRequest) {
       where: { id },
       data: {
         doctorId: doctorId !== undefined ? doctorId : undefined,
-        date: date ? new Date(date) : undefined,
+        date: dateObject, // Use the correctly constructed UTC date object
         type: type !== undefined ? type : undefined,
         reason: reason !== undefined ? reason : undefined
       }

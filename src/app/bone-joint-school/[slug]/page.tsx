@@ -486,7 +486,7 @@ export default async function BoneJointTopicPage({ params }: Props) {
               
               {introText && (
                 <div 
-                  className="text-gray-600 text-lg mb-8 leading-relaxed line-clamp-3"
+                  className="text-gray-600 text-lg mb-8 leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: introText }}
                 />
               )}

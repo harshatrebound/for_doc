@@ -97,14 +97,11 @@ export default function HeroSection({
         return (
           <div className="absolute inset-0 z-0 bg-[#2E3A59]">
             <div className="relative w-full h-full">
-              <Image
+              <img
                 src={bgImage || '/images/default-hero.jpg'}
                 alt="Background"
-                fill
-                priority
-                className="object-cover"
-                sizes="100vw"
-                quality={90}
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ objectPosition: 'center' }}
               />
               <div className="absolute inset-0 bg-[#2E3A59]/50" />
               <div 

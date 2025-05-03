@@ -1,3 +1,5 @@
+// UNUSED: This file is obsolete and can be deleted or archived.
+
 'use client'; // Needed if using event handlers or state, safer default
 
 import React, { useState, FC } from 'react';

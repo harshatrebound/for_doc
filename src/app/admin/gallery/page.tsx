@@ -3,7 +3,7 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { Upload, Trash2, Edit, Image as ImageIcon, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'react-hot-toast';
@@ -146,10 +146,10 @@ export default function GalleryManagementPage() {
 
       {/* Upload Form */}
       <Card>
-        <Card.Header>
-          <Card.Title>Upload New Image</Card.Title>
-        </Card.Header>
-        <Card.Content>
+        <CardHeader>
+          <CardTitle>Upload New Image</CardTitle>
+        </CardHeader>
+        <CardContent>
           <form onSubmit={handleUpload} className="space-y-4">
             <div>
               <label htmlFor="gallery-upload" className="block text-sm font-medium text-gray-700 mb-1">Image File</label>
@@ -169,7 +169,7 @@ export default function GalleryManagementPage() {
               {uploading ? 'Uploading...' : 'Upload Image'}
             </Button>
           </form>
-        </Card.Content>
+        </CardContent>
       </Card>
 
       {/* Image Grid */}
@@ -200,7 +200,7 @@ export default function GalleryManagementPage() {
                    </div>
                 </div>
                 {editingImageId === image.id ? (
-                   <Card.Content className="p-3 space-y-2">
+                   <CardContent className="p-3 space-y-2">
                       <Input 
                          value={editText.title}
                          onChange={(e) => setEditText(prev => ({...prev, title: e.target.value}))}
@@ -218,13 +218,13 @@ export default function GalleryManagementPage() {
                          <Button size="sm" variant="ghost" onClick={handleCancelEdit}>Cancel</Button>
                          <Button size="sm" onClick={() => handleSaveEdit(image.id)} className="bg-[#8B5C9E] hover:bg-[#7A4C8C]">Save</Button>
                       </div>
-                   </Card.Content>
+                   </CardContent>
                 ) : (
-                   <Card.Content className="p-3">
+                   <CardContent className="p-3">
                      <p className="text-sm font-medium truncate" title={image.title || 'No title'}>{image.title || 'Untitled'}</p>
                      <p className="text-xs text-gray-500 truncate" title={image.altText || 'No alt text'}>{image.altText || 'No alt text'}</p>
                      <p className="text-xs text-gray-400 mt-1">Uploaded: {image.createdAt.toLocaleDateString()}</p>
-                   </Card.Content>
+                   </CardContent>
                 )}
               </Card>
             ))}

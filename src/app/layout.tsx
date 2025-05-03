@@ -83,8 +83,8 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
-      <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
-        <main>
+      <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`} suppressHydrationWarning>
+        <main suppressHydrationWarning>
           <Suspense fallback={<Loading />}>
             {children}
           </Suspense>

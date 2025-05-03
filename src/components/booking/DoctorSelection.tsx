@@ -260,7 +260,10 @@ const DoctorSelection = () => {
                 key={doctor.id}
                 doctor={doctor}
                 isSelected={state.doctor?.id === doctor.id}
-                onSelect={(doctor) => dispatch({ type: 'SET_DOCTOR', payload: doctor })}
+                onSelect={(doctor) => {
+                  console.log('[DoctorSelection] Doctor selected:', doctor);
+                  dispatch({ type: 'SET_DOCTOR', payload: doctor });
+                }}
               />
             ))
           ) : (

@@ -186,7 +186,22 @@ async function importAppointments() {
       }
       
       try {
-        // Create appointment
+        // Check if a similar appointment already exists
+        const existingAppointment = await prisma.appointment.findFirst({
+          where: {
+            doctorId: doctorId,
+            patientName: row['Customer Full Name'],
+            date: appointmentDate,
+            time: appointmentTime,
+          }
+        });
+
+        if (existingAppointment) {
+          console.log(`Skipping existing appointment ${row['Booking ID']} for ${row['Customer Full Name']} on ${appointmentDate}`);
+          continue; // Skip creation if it already exists
+        }
+
+        // Create appointment if it doesn't exist
         const appointment = await prisma.appointment.create({
           data: {
             doctorId,

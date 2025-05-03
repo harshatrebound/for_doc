@@ -1,11 +1,14 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { fetchDoctors, fetchDoctorSchedule } from '@/app/actions/admin';
+import { 
+  fetchDoctors, 
+  fetchDoctorSchedule, 
+} from '@/app/actions/admin';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   ChevronDown, 
   ChevronUp, 
@@ -17,7 +20,7 @@ import {
   Clock,
   Plus,
   Settings,
-  Users
+  Users,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
@@ -28,6 +31,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface Doctor {
   id: string;
@@ -179,22 +183,25 @@ export default function SchedulePage() {
                 Manage availability and time slots
               </p>
             </div>
-            {/* Desktop Actions - Moved here */}
+            {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-2">
+              {/* Button to manage global special dates */}
               <Button
                 variant="outline"
                 className="border-[#8B5C9E] text-[#8B5C9E] hover:bg-[#8B5C9E]/5"
-                onClick={() => router.push(`/admin/doctors/${selectedDoctor}/special-dates`)}
+                onClick={() => router.push('/admin/special-dates')}
               >
                 <Calendar className="w-4 h-4 mr-2" />
-                Special Dates
+                Manage Special Dates
               </Button>
+              {/* Button to edit the selected doctor's weekly schedule */}
               <Button
                 className="bg-[#8B5C9E] hover:bg-[#8B5C9E]/90"
-                onClick={() => router.push(`/admin/doctors/${selectedDoctor}/schedule`)}
+                onClick={() => selectedDoctor && router.push(`/admin/doctors/${selectedDoctor}/schedule`)}
+                disabled={!selectedDoctor}
               >
                 <Settings className="w-4 h-4 mr-2" />
-                Edit Schedule
+                Edit Weekly Schedule
               </Button>
             </div>
           </div>
@@ -336,29 +343,52 @@ export default function SchedulePage() {
         )}
       </div>
 
-      {/* Quick Actions */}
-      {todaySchedule && (
-        <>
-          {/* Mobile Actions */}
-          <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1 border-[#8B5C9E] text-[#8B5C9E] hover:bg-[#8B5C9E]/5"
-                onClick={() => router.push(`/admin/doctors/${selectedDoctor}/schedule`)}
-              >
-                Edit Schedule
-              </Button>
-              <Button
-                className="flex-1 bg-[#8B5C9E] hover:bg-[#8B5C9E]/90"
-                onClick={() => router.push(`/admin/doctors/${selectedDoctor}/special-dates`)}
-              >
-                Special Dates
-              </Button>
+      {/* Main Content */}
+      <div className="p-4 space-y-6">
+        {/* Current Week Schedule View - Keep existing structure */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Weekly Schedule Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="p-2 border text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Time</th>
+                    {weekDays.map((date, index) => (
+                      <th key={index} className="p-2 border text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {shortDays[date.getDay()]}<br/>{format(date, 'd')}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'].map(time => (
+                    <tr key={time}>
+                      <td className="p-2 border text-xs text-gray-500 align-top h-12 w-24">{time}</td>
+                      {weekDays.map((date, dayIndex) => {
+                        const daySchedule = selectedDoctorData?.schedules.find(s => s.dayOfWeek === date.getDay());
+                        const isWorking = daySchedule?.isActive;
+                        return (
+                          <td 
+                            key={dayIndex} 
+                            className={cn(
+                              'p-1 border text-xs text-center align-top h-12',
+                              isWorking ? 'bg-green-50' : 'bg-gray-100 opacity-50'
+                            )}
+                          >
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
-        </>
-      )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 } 

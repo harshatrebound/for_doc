@@ -10,6 +10,8 @@ import DateTimeSelection from './DateTimeSelection';
 import PatientDetails from './PatientDetails';
 import Summary from './Summary';
 import ThankYou from './ThankYou';
+import { createAppointment } from '@/app/actions/admin';
+import toast from 'react-hot-toast';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -39,17 +41,43 @@ const BookingModalContent = ({ isOpen, onClose }: BookingModalProps) => {
   };
 
   const handleSubmit = async () => {
-    if (!canProceed() || state.isSubmitting) return;
+    if (!canProceed() || state.isSubmitting || !state.doctor || !state.selectedDate || !state.selectedTime) return;
 
     try {
       dispatch({ type: 'SET_SUBMITTING', payload: true });
-      // Add your submission logic here
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulated API call
-      dispatch({ type: 'SET_STEP', payload: 4 });
+      
+      // Prepare appointment data from state
+      const newAppointmentData = {
+        patientName: state.patientName,
+        email: state.email,
+        phone: state.phone,
+        doctorId: state.doctor.id,
+        date: state.selectedDate,
+        time: state.selectedTime,
+        status: 'SCHEDULED', // Default status for new bookings
+        // Ensure other required fields expected by the Appointment type are included or null
+        id: undefined, // No ID for new appointments
+        customerId: null, // Assuming no customer link initially
+        doctor: undefined, // Doctor relation will be handled by Prisma via doctorId
+        createdAt: new Date(), // Set creation timestamp
+        updatedAt: new Date(), // Set updated timestamp
+      };
+
+      // Call the actual server action
+      const result = await createAppointment(newAppointmentData);
+
+      if (result.success) {
+        dispatch({ type: 'SET_STEP', payload: 4 }); // Proceed to Thank You step
+      } else {
+        toast.error(result.error || 'Booking failed. Please try again.');
+        // Stay on the summary step (or handle error appropriately)
+        dispatch({ type: 'SET_SUBMITTING', payload: false }); // Reset submitting state on failure
+      }
+
     } catch (error) {
-      console.error('Booking failed:', error);
-    } finally {
-      dispatch({ type: 'SET_SUBMITTING', payload: false });
+      console.error('Booking submission error:', error);
+      toast.error('An unexpected error occurred during booking.');
+      dispatch({ type: 'SET_SUBMITTING', payload: false }); // Reset submitting state on catch
     }
   };
 

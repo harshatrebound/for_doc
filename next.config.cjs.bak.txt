@@ -6,41 +6,11 @@ const nextConfig = {
     DATABASE_URL: process.env.DATABASE_URL,
   },
   
-  // Disable image optimization in development for faster builds
+  // Image configuration
   images: {
+    loader: 'custom',
+    loaderFile: './lib/image-loader.js',
     unoptimized: false,
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'yamabiko.proxy.rlwy.net',
-      },
-      {
-        protocol: 'https',
-        hostname: 'bookingdoc-production.up.railway.app',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'via.placeholder.com',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.rlwy.net',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-      },
-      {
-        protocol: 'https',
-        hostname: 'sportsorthopedics.in',
-        pathname: '/wp-content/uploads/**',
-      }
-    ],
   },
 
   // Increase build memory limit for production builds

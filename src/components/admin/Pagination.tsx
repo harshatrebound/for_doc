@@ -29,8 +29,9 @@ export function Pagination({
   const { page, pageCount, total, pageSize } = pagination;
   
   return (
-    <div className={`flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4 ${className}`}>
-      <div className="flex flex-1 justify-between sm:hidden">
+    <div className={`flex flex-col gap-2 border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4 ${className}`}>
+      {/* Mobile: Only Previous/Next buttons */}
+      <div className="flex flex-1 items-center justify-between sm:hidden">
         <Button
           variant="outline"
           size="sm"
@@ -48,6 +49,7 @@ export function Pagination({
           Next
         </Button>
       </div>
+      {/* Desktop: Original pagination */}
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
           <p className="text-sm text-gray-700">
@@ -91,12 +93,10 @@ export function Pagination({
               <span className="sr-only">Previous page</span>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            
             {/* Page number display */}
             <div className="flex items-center px-4 h-8 text-sm text-gray-700">
               {page} / {pageCount || 1}
             </div>
-            
             <Button
               variant="outline"
               size="icon"

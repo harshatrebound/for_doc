@@ -182,3 +182,7 @@
   - [x] Improved doctor cards for small screens
   - [x] Enhanced form fields for touch
   - [x] Optimized calendar integration 
+
+
+
+  For new appointments addedf from website front end, when I edit them in calendar view of /appointments, I dont see pre-existing time coming in time field. It says select time

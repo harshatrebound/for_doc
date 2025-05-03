@@ -1,12 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, Loader2 } from 'lucide-react';
-import Image from 'next/image';
+import { X, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { Card } from '@/components/ui/card';
+// Import necessary Shadcn UI components
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose, // Use DialogClose for cancel button
+} from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface Doctor {
   id: string;
@@ -33,14 +42,15 @@ export default function DoctorModal({ isOpen, onClose, doctor, onSuccess }: Doct
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (doctor) {
+    if (isOpen && doctor) {
       setFormData({
         name: doctor.name,
         speciality: doctor.speciality,
         fee: doctor.fee.toString(),
         image: doctor.image || '',
       });
-    } else {
+    } else if (isOpen && !doctor) {
+      // Reset form when opening for Add
       setFormData({
         name: '',
         speciality: '',
@@ -48,14 +58,13 @@ export default function DoctorModal({ isOpen, onClose, doctor, onSuccess }: Doct
         image: '',
       });
     }
-  }, [doctor]);
+  }, [isOpen, doctor]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      // Validate fee before submitting
       const fee = parseFloat(formData.fee);
       if (isNaN(fee)) {
         toast.error("Please enter a valid fee amount");
@@ -63,17 +72,20 @@ export default function DoctorModal({ isOpen, onClose, doctor, onSuccess }: Doct
         return;
       }
 
-      const endpoint = doctor ? `/api/admin/doctors` : '/api/admin/doctors';
+      const endpoint = doctor ? `/api/admin/doctors/${doctor.id}` : '/api/admin/doctors'; // Use correct PUT endpoint
       const method = doctor ? 'PUT' : 'POST';
 
-      // Create request payload
       const payload = {
         ...formData,
-        fee: fee,  // Use the validated fee
-        ...(doctor && { id: doctor.id }),
+        fee: fee,
+        // ID is now part of the URL for PUT, not needed in payload
       };
+      // Remove id from payload if present (for PUT)
+      if (method === 'PUT') {
+          delete (payload as any).id; 
+      }
 
-      console.log("Submitting payload:", payload);
+      console.log(`Submitting ${method} to ${endpoint} with payload:`, payload);
 
       const response = await fetch(endpoint, {
         method,
@@ -90,161 +102,111 @@ export default function DoctorModal({ isOpen, onClose, doctor, onSuccess }: Doct
         throw new Error(responseData.error || 'Failed to save doctor');
       }
 
-      onSuccess();
-      onClose();
+      toast.success(`Doctor ${doctor ? 'updated' : 'added'} successfully`);
+      onSuccess(); // Call onSuccess passed from parent
+      onClose(); // Close modal
     } catch (error) {
-      console.error('Error:', error);
-      toast.error(`Failed to ${doctor ? 'update' : 'add'} doctor`);
+      console.error('Error saving doctor:', error);
+      toast.error(error instanceof Error ? error.message : `Failed to ${doctor ? 'update' : 'add'} doctor`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (!isOpen) return null;
-
+  // Use Dialog open prop and onOpenChange for controlled state
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          className="relative w-full max-w-lg"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Card className="border-0 shadow-xl">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {doctor ? 'Edit Doctor' : 'Add New Doctor'}
-                </h2>
-                <p className="mt-1 text-sm text-gray-500">
-                  {doctor ? 'Update the doctor\'s information' : 'Add a new doctor to your clinic'}
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="text-gray-400 hover:text-gray-600"
-                aria-label="Close modal"
-              >
-                <X className="w-5 h-5" />
-              </Button>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px] bg-white">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-semibold text-gray-900">
+            {doctor ? 'Edit Doctor' : 'Add New Doctor'}
+          </DialogTitle>
+          <DialogDescription className="text-sm text-gray-500">
+            {doctor ? 'Update the doctor\'s information.' : 'Enter the details for the new doctor.'}
+          </DialogDescription>
+        </DialogHeader>
+        
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4 space-y-4">
+            {/* Name */}
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="h-10 border-gray-300 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
+                required
+                placeholder="Enter doctor's name"
+              />
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#8B5C9E] focus:outline-none focus:ring-[#8B5C9E] sm:text-sm"
-                    required
-                    placeholder="Enter doctor's name"
-                  />
-                </div>
+            {/* Speciality */}
+            <div className="space-y-2">
+              <Label htmlFor="speciality" className="text-sm font-medium text-gray-700">
+                Speciality
+              </Label>
+              <Input
+                id="speciality"
+                value={formData.speciality}
+                onChange={(e) => setFormData({ ...formData, speciality: e.target.value })}
+                className="h-10 border-gray-300 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
+                required
+                placeholder="e.g., Orthopedic"
+              />
+            </div>
 
-                <div>
-                  <label htmlFor="speciality" className="block text-sm font-medium text-gray-700">
-                    Speciality
-                  </label>
-                  <input
-                    type="text"
-                    id="speciality"
-                    value={formData.speciality}
-                    onChange={(e) => setFormData({ ...formData, speciality: e.target.value })}
-                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#8B5C9E] focus:outline-none focus:ring-[#8B5C9E] sm:text-sm"
-                    required
-                    placeholder="e.g., Cardiologist, Pediatrician"
-                  />
-                </div>
+            {/* Consultation Fee */}
+            <div className="space-y-2">
+              <Label htmlFor="fee" className="text-sm font-medium text-gray-700">
+                Fee (₹)
+              </Label>
+              <Input
+                id="fee"
+                type="number"
+                value={formData.fee}
+                onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
+                className="h-10 border-gray-300 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
+                required
+                min="0"
+                placeholder="e.g., 1000"
+              />
+            </div>
 
-                <div>
-                  <label htmlFor="fee" className="block text-sm font-medium text-gray-700">
-                    Consultation Fee (₹)
-                  </label>
-                  <input
-                    type="number"
-                    id="fee"
-                    value={formData.fee}
-                    onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
-                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#8B5C9E] focus:outline-none focus:ring-[#8B5C9E] sm:text-sm"
-                    required
-                    min="0"
-                    step="0.01"
-                    placeholder="Enter consultation fee"
-                  />
-                </div>
+            {/* Image URL */}
+            <div className="space-y-2">
+              <Label htmlFor="image" className="text-sm font-medium text-gray-700">
+                Image URL (Optional)
+              </Label>
+              <Input
+                id="image"
+                type="url"
+                value={formData.image}
+                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                className="h-10 border-gray-300 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+          </div>
 
-                <div>
-                  <label htmlFor="image" className="block text-sm font-medium text-gray-700">
-                    Image URL
-                  </label>
-                  <div className="mt-1 flex rounded-lg border border-gray-300 overflow-hidden">
-                    <input
-                      type="url"
-                      id="image"
-                      value={formData.image}
-                      onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                      className="flex-1 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#8B5C9E] focus:outline-none focus:ring-[#8B5C9E] sm:text-sm"
-                      placeholder="https://example.com/doctor-image.jpg"
-                    />
-                    {formData.image && (
-                      <div className="relative w-10 h-10 bg-gray-50 border-l border-gray-300">
-                        <img
-                          src={formData.image}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = 'https://via.placeholder.com/40';
-                          }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Optional. Provide a URL for the doctor's profile image.
-                  </p>
-                </div>
-              </div>
+          <DialogFooter className="mt-6">
+            <DialogClose asChild>
+              <Button type="button" variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="bg-[#8B5C9E] hover:bg-[#8B5C9E]/90"
+            >
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {doctor ? 'Update Doctor' : 'Add Doctor'}
+            </Button>
+          </DialogFooter>
+        </form>
 
-              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onClose}
-                  className="w-full sm:w-auto"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full sm:w-auto"
-                >
-                  {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  {doctor ? 'Update' : 'Add'} Doctor
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+      </DialogContent>
+    </Dialog>
   );
 } 

@@ -82,7 +82,7 @@ export default function AdminLayout({
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Overlay for mobile */}
       {isSidebarOpen && (
         <div
@@ -151,8 +151,8 @@ export default function AdminLayout({
         </div>
       </aside>
 
-      {/* Main Content Wrapper */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      {/* Main Content Wrapper - THIS IS THE ONLY SCROLLABLE CONTAINER */}
+      <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden">
         {/* Mobile Header */}
         <header className="sticky top-0 z-10 md:hidden bg-white border-b border-gray-200 flex-shrink-0 h-16">
           <div className="flex items-center justify-between h-full px-4">
@@ -167,10 +167,10 @@ export default function AdminLayout({
           </div>
         </header>
 
-        {/* Page Content Area (Scrollable) */}
-        <div className="flex-1 overflow-y-auto p-4">
+        {/* Page Content Area - MAKE SURE THIS DOESN'T SCROLL INDEPENDENTLY */}
+        <main className="flex-1 overflow-auto w-full h-[calc(100vh-4rem)] md:h-screen">
           {children}
-        </div>
+        </main>
       </div>
     </div>
   );
