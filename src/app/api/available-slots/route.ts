@@ -225,7 +225,116 @@ export async function GET(request: Request) {
     }
 
     console.log(`[Available Slots API] Date ${dateStringForCheck} is valid. Proceeding to generate slots.`);
-    // Remainder of code for generating slots remains the same
+    
+    // --- Generate Slots ---
+    console.log("[Available Slots API] Using schedule object:", schedule);
+
+    const existingAppointments = await prisma.appointment.findMany({
+      where: {
+        doctorId: doctorId,
+        status: {
+          notIn: ['CANCELLED', 'NO_SHOW']
+        }
+      },
+      select: { 
+        date: true, 
+        time: true 
+      }
+    });
+    
+    // Filter for appointments on the requested date using IST comparison
+    const sameDataAppointments = existingAppointments.filter(apt => {
+      return isSameDayInIST(new Date(apt.date), selectedDate);
+    });
+    
+    // Get set of booked times
+    const bookedTimes = new Set(sameDataAppointments.map(apt => apt.time).filter(Boolean));
+    console.log(`[Available Slots API] Booked times for ${dateStringForCheck}:`, Array.from(bookedTimes));
+
+    const slots: string[] = [];
+    const slotDuration = schedule.slotDuration;
+    const bufferTime = schedule.bufferTime; 
+    const [startH, startM] = schedule.startTime.split(':').map(Number);
+    const [endH, endM] = schedule.endTime.split(':').map(Number);
+    const [breakStartH, breakStartM] = (schedule.breakStart || '').split(':').map(Number);
+    const [breakEndH, breakEndM] = (schedule.breakEnd || '').split(':').map(Number);
+
+    console.log("[Available Slots API] Slot Generation Params:", { 
+      startH, startM, endH, endM, slotDuration, bufferTime 
+    });
+
+    // Create date objects for the selected day
+    let currentTime = new Date(selectedDate);
+    currentTime.setHours(startH, startM, 0, 0);
+    
+    const endTime = new Date(selectedDate);
+    endTime.setHours(endH, endM, 0, 0);
+    
+    console.log("[Available Slots API] Loop Start/End Times:", {
+      initialCurrentTime: currentTime.toISOString(),
+      loopEndTime: endTime.toISOString()
+    });
+    
+    // Handle break times
+    const breakStartTime = schedule.breakStart ? (() => {
+      const t = new Date(selectedDate);
+      t.setHours(breakStartH, breakStartM, 0, 0);
+      return t;
+    })() : null;
+    
+    const breakEndTime = schedule.breakEnd ? (() => {
+      const t = new Date(selectedDate);
+      t.setHours(breakEndH, breakEndM, 0, 0);
+      return t;
+    })() : null;
+
+    // Total minutes for each slot cycle (work + buffer)
+    const totalSlotTime = slotDuration + bufferTime; 
+    const now = new Date(); // Get current time for past check
+
+    while (isBefore(currentTime, endTime)) {
+      const hours = currentTime.getHours();
+      const minutes = currentTime.getMinutes();
+      const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+      
+      console.log(`[Available Slots API] Loop Iteration: Checking timeStr = ${timeStr}`);
+      let isAvailable = true;
+      let skipReason = '';
+
+      // Check 1: Is the start time of the slot in the past (if date is today)?
+      if (isToday(selectedDate) && isBefore(currentTime, now)) {
+          isAvailable = false;
+          skipReason = 'Slot is in the past';
+      }
+      // Check 2: Is it during break time? 
+      else if (breakStartTime && breakEndTime && 
+                isAfter(currentTime, breakStartTime) && 
+                isBefore(currentTime, breakEndTime)) {
+          isAvailable = false;
+          skipReason = 'Starts during break';
+      }
+      // Check 3: Is this exact time slot already booked?
+      else if (bookedTimes.has(timeStr)) {
+          isAvailable = false;
+          skipReason = 'Already booked';
+      }
+
+      if (isAvailable) {
+        slots.push(timeStr);
+      } else {
+        console.log(`[Available Slots API] Skipping slot ${timeStr}: ${skipReason}`);
+      }
+
+      // Move to the start of the next potential slot
+      currentTime = addMinutes(currentTime, totalSlotTime); 
+    }
+
+    console.log(`[Available Slots API] Generated ${slots.length} slots for ${dateStringForCheck}`);
+    if (slots.length === 0) {
+      console.log(`[Available Slots API] WARNING: No slots generated! Schedule:`, schedule);
+    }
+    
+    return NextResponse.json({ disabledDates, slots });
 
   } catch (error) {
     console.error('[Available Slots API] Error:', error);
