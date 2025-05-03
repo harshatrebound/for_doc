@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Save, Loader2, Refresh, AlertCircle, Globe, FileCode, Share2, Search } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { toast, Toaster } from 'react-hot-toast';
 
 interface GlobalSEOSettings {
   siteName: string;
@@ -182,6 +182,7 @@ export default function SEOPage() {
 
   return (
     <div className="min-h-screen bg-gray-50/40">
+      <Toaster position="top-right" />
       {/* Header */}
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl border-b border-gray-200">
         <div className="px-4 sm:px-6 h-16 flex items-center justify-between">
