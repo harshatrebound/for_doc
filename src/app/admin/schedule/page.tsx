@@ -196,13 +196,37 @@ export default function SchedulePage() {
               </Button>
               {/* Button to edit the selected doctor's weekly schedule */}
               <Button
-                className="bg-[#8B5C9E] hover:bg-[#8B5C9E]/90"
+                className="bg-[#8B5C9E] hover:bg-[#8B5C9E]/90 text-white"
                 onClick={() => selectedDoctor && router.push(`/admin/doctors/${selectedDoctor}/schedule`)}
                 disabled={!selectedDoctor}
               >
                 <Settings className="w-4 h-4 mr-2" />
                 Edit Weekly Schedule
               </Button>
+            </div>
+            
+            {/* Mobile Actions */}
+            <div className="md:hidden">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => router.push('/admin/special-dates')}>
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Manage Special Dates
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => selectedDoctor && router.push(`/admin/doctors/${selectedDoctor}/schedule`)}
+                    disabled={!selectedDoctor}
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Edit Weekly Schedule
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -215,7 +239,7 @@ export default function SchedulePage() {
                 size="sm"
                 className={`flex-shrink-0 ${
                   selectedDoctor === doctor.id 
-                    ? 'bg-[#8B5C9E] hover:bg-[#8B5C9E]/90' 
+                    ? 'bg-[#8B5C9E] hover:bg-[#8B5C9E]/90 text-white' 
                     : 'border-gray-200'
                 }`}
                 onClick={() => setSelectedDoctor(doctor.id)}
@@ -334,7 +358,7 @@ export default function SchedulePage() {
             </p>
             <Button
               onClick={() => router.push(`/admin/doctors/${selectedDoctor}/schedule`)}
-              className="bg-[#8B5C9E] hover:bg-[#8B5C9E]/90"
+              className="bg-[#8B5C9E] hover:bg-[#8B5C9E]/90 text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
               Set Schedule

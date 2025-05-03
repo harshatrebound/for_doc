@@ -95,16 +95,16 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed md:sticky top-0 left-0 z-30 h-screen w-64 bg-white border-r border-gray-200',
+          'fixed md:sticky top-0 left-0 z-30 h-screen w-[250px] bg-white border-r border-gray-200',
           'transform transition-transform duration-200 ease-in-out',
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
           'md:translate-x-0 flex-shrink-0'
         )}
       >
-        <div className="flex flex-col h-full max-h-screen">
+        <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 flex-shrink-0">
-            <h1 className="text-xl font-bold text-[#8B5C9E]">Admin Panel</h1>
+            <h1 className="text-lg font-bold text-[#8B5C9E]">Admin Panel</h1>
             <button
               className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
               onClick={() => setIsSidebarOpen(false)}
@@ -113,9 +113,9 @@ export default function AdminLayout({
             </button>
           </div>
 
-          {/* Navigation */}
-          <div className="flex-1 overflow-y-auto flex flex-col justify-between">
-            <nav className="py-4">
+          {/* Navigation - Fixed height with own scrollbar */}
+          <div className="flex-grow flex flex-col h-[calc(100vh-64px-60px)] overflow-hidden">
+            <nav className="flex-grow overflow-y-auto py-4">
               <ul className="space-y-1 px-2">
                 {menuItems.map((item) => {
                   const isActive = pathname === item.href;
@@ -144,18 +144,18 @@ export default function AdminLayout({
                 })}
               </ul>
             </nav>
+          </div>
 
-            {/* Logout Button - Now part of the scrollable section */}
-            <div className="p-4">
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-2"
-                onClick={handleLogout}
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </Button>
-            </div>
+          {/* Logout Button - Fixed at bottom */}
+          <div className="p-4 border-t border-gray-200 flex-shrink-0">
+            <Button
+              variant="outline"
+              className="w-full justify-start gap-2"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </Button>
           </div>
         </div>
       </aside>

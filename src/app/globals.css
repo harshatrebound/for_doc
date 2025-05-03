@@ -495,3 +495,31 @@ h2, h3, h4 {
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+/* Ensure all purple buttons have white text */
+.bg-\[\#8B5C9E\], 
+.bg-\[\#8B5C9E\]\/90, 
+.bg-\[\#8B5C9E\]\/80, 
+.bg-\[\#8B5C9E\]\/70,
+.bg-\[\#8B5C9E\]\/60 {
+  color: white !important;
+}
+
+/* Fix hover states as well */
+.hover\:bg-\[\#8B5C9E\]:hover,
+.hover\:bg-\[\#8B5C9E\]\/90:hover,
+.hover\:bg-\[\#7B4C8E\]:hover {
+  color: white !important;
+}
+
+/* Ensure consistent margin around icons in buttons */
+button svg {
+  margin-right: 0.25rem;
+}
+
+/* Reset margin if the button is an icon-only button */
+button.w-9 svg, 
+button.h-9.w-9 svg,
+button.h-8.w-8 svg {
+  margin-right: 0;
+}
