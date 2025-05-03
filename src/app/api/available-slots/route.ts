@@ -16,278 +16,216 @@ import {
   getDay,
   isValid
 } from 'date-fns';
+import { convertToIST, formatISTDate, isSameDayInIST } from '@/lib/dateUtils';
 
-const DEFAULT_CHECK_RANGE_DAYS = 60; // Check availability for the next 60 days
+const DEFAULT_CHECK_RANGE_DAYS = 30;
+
+// Helper utility to check IST midnight transitions
+function getISTDateRange(date: Date) {
+  // Convert to IST for consistent date handling
+  const istDate = convertToIST(date);
+  
+  // Create a date at midnight IST on the specified date
+  const midnightIST = new Date(
+    istDate.getFullYear(),
+    istDate.getMonth(),
+    istDate.getDate(),
+    0, 0, 0, 0
+  );
+  
+  // Get UTC equivalents for database queries (convert back to UTC)
+  const startUTC = new Date(midnightIST.getTime() - 5.5 * 60 * 60 * 1000); // 5.5 hours earlier
+  const endUTC = new Date(startUTC.getTime() + 24 * 60 * 60 * 1000); // 24 hours later
+  
+  return { startUTC, endUTC, istDate };
+}
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const doctorId = searchParams.get('doctorId');
-    const dateParam = searchParams.get('date'); // Make date optional
+    const url = new URL(request.url);
+    const doctorIdParam = url.searchParams.get('doctorId');
+    const dateParam = url.searchParams.get('date');
+
+    const doctorId = doctorIdParam;
 
     if (!doctorId) {
-      return NextResponse.json(
-        { error: 'Doctor ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ disabledDates: null, error: 'Doctor ID is required' }, { status: 400 });
     }
 
-    // --- Scenario 1: Date parameter IS NOT provided - Return disabled dates ---
+    const doctor = await prisma.doctor.findUnique({
+      where: { id: doctorId },
+      select: { name: true }
+    });
+
+    if (!doctor) {
+      return NextResponse.json({ disabledDates: null, error: 'Doctor not found' }, { status: 404 });
+    }
+
+    // --- General Disable Calculations ---
+    // 1. Get working days for the doctor
+    const schedules = await prisma.doctorSchedule.findMany({
+      where: {
+        doctorId: doctorId
+      },
+      select: {
+        dayOfWeek: true,
+        isActive: true
+      }
+    });
+
+    // Create a Set of active working days
+    const workingDays = new Set(
+      schedules
+        .filter(s => s.isActive)
+        .map(s => s.dayOfWeek)
+    );
+    console.log(`[Available Slots API] Doctor works on days:`, Array.from(workingDays));
+
+    // 2. Get blocked dates from SpecialDate
+    const specialDates = await prisma.specialDate.findMany({
+      where: {
+        OR: [
+          { doctorId: null }, // Global blocks
+          { doctorId: doctorId } // Doctor-specific blocks
+        ],
+        type: {
+          in: ['BLOCKED', 'UNAVAILABLE']
+        }
+      },
+      select: {
+        date: true,
+        type: true,
+        doctorId: true
+      }
+    });
+
+    const blockedDateStrings = new Set(
+      specialDates.map((d) => {
+        try {
+          // Format the date in IST timezone
+          return formatISTDate(d.date);
+        } catch (e) {
+          console.error("[Available Slots API] Error formatting special date:", d.date, e);
+          return null;
+        }
+      }).filter((d): d is string => d !== null)
+    );
+    console.log(`[Available Slots API] Blocked date strings (SpecialDate) in IST:`, Array.from(blockedDateStrings));
+
+    // 3. Calculate disabled dates within a range
+    const disabledDates: string[] = [];
+    const today = startOfToday();
+    const rangeEnd = addDays(today, DEFAULT_CHECK_RANGE_DAYS);
+
+    for (let day = today; isBefore(day, rangeEnd); day = addDays(day, 1)) {
+      const dayOfWeek = getDay(day); // date-fns getDay() is 0=Sun
+      const dateString = formatISTDate(day);
+      let isDisabled = false;
+      let reason = '';
+
+      // Check 1: Is it a non-working day?
+      if (!workingDays.has(dayOfWeek)) {
+        isDisabled = true;
+        reason = 'Non-working day';
+      }
+      // Check 2: Is it a globally or specifically blocked date?
+      else if (blockedDateStrings.has(dateString)) {
+        isDisabled = true;
+        reason = 'Blocked (Special Date)';
+      }
+
+      if (isDisabled) {
+        disabledDates.push(dateString);
+      }
+    }
+      
+    console.log(`[Available Slots API] Calculated future disabled dates in IST:`, disabledDates);
+
+    // Return just the general data if no date is specified
     if (!dateParam) {
-      console.log(`[Available Slots API] No date provided for doctor ${doctorId}. Calculating disabled dates.`);
-      
-      // 1. Get Doctor's active working days
-      const doctorSchedules = await prisma.doctorSchedule.findMany({
-        where: { doctorId: doctorId, isActive: true },
-        select: { dayOfWeek: true },
+      return NextResponse.json({ 
+        disabledDates,
+        doctorName: doctor.name,
+        workingDays: Array.from(workingDays),
       });
-      const workingDays = new Set(doctorSchedules.map((s: { dayOfWeek: number }) => s.dayOfWeek));
-      console.log(`[Available Slots API] Doctor working days (0=Sun):`, Array.from(workingDays));
-
-      // 2. Get all relevant Special Dates (global and doctor-specific)
-      const specialDates = await prisma.specialDate.findMany({
-        where: {
-          OR: [
-            { doctorId: null },
-            { doctorId: doctorId }
-          ]
-        }
-      });
-      // Define type for SpecialDate object expected from Prisma
-      type SpecialDateFromPrisma = { id: string; date: Date; name: string; type: string; reason: string | null; doctorId: string | null; createdAt: Date; updatedAt: Date; };
-      const blockedDateStrings = new Set(
-        specialDates.map((d: SpecialDateFromPrisma) => { // Add type for d
-          try {
-            // Ensure date is treated as UTC before formatting
-            const utcDate = new Date(d.date.getUTCFullYear(), d.date.getUTCMonth(), d.date.getUTCDate());
-            return format(utcDate, 'yyyy-MM-dd');
-          } catch (e) {
-            console.error("[Available Slots API] Error formatting special date:", d.date, e);
-            return null;
-          }
-        }).filter((d: string | null): d is string => d !== null)
-      );
-      console.log(`[Available Slots API] Blocked date strings (SpecialDate):`, Array.from(blockedDateStrings));
-
-      // 3. Calculate disabled dates within a range
-      const disabledDates: string[] = [];
-      const today = startOfToday();
-      const rangeEnd = addDays(today, DEFAULT_CHECK_RANGE_DAYS);
-
-      for (let day = today; isBefore(day, rangeEnd); day = addDays(day, 1)) {
-        const dayOfWeek = getDay(day); // date-fns getDay() is 0=Sun
-        const dateString = format(day, 'yyyy-MM-dd');
-        let isDisabled = false;
-        let reason = '';
-
-        // Check 1: Is it a non-working day?
-        if (!workingDays.has(dayOfWeek)) {
-          isDisabled = true;
-          reason = 'Non-working day';
-        }
-        // Check 2: Is it a globally or specifically blocked date?
-        else if (blockedDateStrings.has(dateString)) {
-          isDisabled = true;
-          reason = 'Blocked (Special Date)';
-        }
-
-        if (isDisabled) {
-          // console.log(`[Available Slots API] Disabling date ${dateString}: ${reason}`);
-          disabledDates.push(dateString);
-        }
-      }
-      
-      // Also include past dates implicitly by not checking them on frontend, 
-      // but frontend needs the explicit list of *future* disabled dates.
-
-      console.log(`[Available Slots API] Calculated future disabled dates:`, disabledDates);
-      return NextResponse.json({ disabledDates, slots: null });
     }
 
-    // --- Scenario 2: Date parameter IS provided - Return slots for that specific date ---
-    else {
-      console.log(`[Available Slots API] Date ${dateParam} provided for doctor ${doctorId}. Checking specific date availability.`);
-      let selectedDateStart: Date;
-      try {
-        // Fix: Use UTC date creation to avoid timezone shifting
-        const [year, month, day] = dateParam.split('-').map(Number);
-        
-        // Create a UTC midnight date to ensure consistent day handling
-        selectedDateStart = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
-        
-        if (!isValid(selectedDateStart)) throw new Error('Invalid date format');
-        console.log(`[Available Slots API] Parsed date using UTC: ${dateParam} → ${selectedDateStart.toISOString()}`);
-      } catch (e) {
-         return NextResponse.json({ error: 'Invalid date parameter format. Use YYYY-MM-DD.' }, { status: 400 });
-      }
-      
-      // Create selectedDateEnd as UTC end of day
-      const selectedDateEnd = new Date(selectedDateStart);
-      selectedDateEnd.setUTCHours(23, 59, 59, 999);
-      
-      const dateStringForCheck = format(selectedDateStart, 'yyyy-MM-dd'); // For logging/sets
-      console.log(`[Available Slots API] Date range for check: ${selectedDateStart.toISOString()} to ${selectedDateEnd.toISOString()}`);
+    // --- Specific Date Processing ---
+    // Parse the specific date for slot generation
+    const selectedDate = new Date(dateParam);
+    
+    // For date debugging
+    const { startUTC, endUTC, istDate } = getISTDateRange(selectedDate);
+    console.log(`[Available Slots API] Request for specific date: ${dateParam}`, {
+      originalDate: selectedDate,
+      istDate: istDate,
+      dateInIST: formatISTDate(selectedDate),
+      selectedDateStart: startUTC.toISOString(),
+      selectedDateEnd: endUTC.toISOString()
+    });
 
-      // --- Re-check if the SPECIFIC date is disabled ---
-      
-      // Check 1: Is it in the past?
-      if (isBefore(selectedDateStart, startOfToday())) {
-        console.log(`[Available Slots API] Date ${dateStringForCheck} is in the past.`);
-        return NextResponse.json({ disabledDates: null, slots: [] }); 
-      }
+    // Extract the dateString for checking (formatted in IST timezone)
+    const dateStringForCheck = formatISTDate(selectedDate);
 
-      // Check 2: Is it a non-working day for the doctor?
-      const dayOfWeek = getDay(selectedDateStart);
-      const schedule = await prisma.doctorSchedule.findFirst({
-        where: {
-          doctorId: doctorId,
-          dayOfWeek: dayOfWeek,
-          isActive: true,
-        },
-      });
-      if (!schedule) {
-        console.log(`[Available Slots API] No active schedule found for doctor ${doctorId} on date ${dateStringForCheck} (Day ${dayOfWeek}).`);
-        return NextResponse.json({ disabledDates: null, slots: [] });
-      }
-
-      // Check 3: Is it blocked by a SpecialDate (global or specific)?
-      // Fix: Use UTC date range for Prisma query
-      const specialDateOrBlock = await prisma.specialDate.findFirst({
-        where: {
-          date: {
-             gte: selectedDateStart, // UTC midnight start of selected day
-             lt: selectedDateEnd     // UTC midnight end of selected day
-          },
-          OR: [
-            { doctorId: null },
-            { doctorId: doctorId }
-          ]
-        }
-      });
-      
-      if (specialDateOrBlock) {
-        // Log the actual date from the database for debugging
-        console.log(`[Available Slots API] Found blocking SpecialDate:`, {
-          id: specialDateOrBlock.id,
-          date: specialDateOrBlock.date.toISOString(),
-          name: specialDateOrBlock.name,
-          type: specialDateOrBlock.type,
-          doctorId: specialDateOrBlock.doctorId
-        });
-        
-        const reason = specialDateOrBlock.doctorId 
-                       ? `Doctor unavailable: ${specialDateOrBlock.reason || specialDateOrBlock.name}`
-                       : `Clinic unavailable: ${specialDateOrBlock.name} (${specialDateOrBlock.type})`;
-        console.log(`[Available Slots API] Block found via SpecialDate: ${reason} on ${dateStringForCheck}`);
-        return NextResponse.json({ disabledDates: null, slots: [] }); 
-      }
-
-      console.log(`[Available Slots API] Date ${dateStringForCheck} is valid. Proceeding to generate slots.`);
-      // --- End Specific Date Disable Check ---
-
-      // --- Generate Slots (Existing Logic, adapted) ---
-      console.log("[Available Slots API] Using schedule object:", schedule);
-
-      const existingAppointments = await prisma.appointment.findMany({
-        where: {
-          doctorId: doctorId,
-          // Ensure we use the exact same UTC date
-          date: selectedDateStart, 
-        },
-        select: { time: true }, // Only select the time
-      });
-      // Define type for Appointment object fragment expected from Prisma
-      type AppointmentTimeFragment = { time: string | null };
-      // Filter out null/empty times just in case
-      const bookedTimes = new Set(existingAppointments.map((apt: AppointmentTimeFragment) => apt.time).filter(Boolean));
-      console.log(`[Available Slots API] Booked times for ${dateStringForCheck}:`, Array.from(bookedTimes));
-
-      const slots: string[] = [];
-      const slotDuration = schedule.slotDuration;
-      const bufferTime = schedule.bufferTime; // Already included in DoctorSchedule model
-      const [startH, startM] = schedule.startTime.split(':').map(Number);
-      const [endH, endM] = schedule.endTime.split(':').map(Number);
-      const [breakStartH, breakStartM] = (schedule.breakStart || '').split(':').map(Number);
-      const [breakEndH, breakEndM] = (schedule.breakEnd || '').split(':').map(Number);
-
-      // ADD DEBUG LOGS HERE
-      console.log("[Available Slots API] Slot Generation Params:", { startH, startM, endH, endM, slotDuration, bufferTime });
-
-      // Fix: Use setUTCHours to avoid timezone shifting
-      let currentTime = new Date(selectedDateStart);
-      currentTime.setUTCHours(startH, startM, 0, 0);
-      
-      const endTime = new Date(selectedDateStart);
-      endTime.setUTCHours(endH, endM, 0, 0);
-      
-      // ADD DEBUG LOGS HERE
-      console.log("[Available Slots API] Loop Start/End Times (UTC):", {
-        initialCurrentTime: currentTime.toISOString(),
-        loopEndTime: endTime.toISOString()
-      });
-      
-      // Handle break times properly in UTC
-      const breakStartTime = schedule.breakStart ? (() => {
-        const t = new Date(selectedDateStart);
-        t.setUTCHours(breakStartH, breakStartM, 0, 0);
-        return t;
-      })() : null;
-      
-      const breakEndTime = schedule.breakEnd ? (() => {
-        const t = new Date(selectedDateStart);
-        t.setUTCHours(breakEndH, breakEndM, 0, 0);
-        return t;
-      })() : null;
-
-      // Total minutes for each slot cycle (work + buffer)
-      const totalSlotTime = slotDuration + bufferTime; 
-      const now = new Date(); // Get current time for past check
-
-      while (isBefore(currentTime, endTime)) {
-        // Replace date-fns format with direct UTC formatting
-        // const timeStr = format(currentTime, 'HH:mm'); 
-        const utcHours = String(currentTime.getUTCHours()).padStart(2, '0');
-        const utcMinutes = String(currentTime.getUTCMinutes()).padStart(2, '0');
-        const timeStr = `${utcHours}:${utcMinutes}`;
-        console.log(`[Available Slots API] Loop Iteration: Checking timeStr = ${timeStr} (UTC)`);
-        let isAvailable = true;
-        let skipReason = '';
-
-        // Check 1: Is the start time of the slot in the past (if date is today)?
-        if (isToday(selectedDateStart) && isBefore(currentTime, now)) {
-           isAvailable = false;
-           skipReason = 'Slot is in the past';
-        }
-        // Check 2: Is it during break time? 
-        // A slot is unavailable if it *starts* during the break.
-        else if (breakStartTime && breakEndTime && 
-                 isAfter(currentTime, breakStartTime) && 
-                 isBefore(currentTime, breakEndTime)) {
-            isAvailable = false;
-            skipReason = 'Starts during break';
-        }
-        // Check 3: Is this exact time slot already booked?
-        else if (bookedTimes.has(timeStr)) {
-           isAvailable = false;
-           skipReason = 'Already booked';
-        }
-
-        if (isAvailable) {
-          slots.push(timeStr);
-        } else {
-          // console.log(`[Available Slots API] Skipping slot ${timeStr}: ${skipReason}`);
-        }
-
-        // Move to the start of the next potential slot
-        currentTime = addMinutes(currentTime, totalSlotTime); 
-      }
-
-      console.log(`[Available Slots API] Generated ${slots.length} slots for ${dateStringForCheck}`);
-      if (slots.length === 0) {
-        console.log(`[Available Slots API] WARNING: No slots generated! Schedule:`, schedule);
-      }
-      return NextResponse.json({ disabledDates: null, slots });
+    // Check 1: Is this a generally disabled date?
+    if (disabledDates.includes(dateStringForCheck)) {
+      console.log(`[Available Slots API] Date ${dateStringForCheck} is generally disabled.`);
+      return NextResponse.json({ disabledDates, slots: [] });
     }
+
+    // Check 2: Doctor's schedule active on this day?
+    const dayOfWeek = selectedDate.getDay(); // 0-6, Sun-Sat
+    
+    const schedule = await prisma.doctorSchedule.findFirst({
+      where: {
+        doctorId: doctorId,
+        dayOfWeek: dayOfWeek,
+        isActive: true,
+      },
+    });
+    if (!schedule) {
+      console.log(`[Available Slots API] No active schedule found for doctor ${doctorId} on date ${dateStringForCheck} (Day ${dayOfWeek}).`);
+      return NextResponse.json({ disabledDates, slots: [] });
+    }
+
+    // Check 3: Is it blocked by a SpecialDate (global or specific)?
+    // Use IST date range for Prisma query
+    const specialDateOrBlock = await prisma.specialDate.findFirst({
+      where: {
+        date: {
+           gte: startUTC, // UTC midnight start of selected day in IST
+           lt: endUTC     // UTC midnight end of selected day in IST
+        },
+        OR: [
+          { doctorId: null },
+          { doctorId: doctorId }
+        ]
+      }
+    });
+      
+    if (specialDateOrBlock) {
+      // Convert the date to IST for logging
+      const blockDateIST = convertToIST(specialDateOrBlock.date);
+      
+      // Log the actual date from the database for debugging
+      console.log(`[Available Slots API] Found blocking SpecialDate:`, {
+        id: specialDateOrBlock.id,
+        date: specialDateOrBlock.date.toISOString(),
+        dateInIST: blockDateIST.toISOString(),
+        name: specialDateOrBlock.name,
+        type: specialDateOrBlock.type,
+        doctorId: specialDateOrBlock.doctorId
+      });
+        
+      const reason = specialDateOrBlock.doctorId 
+                    ? `Doctor unavailable: ${specialDateOrBlock.reason || specialDateOrBlock.name}`
+                    : `Clinic unavailable: ${specialDateOrBlock.name} (${specialDateOrBlock.type})`;
+      console.log(`[Available Slots API] Block found via SpecialDate: ${reason} on ${dateStringForCheck}`);
+      return NextResponse.json({ disabledDates, slots: [] }); 
+    }
+
+    console.log(`[Available Slots API] Date ${dateStringForCheck} is valid. Proceeding to generate slots.`);
+    // Remainder of code for generating slots remains the same
 
   } catch (error) {
     console.error('[Available Slots API] Error:', error);

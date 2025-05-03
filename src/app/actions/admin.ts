@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { format, addMinutes, isBefore } from 'date-fns';
+import { convertToIST, isSameDayInIST, formatISTDate } from '@/lib/dateUtils';
 
 // Helper function for debugging date comparisons
 function debugDateComparison(name: string, date1: Date | string, date2: Date | string) {
@@ -12,27 +13,41 @@ function debugDateComparison(name: string, date1: Date | string, date2: Date | s
   const d1 = typeof date1 === 'string' ? new Date(date1) : date1;
   const d2 = typeof date2 === 'string' ? new Date(date2) : date2;
   
+  // Convert to IST for logging and comparison
+  const d1_ist = convertToIST(d1);
+  const d2_ist = convertToIST(d2);
+  
   console.log(`Date 1 (original): ${date1}`);
   console.log(`Date 1 (as Date): ${d1}`);
-  console.log(`Date 1 components: Year=${d1.getUTCFullYear()}, Month=${d1.getUTCMonth()+1}, Day=${d1.getUTCDate()}`);
+  console.log(`Date 1 (in IST): ${d1_ist}`);
+  console.log(`Date 1 IST components: Year=${d1_ist.getFullYear()}, Month=${d1_ist.getMonth()+1}, Day=${d1_ist.getDate()}`);
   
   console.log(`Date 2 (original): ${date2}`);
   console.log(`Date 2 (as Date): ${d2}`);
-  console.log(`Date 2 components: Year=${d2.getUTCFullYear()}, Month=${d2.getUTCMonth()+1}, Day=${d2.getUTCDate()}`);
+  console.log(`Date 2 (in IST): ${d2_ist}`);
+  console.log(`Date 2 IST components: Year=${d2_ist.getFullYear()}, Month=${d2_ist.getMonth()+1}, Day=${d2_ist.getDate()}`);
   
   // Check equality using different methods
-  const componentsEqual = 
+  const utcComponentsEqual = 
     d1.getUTCFullYear() === d2.getUTCFullYear() && 
     d1.getUTCMonth() === d2.getUTCMonth() && 
     d1.getUTCDate() === d2.getUTCDate();
     
+  // Compare components in IST timezone
+  const istComponentsEqual = 
+    d1_ist.getFullYear() === d2_ist.getFullYear() && 
+    d1_ist.getMonth() === d2_ist.getMonth() && 
+    d1_ist.getDate() === d2_ist.getDate();
+    
   const isoEqual = d1.toISOString().substring(0, 10) === d2.toISOString().substring(0, 10);
   
-  console.log(`Components equal: ${componentsEqual}`);
+  console.log(`UTC Components equal: ${utcComponentsEqual}`);
+  console.log(`IST Components equal: ${istComponentsEqual}`);
   console.log(`ISO dates equal: ${isoEqual}`);
   console.log('-------------------------');
   
-  return componentsEqual;
+  // Use IST comparison instead of UTC
+  return istComponentsEqual;
 }
 
 // Helper function to convert HH:MM time string to minutes since midnight
@@ -112,6 +127,8 @@ function generateTimeSlots(startTimeStr: string, endTimeStr: string, slotDuratio
 // New server action to fetch available slots for a doctor on a specific date
 export async function fetchAvailableSlots(doctorId: string, date: Date): Promise<ApiResponse<string[]>> {
   try {
+    console.log(`Fetching available slots for doctor ${doctorId} on date ${date} (IST: ${convertToIST(date)})`);
+    
     const scheduleResult = await fetchDoctorSchedule(doctorId);
     if (!scheduleResult.success || !scheduleResult.data) {
       return { success: false, error: 'Could not fetch doctor schedule.' };
@@ -155,8 +172,9 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
       currentTime = addMinutes(currentTime, totalSlotTime); // Increment by TOTAL slot time
     }
     
-    // Format date for database queries
-    const dateStr = format(date, 'yyyy-MM-dd');
+    // Format date for database queries using IST
+    const dateStr = formatISTDate(date);
+    console.log(`Formatted date in IST: ${dateStr}`);
     
     // 1. Get all existing appointments for this doctor
     const existingAppointments = await prisma.appointment.findMany({
@@ -172,25 +190,9 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
       }
     });
     
-    // Filter to only appointments on the requested date
+    // Filter to only appointments on the requested date using IST comparison
     const sameDataAppointments = existingAppointments.filter(apt => {
-      const aptDate = new Date(apt.date);
-      
-      // Extract individual date components
-      const aptYear = aptDate.getUTCFullYear();
-      const aptMonth = aptDate.getUTCMonth();
-      const aptDay = aptDate.getUTCDate();
-      
-      const reqYear = date.getUTCFullYear();
-      const reqMonth = date.getUTCMonth();
-      const reqDay = date.getUTCDate();
-      
-      // Compare the date components directly
-      return (
-        aptYear === reqYear && 
-        aptMonth === reqMonth && 
-        aptDay === reqDay
-      );
+      return isSameDayInIST(new Date(apt.date), date);
     });
     
     const bookedSlots = new Set(sameDataAppointments.map(apt => apt.time));
@@ -203,25 +205,9 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
       }
     });
     
-    // Filter to only blocks on the requested date
+    // Filter to only blocks on the requested date using IST comparison
     const relevantTimeBlocks = timeBlocks.filter(block => {
-      const blockDate = new Date(block.date);
-      
-      // Extract individual date components
-      const blockYear = blockDate.getUTCFullYear();
-      const blockMonth = blockDate.getUTCMonth();
-      const blockDay = blockDate.getUTCDate();
-      
-      const apptYear = date.getUTCFullYear();
-      const apptMonth = date.getUTCMonth();
-      const apptDay = date.getUTCDate();
-      
-      // Compare the date components directly
-      return (
-        blockYear === apptYear && 
-        blockMonth === apptMonth && 
-        blockDay === apptDay
-      );
+      return isSameDayInIST(block.date, date);
     });
     
     // Filter out slots that:
@@ -229,26 +215,54 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
     // 2. Fall within a time block
     // 3. Would overlap with a break
     const availableSlots = slots.filter(slot => {
-      // Check if the slot is already booked
+      // Check 1: Already booked?
       if (bookedSlots.has(slot)) {
         return false;
       }
       
+      // Check 2: Within a time block?
       const slotMinutes = timeToMinutes(slot);
-      if (slotMinutes === null) return false;
+      if (slotMinutes === null) return false; // Invalid time format
       
-      // Check if this slot falls within scheduled break
-      if (breakStartMinutes !== null && breakEndMinutes !== null) {
-        // Calculate end time of this appointment by adding the duration
-        const slotEndMinutes = slotMinutes + slotDuration;
+      const slotEndMinutes = slotMinutes + slotDuration;
+      
+      for (const block of relevantTimeBlocks) {
+        if (!block.reason?.startsWith('TIME:')) continue;
         
-        // Check if appointment starts during break
+        const parts = block.reason.split(':');
+        if (parts.length < 3) continue;
+        
+        const timeRange = parts[1];
+        const [blockStartTimeStr, blockEndTimeStr] = timeRange.split('-');
+        
+        const blockStartMinutes = timeToMinutes(blockStartTimeStr);
+        const blockEndMinutes = timeToMinutes(blockEndTimeStr);
+        
+        if (blockStartMinutes === null || blockEndMinutes === null) continue;
+        
+        // Check if slot starts during block
+        const startsInBlock = slotMinutes >= blockStartMinutes && slotMinutes < blockEndMinutes;
+        
+        // Check if slot ends during block
+        const endsInBlock = slotEndMinutes > blockStartMinutes && slotEndMinutes <= blockEndMinutes;
+        
+        // Check if slot spans the entire block
+        const spansBlock = slotMinutes < blockStartMinutes && slotEndMinutes > blockEndMinutes;
+        
+        if (startsInBlock || endsInBlock || spansBlock) {
+          return false;
+        }
+      }
+      
+      // Check 3: Overlaps with a defined break?
+      if (breakStartMinutes !== null && breakEndMinutes !== null) {
+        // Check if slot starts during break
         const startsInBreak = slotMinutes >= breakStartMinutes && slotMinutes < breakEndMinutes;
         
-        // Check if appointment ends during break
+        // Check if slot ends during break
         const endsInBreak = slotEndMinutes > breakStartMinutes && slotEndMinutes <= breakEndMinutes;
         
-        // Check if appointment spans across the break
+        // Check if slot spans the entire break
         const spansBreak = slotMinutes < breakStartMinutes && slotEndMinutes > breakEndMinutes;
         
         if (startsInBreak || endsInBreak || spansBreak) {
@@ -256,45 +270,13 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
         }
       }
       
-      // Check if this slot falls within any time block
-      // Also check if the slot PLUS its duration overlaps with any time block
-      return !relevantTimeBlocks.some(block => {
-        // Extract time range from block.reason
-        if (!block.reason?.startsWith('TIME:')) return false;
-        
-        const parts = block.reason.split(':');
-        if (parts.length < 3) return false;
-        
-        const timeRange = parts[1];
-        const [startTimeStr, endTimeStr] = timeRange.split('-');
-        
-        const blockStartMinutes = timeToMinutes(startTimeStr);
-        const blockEndMinutes = timeToMinutes(endTimeStr);
-        
-        if (blockStartMinutes === null || blockEndMinutes === null) return false;
-        
-        // Calculate end time of this appointment by adding the duration
-        const slotEndMinutes = slotMinutes + slotDuration;
-        
-        // Check if appointment starts during block
-        const startsInBlock = slotMinutes >= blockStartMinutes && slotMinutes < blockEndMinutes;
-        
-        // Check if appointment ends during block
-        const endsInBlock = slotEndMinutes > blockStartMinutes && slotEndMinutes <= blockEndMinutes;
-        
-        // Check if appointment spans the entire block
-        const spansBlock = slotMinutes < blockStartMinutes && slotEndMinutes > blockEndMinutes;
-        
-        // If any of these conditions are true, the slot overlaps with a blocked time
-        return startsInBlock || endsInBlock || spansBlock;
-      });
+      return true;
     });
     
     return { success: true, data: availableSlots };
-
   } catch (error) {
     console.error("Error fetching available slots:", error);
-    return { success: false, error: 'Error fetching available slots.' };
+    return { success: false, error: 'Failed to retrieve available time slots' };
   }
 }
 
@@ -627,12 +609,11 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     }
 
     // 2. Check for whole-day blocks on the requested date
-    const dateStr = format(appointmentDate, 'yyyy-MM-dd');
+    // Use IST date string format for better logging clarity
+    const dateStr = formatISTDate(appointmentDate);
+    console.log(`Checking availability for date in IST: ${dateStr}`);
     
-    // Extract just the date part for comparison (ignore time component)
-    const appointmentDateOnly = dateStr; // 'YYYY-MM-DD' format
-    
-    // Find any blocks for this doctor where the date component matches
+    // Find any blocks for this doctor
     const fullDayBlocks = await prisma.specialDate.findMany({
       where: {
         doctorId: doctorId,
@@ -640,13 +621,13 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
       }
     });
     
-    // Find blocks for the requested appointment date using our debug helper
+    // Use the new IST comparison to check for blocks
     const fullDayBlock = fullDayBlocks.find(block => {
-      return debugDateComparison('Checking block date against appointment date', block.date, appointmentDate);
+      return isSameDayInIST(block.date, appointmentDate);
     });
 
     if (fullDayBlock) {
-      console.log(`Found blocking date: ${fullDayBlock.date} matching appointment date: ${appointmentDateOnly}`);
+      console.log(`Found blocking date: ${fullDayBlock.date} matching appointment date in IST: ${dateStr}`);
       return { 
         success: false, 
         error: `Doctor is unavailable on this date${fullDayBlock.reason ? ': ' + fullDayBlock.reason : ''}` 
@@ -682,11 +663,9 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
       }
     });
     
-    // Filter time blocks to only include those on the same date
+    // Filter time blocks to only include those on the same date in IST
     const relevantTimeBlocks = timeBlocks.filter(block => {
-      const blockDate = new Date(block.date);
-      const blockDateStr = format(blockDate, 'yyyy-MM-dd');
-      return blockDateStr === dateStr;
+      return isSameDayInIST(block.date, appointmentDate);
     });
 
     for (const block of relevantTimeBlocks) {
@@ -722,7 +701,7 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     }
 
     // 4. Check for existing appointments at this time
-    const existingAppointment = await prisma.appointment.findFirst({
+    const existingAppointments = await prisma.appointment.findMany({
       where: {
         doctorId,
         time,
@@ -732,33 +711,16 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
       }
     });
     
-    // If there's a potentially conflicting appointment, check the date manually
-    if (existingAppointment) {
-      const existingDate = new Date(existingAppointment.date);
-      
-      // Extract individual date components
-      const existingYear = existingDate.getUTCFullYear();
-      const existingMonth = existingDate.getUTCMonth();
-      const existingDay = existingDate.getUTCDate();
-      
-      const apptYear = appointmentDate.getUTCFullYear();
-      const apptMonth = appointmentDate.getUTCMonth();
-      const apptDay = appointmentDate.getUTCDate();
-      
-      // Compare the date components directly
-      const datesMatch = (
-        existingYear === apptYear && 
-        existingMonth === apptMonth && 
-        existingDay === apptDay
-      );
-      
-      // Only consider it a conflict if it's on the same date
-      if (datesMatch) {
-        return { 
-          success: false, 
-          error: 'This time slot is already booked. Please select another time.' 
-        };
-      }
+    // Check if any existing appointment is on the same day in IST
+    const conflictingAppointment = existingAppointments.find(appointment => {
+      return isSameDayInIST(new Date(appointment.date), appointmentDate);
+    });
+    
+    if (conflictingAppointment) {
+      return { 
+        success: false, 
+        error: 'This time slot is already booked. Please select another time.' 
+      };
     }
 
     const newAppointment = await prisma.appointment.create({
@@ -854,12 +816,10 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
       }
 
       // 2. Check for whole-day blocks on the requested date
-      const dateStr = format(appointmentDate, 'yyyy-MM-dd');
+      const dateStr = formatISTDate(appointmentDate);
+      console.log(`Checking availability for date in IST: ${dateStr}`);
       
-      // Extract just the date part for comparison (ignore time component)
-      const appointmentDateOnly = dateStr; // 'YYYY-MM-DD' format
-      
-      // Find any blocks for this doctor where the date component matches
+      // Find any blocks for this doctor
       const fullDayBlocks = await prisma.specialDate.findMany({
         where: {
           doctorId: doctorId,
@@ -867,13 +827,13 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
         }
       });
       
-      // Find blocks for the requested appointment date using our debug helper
+      // Use the new IST comparison to check for blocks
       const fullDayBlock = fullDayBlocks.find(block => {
-        return debugDateComparison('Checking block date against appointment date', block.date, appointmentDate);
+        return isSameDayInIST(block.date, appointmentDate);
       });
 
       if (fullDayBlock) {
-        console.log(`Found blocking date: ${fullDayBlock.date} matching appointment date: ${appointmentDateOnly}`);
+        console.log(`Found blocking date: ${fullDayBlock.date} matching appointment date in IST: ${dateStr}`);
         return { 
           success: false, 
           error: `Doctor is unavailable on this date${fullDayBlock.reason ? ': ' + fullDayBlock.reason : ''}` 
@@ -909,11 +869,9 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
         }
       });
       
-      // Filter time blocks to only include those on the same date
+      // Filter time blocks to only include those on the same date in IST
       const relevantTimeBlocks = timeBlocks.filter(block => {
-        const blockDate = new Date(block.date);
-        const blockDateStr = format(blockDate, 'yyyy-MM-dd');
-        return blockDateStr === dateStr;
+        return isSameDayInIST(block.date, appointmentDate);
       });
 
       for (const block of relevantTimeBlocks) {
