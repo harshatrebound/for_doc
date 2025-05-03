@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@headlessui/react';
+import { Switch } from '@/components/ui/switch';
 import { Save, Loader2, Refresh, AlertCircle, Globe, FileCode, Share2, Search } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -324,15 +324,9 @@ export default function SEOPage() {
                   </div>
                   <Switch
                     checked={globalSettings.generateSitemapAutomatically}
-                    onChange={(checked) => setGlobalSettings({...globalSettings, generateSitemapAutomatically: checked})}
-                    className={`${
-                      globalSettings.generateSitemapAutomatically ? 'bg-[#8B5C9E]' : 'bg-gray-200'
-                    } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
-                  >
-                    <span className={`${
-                      globalSettings.generateSitemapAutomatically ? 'translate-x-6' : 'translate-x-1'
-                    } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`} />
-                  </Switch>
+                    onCheckedChange={(checked) => setGlobalSettings({...globalSettings, generateSitemapAutomatically: checked})}
+                    className="data-[state=checked]:bg-[#8B5C9E]"
+                  />
                 </div>
                 
                 <div>
@@ -353,15 +347,9 @@ export default function SEOPage() {
                   </div>
                   <Switch
                     checked={globalSettings.indexingEnabled}
-                    onChange={(checked) => setGlobalSettings({...globalSettings, indexingEnabled: checked})}
-                    className={`${
-                      globalSettings.indexingEnabled ? 'bg-[#8B5C9E]' : 'bg-gray-200'
-                    } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
-                  >
-                    <span className={`${
-                      globalSettings.indexingEnabled ? 'translate-x-6' : 'translate-x-1'
-                    } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`} />
-                  </Switch>
+                    onCheckedChange={(checked) => setGlobalSettings({...globalSettings, indexingEnabled: checked})}
+                    className="data-[state=checked]:bg-[#8B5C9E]"
+                  />
                 </div>
               </CardContent>
             </Card>
