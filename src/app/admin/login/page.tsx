@@ -42,10 +42,7 @@ export default function AdminLogin() {
   return (
     <div className="max-w-md w-full p-8 bg-white shadow-md rounded-xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-center text-[#8B5C9E] mb-2">
-          BookingPress
-        </h1>
-        <h2 className="text-center text-xl font-semibold text-gray-900">
+        <h2 className="text-center text-2xl font-semibold text-[#8B5C9E]">
           Admin Login
         </h2>
       </div>
