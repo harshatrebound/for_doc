@@ -4,6 +4,37 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { format, addMinutes, isBefore } from 'date-fns';
 
+// Helper function for debugging date comparisons
+function debugDateComparison(name: string, date1: Date | string, date2: Date | string) {
+  console.log(`------ DEBUG: ${name} ------`);
+  
+  // Convert to Date objects if they're strings
+  const d1 = typeof date1 === 'string' ? new Date(date1) : date1;
+  const d2 = typeof date2 === 'string' ? new Date(date2) : date2;
+  
+  console.log(`Date 1 (original): ${date1}`);
+  console.log(`Date 1 (as Date): ${d1}`);
+  console.log(`Date 1 components: Year=${d1.getUTCFullYear()}, Month=${d1.getUTCMonth()+1}, Day=${d1.getUTCDate()}`);
+  
+  console.log(`Date 2 (original): ${date2}`);
+  console.log(`Date 2 (as Date): ${d2}`);
+  console.log(`Date 2 components: Year=${d2.getUTCFullYear()}, Month=${d2.getUTCMonth()+1}, Day=${d2.getUTCDate()}`);
+  
+  // Check equality using different methods
+  const componentsEqual = 
+    d1.getUTCFullYear() === d2.getUTCFullYear() && 
+    d1.getUTCMonth() === d2.getUTCMonth() && 
+    d1.getUTCDate() === d2.getUTCDate();
+    
+  const isoEqual = d1.toISOString().substring(0, 10) === d2.toISOString().substring(0, 10);
+  
+  console.log(`Components equal: ${componentsEqual}`);
+  console.log(`ISO dates equal: ${isoEqual}`);
+  console.log('-------------------------');
+  
+  return componentsEqual;
+}
+
 // Helper function to convert HH:MM time string to minutes since midnight
 function timeToMinutes(timeStr: string | null): number | null {
   if (!timeStr || !timeStr.includes(':')) return null;
@@ -143,8 +174,23 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
     
     // Filter to only appointments on the requested date
     const sameDataAppointments = existingAppointments.filter(apt => {
-      const aptDateStr = format(new Date(apt.date), 'yyyy-MM-dd');
-      return aptDateStr === dateStr;
+      const aptDate = new Date(apt.date);
+      
+      // Extract individual date components
+      const aptYear = aptDate.getUTCFullYear();
+      const aptMonth = aptDate.getUTCMonth();
+      const aptDay = aptDate.getUTCDate();
+      
+      const reqYear = date.getUTCFullYear();
+      const reqMonth = date.getUTCMonth();
+      const reqDay = date.getUTCDate();
+      
+      // Compare the date components directly
+      return (
+        aptYear === reqYear && 
+        aptMonth === reqMonth && 
+        aptDay === reqDay
+      );
     });
     
     const bookedSlots = new Set(sameDataAppointments.map(apt => apt.time));
@@ -160,8 +206,22 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
     // Filter to only blocks on the requested date
     const relevantTimeBlocks = timeBlocks.filter(block => {
       const blockDate = new Date(block.date);
-      const blockDateStr = format(blockDate, 'yyyy-MM-dd');
-      return blockDateStr === dateStr;
+      
+      // Extract individual date components
+      const blockYear = blockDate.getUTCFullYear();
+      const blockMonth = blockDate.getUTCMonth();
+      const blockDay = blockDate.getUTCDate();
+      
+      const apptYear = date.getUTCFullYear();
+      const apptMonth = date.getUTCMonth();
+      const apptDay = date.getUTCDate();
+      
+      // Compare the date components directly
+      return (
+        blockYear === apptYear && 
+        blockMonth === apptMonth && 
+        blockDay === apptDay
+      );
     });
     
     // Filter out slots that:
@@ -580,11 +640,9 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
       }
     });
     
-    // Check each block by comparing only the date part (ignoring time)
+    // Find blocks for the requested appointment date using our debug helper
     const fullDayBlock = fullDayBlocks.find(block => {
-      const blockDate = new Date(block.date);
-      const blockDateStr = format(blockDate, 'yyyy-MM-dd');
-      return blockDateStr === appointmentDateOnly;
+      return debugDateComparison('Checking block date against appointment date', block.date, appointmentDate);
     });
 
     if (fullDayBlock) {
@@ -676,9 +734,26 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
     
     // If there's a potentially conflicting appointment, check the date manually
     if (existingAppointment) {
-      const existingAppointmentDate = format(existingAppointment.date, 'yyyy-MM-dd');
+      const existingDate = new Date(existingAppointment.date);
+      
+      // Extract individual date components
+      const existingYear = existingDate.getUTCFullYear();
+      const existingMonth = existingDate.getUTCMonth();
+      const existingDay = existingDate.getUTCDate();
+      
+      const apptYear = appointmentDate.getUTCFullYear();
+      const apptMonth = appointmentDate.getUTCMonth();
+      const apptDay = appointmentDate.getUTCDate();
+      
+      // Compare the date components directly
+      const datesMatch = (
+        existingYear === apptYear && 
+        existingMonth === apptMonth && 
+        existingDay === apptDay
+      );
+      
       // Only consider it a conflict if it's on the same date
-      if (existingAppointmentDate === dateStr) {
+      if (datesMatch) {
         return { 
           success: false, 
           error: 'This time slot is already booked. Please select another time.' 
@@ -792,11 +867,9 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
         }
       });
       
-      // Check each block by comparing only the date part (ignoring time)
+      // Find blocks for the requested appointment date using our debug helper
       const fullDayBlock = fullDayBlocks.find(block => {
-        const blockDate = new Date(block.date);
-        const blockDateStr = format(blockDate, 'yyyy-MM-dd');
-        return blockDateStr === appointmentDateOnly;
+        return debugDateComparison('Checking block date against appointment date', block.date, appointmentDate);
       });
 
       if (fullDayBlock) {
@@ -889,9 +962,26 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
 
       // If there's a potentially conflicting appointment, check the date manually
       if (conflictingAppointment) {
-        const conflictingAppointmentDate = format(conflictingAppointment.date, 'yyyy-MM-dd');
+        const conflictingDate = new Date(conflictingAppointment.date);
+        
+        // Extract individual date components
+        const conflictingYear = conflictingDate.getUTCFullYear();
+        const conflictingMonth = conflictingDate.getUTCMonth();
+        const conflictingDay = conflictingDate.getUTCDate();
+        
+        const apptYear = appointmentDate.getUTCFullYear();
+        const apptMonth = appointmentDate.getUTCMonth();
+        const apptDay = appointmentDate.getUTCDate();
+        
+        // Compare the date components directly
+        const datesMatch = (
+          conflictingYear === apptYear && 
+          conflictingMonth === apptMonth && 
+          conflictingDay === apptDay
+        );
+        
         // Only consider it a conflict if it's on the same date
-        if (conflictingAppointmentDate === dateStr) {
+        if (datesMatch) {
           return { 
             success: false, 
             error: 'This time slot is already booked. Please select another time.' 
