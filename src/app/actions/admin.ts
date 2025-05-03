@@ -114,8 +114,9 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
     const endTime = new Date(date);
     endTime.setHours(endH, endM, 0, 0); // Set end time
 
-    // TODO: Consider breaks and booked slots if needed for the *modal* display
-    // Currently, this action only generates based on work hours/interval
+    // Handle breaks if defined
+    const breakStartMinutes = relevantSchedule.breakStart ? timeToMinutes(relevantSchedule.breakStart) : null;
+    const breakEndMinutes = relevantSchedule.breakEnd ? timeToMinutes(relevantSchedule.breakEnd) : null;
 
     while (isBefore(currentTime, endTime)) {
       const timeStr = format(currentTime, 'HH:mm');
@@ -123,8 +124,26 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
       currentTime = addMinutes(currentTime, totalSlotTime); // Increment by TOTAL slot time
     }
     
-    // Check for time-specific blocks for this date
+    // Format date for database queries
     const dateStr = format(date, 'yyyy-MM-dd');
+    
+    // 1. Get all existing appointments for this doctor on this date
+    const existingAppointments = await prisma.appointment.findMany({
+      where: {
+        doctorId: doctorId,
+        date: new Date(dateStr),
+        status: {
+          notIn: ['CANCELLED', 'NO_SHOW'] // Only consider active appointments
+        }
+      },
+      select: {
+        time: true,
+      }
+    });
+    
+    const bookedSlots = new Set(existingAppointments.map(apt => apt.time));
+    
+    // 2. Get time-specific blocks for this date
     const timeBlocks = await prisma.specialDate.findMany({
       where: {
         doctorId: doctorId,
@@ -133,12 +152,40 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
       }
     });
     
-    // Filter out slots that fall within time blocks
+    // Filter out slots that:
+    // 1. Are already booked
+    // 2. Fall within a time block
+    // 3. Would overlap with a break
     const availableSlots = slots.filter(slot => {
+      // Check if the slot is already booked
+      if (bookedSlots.has(slot)) {
+        return false;
+      }
+      
       const slotMinutes = timeToMinutes(slot);
       if (slotMinutes === null) return false;
       
+      // Check if this slot falls within scheduled break
+      if (breakStartMinutes !== null && breakEndMinutes !== null) {
+        // Calculate end time of this appointment by adding the duration
+        const slotEndMinutes = slotMinutes + slotDuration;
+        
+        // Check if appointment starts during break
+        const startsInBreak = slotMinutes >= breakStartMinutes && slotMinutes < breakEndMinutes;
+        
+        // Check if appointment ends during break
+        const endsInBreak = slotEndMinutes > breakStartMinutes && slotEndMinutes <= breakEndMinutes;
+        
+        // Check if appointment spans across the break
+        const spansBreak = slotMinutes < breakStartMinutes && slotEndMinutes > breakEndMinutes;
+        
+        if (startsInBreak || endsInBreak || spansBreak) {
+          return false;
+        }
+      }
+      
       // Check if this slot falls within any time block
+      // Also check if the slot PLUS its duration overlaps with any time block
       return !timeBlocks.some(block => {
         // Extract time range from block.reason
         if (!block.reason?.startsWith('TIME:')) return false;
@@ -154,8 +201,20 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
         
         if (blockStartMinutes === null || blockEndMinutes === null) return false;
         
-        // Check if slot is within the blocked time range
-        return slotMinutes >= blockStartMinutes && slotMinutes < blockEndMinutes;
+        // Calculate end time of this appointment by adding the duration
+        const slotEndMinutes = slotMinutes + slotDuration;
+        
+        // Check if appointment starts during block
+        const startsInBlock = slotMinutes >= blockStartMinutes && slotMinutes < blockEndMinutes;
+        
+        // Check if appointment ends during block
+        const endsInBlock = slotEndMinutes > blockStartMinutes && slotEndMinutes <= blockEndMinutes;
+        
+        // Check if appointment spans the entire block
+        const spansBlock = slotMinutes < blockStartMinutes && slotEndMinutes > blockEndMinutes;
+        
+        // If any of these conditions are true, the slot overlaps with a blocked time
+        return startsInBlock || endsInBlock || spansBlock;
       });
     });
     
@@ -474,6 +533,7 @@ interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
   error?: string;
+  message?: string;
 }
 
 // Create a new appointment with schedule validation
@@ -488,12 +548,109 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
       return { success: false, error: 'Missing required appointment fields (incl. email/phone)' };
     }
 
-    // *** Check doctor availability ***
+    // 1. Check if doctor works on this day and time (basic availability)
     const availability = await isDoctorAvailable(doctorId, appointmentDate, time);
     if (!availability.available) {
-        return { success: false, error: availability.message };
+      return { success: false, error: availability.message };
     }
-    // *******************************
+
+    // 2. Check for whole-day blocks on the requested date
+    const dateStr = format(appointmentDate, 'yyyy-MM-dd');
+    const fullDayBlock = await prisma.specialDate.findFirst({
+      where: {
+        doctorId: doctorId,
+        date: new Date(dateStr),
+        type: 'UNAVAILABLE'
+      }
+    });
+
+    if (fullDayBlock) {
+      return { 
+        success: false, 
+        error: `Doctor is unavailable on this date${fullDayBlock.reason ? ': ' + fullDayBlock.reason : ''}` 
+      };
+    }
+
+    // 3. Check for time-specific blocks
+    const appointmentTimeMinutes = timeToMinutes(time);
+    if (appointmentTimeMinutes === null) {
+      return { success: false, error: 'Invalid appointment time format' };
+    }
+
+    // Get doctor's schedule to determine slot duration
+    const scheduleResult = await fetchDoctorSchedule(doctorId);
+    if (!scheduleResult.success || !scheduleResult.data) {
+      return { success: false, error: 'Could not fetch doctor schedule to verify appointment duration' };
+    }
+
+    const dayOfWeek = appointmentDate.getDay();
+    const relevantSchedule = scheduleResult.data.find(s => s.dayOfWeek === dayOfWeek);
+    if (!relevantSchedule) {
+      return { success: false, error: 'Doctor does not work on this day' };
+    }
+
+    const slotDuration = relevantSchedule.slotDuration;
+    const appointmentEndMinutes = appointmentTimeMinutes + slotDuration;
+
+    // Check for time blocks
+    const timeBlocks = await prisma.specialDate.findMany({
+      where: {
+        doctorId: doctorId,
+        date: new Date(dateStr),
+        type: 'TIME_BLOCK'
+      }
+    });
+
+    for (const block of timeBlocks) {
+      if (!block.reason?.startsWith('TIME:')) continue;
+      
+      const parts = block.reason.split(':');
+      if (parts.length < 3) continue;
+      
+      const timeRange = parts[1];
+      const [blockStartTimeStr, blockEndTimeStr] = timeRange.split('-');
+      const blockReason = parts.slice(2).join(':') || 'Time Block';
+      
+      const blockStartMinutes = timeToMinutes(blockStartTimeStr);
+      const blockEndMinutes = timeToMinutes(blockEndTimeStr);
+      
+      if (blockStartMinutes === null || blockEndMinutes === null) continue;
+      
+      // Check if appointment starts during block
+      const startsInBlock = appointmentTimeMinutes >= blockStartMinutes && appointmentTimeMinutes < blockEndMinutes;
+      
+      // Check if appointment ends during block
+      const endsInBlock = appointmentEndMinutes > blockStartMinutes && appointmentEndMinutes <= blockEndMinutes;
+      
+      // Check if appointment spans the entire block
+      const spansBlock = appointmentTimeMinutes < blockStartMinutes && appointmentEndMinutes > blockEndMinutes;
+      
+      if (startsInBlock || endsInBlock || spansBlock) {
+        return { 
+          success: false, 
+          error: `Doctor is unavailable during this time: ${blockStartTimeStr}-${blockEndTimeStr}${blockReason ? ' (' + blockReason + ')' : ''}` 
+        };
+      }
+    }
+
+    // 4. Check for existing appointments at this time
+    const existingAppointment = await prisma.appointment.findFirst({
+      where: {
+        doctorId,
+        date: appointmentDate,
+        time,
+        status: {
+          notIn: ['CANCELLED', 'NO_SHOW']
+        }
+      }
+    });
+
+    if (existingAppointment) {
+      return { 
+        success: false, 
+        error: 'This time slot is already booked. Please select another time.' 
+      };
+    }
 
     const newAppointment = await prisma.appointment.create({
       data: {
@@ -553,7 +710,7 @@ export const createAppointment = async (appointmentData: any): Promise<ApiRespon
 // Update an existing appointment with schedule validation
 export const updateAppointment = async (appointmentData: any): Promise<ApiResponse> => {
   try {
-    const { id, patientName, date, time, status, doctorId, customerId } = appointmentData;
+    const { id, patientName, email, phone, date, time, status, doctorId, customerId } = appointmentData;
     const appointmentDate = new Date(date);
 
     console.log('Attempting to update appointment with ID:', id);
@@ -566,17 +723,133 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
       return { success: false, error: 'Missing required appointment fields for update' };
     }
 
-    // *** Check doctor availability ***
-    const availability = await isDoctorAvailable(doctorId, appointmentDate, time);
-    if (!availability.available) {
-      return { success: false, error: availability.message };
+    // Get existing appointment to check if anything changed
+    const existingAppointment = await prisma.appointment.findUnique({
+      where: { id }
+    });
+
+    if (!existingAppointment) {
+      return { success: false, error: `Appointment with ID ${id} not found.` };
     }
-    // *******************************
+
+    // Check if the time or date is being changed
+    const isTimeChanged = existingAppointment.time !== time || 
+                          existingAppointment.date.toISOString().split('T')[0] !== appointmentDate.toISOString().split('T')[0];
+    
+    // Only do availability checks if the time, date, or doctor is changing
+    if (isTimeChanged || existingAppointment.doctorId !== doctorId) {
+      // 1. Check if doctor works on this day and time (basic availability)
+      const availability = await isDoctorAvailable(doctorId, appointmentDate, time);
+      if (!availability.available) {
+        return { success: false, error: availability.message };
+      }
+
+      // 2. Check for whole-day blocks on the requested date
+      const dateStr = format(appointmentDate, 'yyyy-MM-dd');
+      const fullDayBlock = await prisma.specialDate.findFirst({
+        where: {
+          doctorId: doctorId,
+          date: new Date(dateStr),
+          type: 'UNAVAILABLE'
+        }
+      });
+
+      if (fullDayBlock) {
+        return { 
+          success: false, 
+          error: `Doctor is unavailable on this date${fullDayBlock.reason ? ': ' + fullDayBlock.reason : ''}` 
+        };
+      }
+
+      // 3. Check for time-specific blocks
+      const appointmentTimeMinutes = timeToMinutes(time);
+      if (appointmentTimeMinutes === null) {
+        return { success: false, error: 'Invalid appointment time format' };
+      }
+
+      // Get doctor's schedule to determine slot duration
+      const scheduleResult = await fetchDoctorSchedule(doctorId);
+      if (!scheduleResult.success || !scheduleResult.data) {
+        return { success: false, error: 'Could not fetch doctor schedule to verify appointment duration' };
+      }
+
+      const dayOfWeek = appointmentDate.getDay();
+      const relevantSchedule = scheduleResult.data.find(s => s.dayOfWeek === dayOfWeek);
+      if (!relevantSchedule) {
+        return { success: false, error: 'Doctor does not work on this day' };
+      }
+
+      const slotDuration = relevantSchedule.slotDuration;
+      const appointmentEndMinutes = appointmentTimeMinutes + slotDuration;
+
+      // Check for time blocks
+      const timeBlocks = await prisma.specialDate.findMany({
+        where: {
+          doctorId: doctorId,
+          date: new Date(dateStr),
+          type: 'TIME_BLOCK'
+        }
+      });
+
+      for (const block of timeBlocks) {
+        if (!block.reason?.startsWith('TIME:')) continue;
+        
+        const parts = block.reason.split(':');
+        if (parts.length < 3) continue;
+        
+        const timeRange = parts[1];
+        const [blockStartTimeStr, blockEndTimeStr] = timeRange.split('-');
+        const blockReason = parts.slice(2).join(':') || 'Time Block';
+        
+        const blockStartMinutes = timeToMinutes(blockStartTimeStr);
+        const blockEndMinutes = timeToMinutes(blockEndTimeStr);
+        
+        if (blockStartMinutes === null || blockEndMinutes === null) continue;
+        
+        // Check if appointment starts during block
+        const startsInBlock = appointmentTimeMinutes >= blockStartMinutes && appointmentTimeMinutes < blockEndMinutes;
+        
+        // Check if appointment ends during block
+        const endsInBlock = appointmentEndMinutes > blockStartMinutes && appointmentEndMinutes <= blockEndMinutes;
+        
+        // Check if appointment spans the entire block
+        const spansBlock = appointmentTimeMinutes < blockStartMinutes && appointmentEndMinutes > blockEndMinutes;
+        
+        if (startsInBlock || endsInBlock || spansBlock) {
+          return { 
+            success: false, 
+            error: `Doctor is unavailable during this time: ${blockStartTimeStr}-${blockEndTimeStr}${blockReason ? ' (' + blockReason + ')' : ''}` 
+          };
+        }
+      }
+
+      // 4. Check for existing appointments at this time (excluding the current appointment being updated)
+      const conflictingAppointment = await prisma.appointment.findFirst({
+        where: {
+          doctorId,
+          date: appointmentDate,
+          time,
+          id: { not: id }, // Exclude the current appointment
+          status: {
+            notIn: ['CANCELLED', 'NO_SHOW']
+          }
+        }
+      });
+
+      if (conflictingAppointment) {
+        return { 
+          success: false, 
+          error: 'This time slot is already booked. Please select another time.' 
+        };
+      }
+    }
 
     const updatedAppointment = await prisma.appointment.update({
       where: { id: id },
       data: {
         patientName,
+        email: email || existingAppointment.email,
+        phone: phone || existingAppointment.phone,
         date: appointmentDate,
         time,
         status,
@@ -595,7 +868,7 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
   } catch (error) {
     console.error('Error updating appointment:', error);
     if (error instanceof Error && (error as any).code === 'P2025') {
-       return { success: false, error: `Appointment with ID ${id} not found.` };
+       return { success: false, error: `Appointment with ID ${appointmentData?.id} not found.` };
     }
     return { success: false, error: 'Failed to update appointment in database' };
   }
