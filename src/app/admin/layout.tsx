@@ -101,7 +101,7 @@ export default function AdminLayout({
           'md:translate-x-0 flex-shrink-0'
         )}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full max-h-screen">
           {/* Logo */}
           <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 flex-shrink-0">
             <h1 className="text-xl font-bold text-[#8B5C9E]">Admin Panel</h1>
@@ -114,51 +114,53 @@ export default function AdminLayout({
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-4">
-            <ul className="space-y-1 px-2">
-              {menuItems.map((item) => {
-                const isActive = pathname === item.href;
-                
-                // Skip items marked as hideOnMobile on small screens
-                if (item.hideOnMobile && typeof window !== 'undefined' && window.innerWidth < 768) {
-                  return null;
-                }
-                
-                return (
-                  <li key={item.href}>
-                    <a
-                      href={item.href}
-                      className={cn(
-                        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                        isActive
-                          ? 'bg-[#8B5C9E] text-white'
-                          : 'text-gray-600 hover:bg-gray-100'
-                      )}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      {item.label}
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
+          <div className="flex-1 overflow-y-auto flex flex-col justify-between">
+            <nav className="py-4">
+              <ul className="space-y-1 px-2">
+                {menuItems.map((item) => {
+                  const isActive = pathname === item.href;
+                  
+                  // Skip items marked as hideOnMobile on small screens
+                  if (item.hideOnMobile && typeof window !== 'undefined' && window.innerWidth < 768) {
+                    return null;
+                  }
+                  
+                  return (
+                    <li key={item.href}>
+                      <a
+                        href={item.href}
+                        className={cn(
+                          'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                          isActive
+                            ? 'bg-[#8B5C9E] text-white'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        )}
+                      >
+                        <item.icon className="w-5 h-5" />
+                        {item.label}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
 
-          {/* Logout Button */}
-          <div className="p-4 border-t border-gray-200 flex-shrink-0">
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-2"
-              onClick={handleLogout}
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
+            {/* Logout Button - Now part of the scrollable section */}
+            <div className="p-4">
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2"
+                onClick={handleLogout}
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </aside>
 
-      {/* Main Content Wrapper - THIS IS THE ONLY SCROLLABLE CONTAINER */}
+      {/* Main Content Wrapper */}
       <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden">
         {/* Mobile Header */}
         <header className="sticky top-0 z-10 md:hidden bg-white border-b border-gray-200 flex-shrink-0 h-16">
@@ -174,7 +176,7 @@ export default function AdminLayout({
           </div>
         </header>
 
-        {/* Page Content Area - MAKE SURE THIS DOESN'T SCROLL INDEPENDENTLY */}
+        {/* Page Content Area */}
         <main className="flex-1 overflow-auto w-full h-[calc(100vh-4rem-2.5rem)] md:h-[calc(100vh-2.5rem)]">
           {children}
         </main>
