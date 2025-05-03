@@ -321,11 +321,11 @@ export async function fetchAnalytics(startDate: Date, endDate: Date) {
       })
     ]);
 
-    // Calculate revenue by doctor
+    // Calculate revenue by doctor - improved with null checks
     const revenueMap = new Map<string, { id: string; name: string; revenue: number }>();
     
     completedAppointmentsWithFees.forEach(apt => {
-      if (apt.doctor) {
+      if (apt.doctor && apt.doctor.id) {
         const doctorId = apt.doctor.id;
         const fee = apt.doctor.fee || 0;
         const existing = revenueMap.get(doctorId);
@@ -335,7 +335,7 @@ export async function fetchAnalytics(startDate: Date, endDate: Date) {
         } else {
           revenueMap.set(doctorId, {
             id: doctorId,
-            name: apt.doctor.name,
+            name: apt.doctor.name || 'Unknown Doctor',
             revenue: fee
           });
         }

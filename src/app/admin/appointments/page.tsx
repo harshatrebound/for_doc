@@ -403,9 +403,6 @@ export default function AppointmentsPage() {
     );
   }
   
-  console.log('[AppointmentsPage] Appointments state:', appointments);
-  console.log('[AppointmentsPage] Doctors state:', doctors);
-
   return (
     <div className="flex flex-col">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 px-4">

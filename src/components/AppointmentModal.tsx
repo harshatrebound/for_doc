@@ -80,12 +80,9 @@ export default function AppointmentModal({
   // Initialize form with appointment data or default values
   useEffect(() => {
     if (isOpen) {
-      console.log("Modal Effect Triggered. Props received: isNew=", isNewAppointment, "appointment=", appointment, "selectedDate=", selectedDate, "prefilledTime=", prefilledTime);
-
       // Explicitly prioritize the isNewAppointment flag
       if (isNewAppointment) { 
         if (selectedDate) {
-          console.log(`Modal Effect: Initializing for NEW. Using selectedDate: ${selectedDate} and prefilledTime: ${prefilledTime}`);
           const initialData = {
             patientName: '',
             date: selectedDate, // Use the prop directly here
@@ -98,7 +95,6 @@ export default function AppointmentModal({
             email: '',
             phone: '',
           };
-          console.log("--> Setting NEW formData:", initialData);
           setFormData(initialData);
         } else {
           // This case might indicate an issue, as selectedDate should be set for new appointments from calendar/drawer
@@ -109,9 +105,6 @@ export default function AppointmentModal({
           }); 
         }
       } else if (appointment) { // Only process as edit if NOT new AND appointment exists
-        console.log("Modal Effect: Initializing for EDIT.", appointment);
-        // ADD DETAILED LOG FOR TIME
-        console.log(`--> Received time for EDIT: '${appointment.time}' (Type: ${typeof appointment.time})`);
         const formattedAppointment = {
           id: appointment.id,
           patientName: appointment.patientName || '',
@@ -124,7 +117,6 @@ export default function AppointmentModal({
           email: appointment.email || '',
           phone: appointment.phone || '',
         };
-        console.log("--> Setting EDIT formData:", formattedAppointment);
         setFormData(formattedAppointment);
       } else {
         // Handle state where modal is opened not as new, but no appointment provided

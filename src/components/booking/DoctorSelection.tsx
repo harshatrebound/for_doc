@@ -178,6 +178,15 @@ const DoctorSelection = () => {
     return matchesSearch && matchesSpecialty;
   });
 
+  // Create a handleDoctorSelect function that sets the selected doctor in the context
+  const handleDoctorSelect = (doctor: Doctor) => {
+    dispatch({ type: 'SET_DOCTOR', payload: doctor });
+    // If there's a next button action to trigger, pass it to parent
+    if (onNext) {
+      onNext();
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
@@ -261,8 +270,7 @@ const DoctorSelection = () => {
                 doctor={doctor}
                 isSelected={state.doctor?.id === doctor.id}
                 onSelect={(doctor) => {
-                  console.log('[DoctorSelection] Doctor selected:', doctor);
-                  dispatch({ type: 'SET_DOCTOR', payload: doctor });
+                  handleDoctorSelect(doctor);
                 }}
               />
             ))

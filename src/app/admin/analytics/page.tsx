@@ -169,7 +169,7 @@ export default function AnalyticsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
         <div className="text-sm text-gray-500">
-          Last 30 days overview
+          Last 30 days: {format(dateRange.startDate, 'MMM d, yyyy')} - {format(dateRange.endDate, 'MMM d, yyyy')}
         </div>
       </div>
 
@@ -196,7 +196,7 @@ export default function AnalyticsPage() {
         <Card className="p-4 sm:p-6 border-0 shadow-md bg-white">
           <h3 className="text-xs sm:text-sm font-medium text-gray-500">Total Revenue</h3>
           <p className="mt-2 text-xl sm:text-3xl font-semibold text-[#8B5C9E]">
-            ₹{analytics.totalRevenue.toFixed(2)}
+            ₹{analytics.totalRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
         </Card>
       </div>

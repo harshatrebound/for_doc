@@ -12,6 +12,7 @@ import { MobileSheet } from '@/components/ui/MobileSheet';
 import { cn } from '@/lib/utils';
 import { Calendar as ShadcnCalendar } from "@/components/ui/calendar";
 import type { DayPickerSingleProps } from 'react-day-picker';
+import { toast } from 'react-hot-toast';
 
 interface TimeSlotDisplay {
   time: string;
@@ -54,10 +55,9 @@ const DateTimeSelection = ({ onBack }: Omit<DateTimeSelectionProps, 'formData' |
   const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
-    console.log('[DateTimeSelection] Doctor in state:', doctor);
     if (!doctor) {
        console.warn("[DateTimeSelection] No doctor selected for this step!");
-              }
+    }
   }, [doctor]);
 
   useEffect(() => {

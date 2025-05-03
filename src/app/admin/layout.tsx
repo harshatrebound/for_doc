@@ -21,6 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
+import AdminFooter from '@/components/admin/AdminFooter';
 
 const menuItems = [
   { href: '/admin', label: 'Dashboard', icon: BarChart2 },
@@ -174,9 +175,12 @@ export default function AdminLayout({
         </header>
 
         {/* Page Content Area - MAKE SURE THIS DOESN'T SCROLL INDEPENDENTLY */}
-        <main className="flex-1 overflow-auto w-full h-[calc(100vh-4rem)] md:h-screen">
+        <main className="flex-1 overflow-auto w-full h-[calc(100vh-4rem-2.5rem)] md:h-[calc(100vh-2.5rem)]">
           {children}
         </main>
+
+        {/* Admin Footer */}
+        <AdminFooter />
       </div>
     </div>
   );
