@@ -52,7 +52,6 @@ const DateTimeSelection = ({ onBack }: Omit<DateTimeSelectionProps, 'formData' |
   const [schedule, setSchedule] = useState<DoctorSchedule[]>([]);
   const [globalBlockedDates, setGlobalBlockedDates] = useState<string[]>([]);
   const [doctorBlockedDates, setDoctorBlockedDates] = useState<string[]>([]);
-  const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
     if (!doctor) {
@@ -349,32 +348,6 @@ const DateTimeSelection = ({ onBack }: Omit<DateTimeSelectionProps, 'formData' |
           )}
         </div>
       </MobileSheet>
-
-       <button
-         className="text-xs text-blue-600 underline mb-2"
-         onClick={() => setShowDebug((v) => !v)}
-       >
-         {showDebug ? 'Hide' : 'Show'} Debug Info
-       </button>
-       {showDebug && (
-         <div className="p-3 mb-4 bg-gray-100 rounded text-xs text-gray-800 space-y-1">
-           <div><b>Doctor ID:</b> {doctorId || <span className='text-red-500'>N/A (Required)</span>}</div>
-           <div><b>Global Blocked (Local):</b> {globalBlockedDates.join(', ') || 'None'}</div>
-           <div><b>Doctor Blocked (Local):</b> {doctorBlockedDates.join(', ') || 'None'}</div>
-           <div><b>Doctor Schedule:</b></div>
-           <ul className="ml-4 list-disc">
-             {schedule.length === 0 ? <li>None fetched</li> : schedule.map(s => (
-               <li key={s.id}>
-                 Day: {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][s.dayOfWeek]},
-                 {s.isActive ? ` ${s.startTime}–${s.endTime}` : <span className='text-orange-500'> Not working</span>}
-               </li>
-             ))}
-           </ul>
-           <div><b>Selected Date Obj:</b> {selectedDate ? selectedDate.toISOString() : 'None'}</div>
-           <div><b>isLoadingData:</b> {isLoadingData.toString()}</div>
-           <div><b>isLoadingSlots:</b> {isLoadingSlots.toString()}</div>
-         </div>
-       )}
     </div>
   );
 };

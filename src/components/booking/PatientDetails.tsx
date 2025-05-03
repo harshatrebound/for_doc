@@ -2,6 +2,9 @@
 
 import { useBookingForm } from '@/contexts/BookingFormContext';
 import { ChevronLeft } from 'lucide-react';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css'; // Import library styles
+import { cn } from '@/lib/utils'; // Import cn for conditional classes
 
 interface PatientDetailsProps {
   onBack: () => void;
@@ -11,6 +14,7 @@ const PatientDetails = ({ onBack }: PatientDetailsProps) => {
   const { state, dispatch } = useBookingForm();
 
   const handleChange = (field: string, value: string) => {
+    // No special processing needed for phone here anymore, library handles it
     dispatch({
       type: 'SET_PATIENT_INFO',
       payload: {
@@ -91,17 +95,34 @@ const PatientDetails = ({ onBack }: PatientDetailsProps) => {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Phone Number
           </label>
-          <input
-            type="tel"
+          <PhoneInput
+            international
+            countryCallingCodeEditable={false}
+            defaultCountry="IN"
+            countries={["IN"]} // Only allow India
             value={state.phone}
-            onChange={(e) => handleChange('phone', e.target.value)}
-            className={`
-              w-full px-4 py-2.5 rounded-xl border transition-colors
-              ${state.errors.phone
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]'
-              }
-            `}
+            onChange={(value: string | undefined) => handleChange('phone', value || '')} // Add type for value
+            className={cn(
+              'phone-input-container', // Add a base class for potential custom styling
+              state.errors.phone
+                ? 'phone-input-error' // Class for error state
+                : ''
+            )}
+            // Apply styles directly to the input element within the component
+            inputComponent={(props: React.InputHTMLAttributes<HTMLInputElement>) => ( // Add type for props
+              <input
+                {...props}
+                className={`
+                  w-full px-4 py-2.5 rounded-xl border transition-colors
+                  focus:border-[#8B5C9E] focus:ring-[#8B5C9E]
+                  ${state.errors.phone
+                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                    : 'border-gray-300'
+                  }
+                  phone-input-base // Add base class for input itself
+                `}
+              />
+            )}
             placeholder="Enter your phone number"
           />
           {state.errors.phone && (

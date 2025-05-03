@@ -523,3 +523,13 @@ button.h-9.w-9 svg,
 button.h-8.w-8 svg {
   margin-right: 0;
 }
+
+/* Hide the dropdown arrow in react-phone-number-input */
+.PhoneInputCountrySelectArrow {
+  display: none !important; 
+}
+
+/* Prevent clicking the country select part when it's disabled */
+.PhoneInputCountry {
+  pointer-events: none; 
+}
