@@ -109,7 +109,11 @@ const DoctorCard = ({ doctor, isSelected, onSelect }: DoctorCardProps) => (
   </motion.div>
 );
 
-const DoctorSelection = () => {
+interface DoctorSelectionProps {
+  onNext?: () => void;
+}
+
+const DoctorSelection = ({ onNext }: DoctorSelectionProps = {}) => {
   const { state, dispatch } = useBookingForm();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);

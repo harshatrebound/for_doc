@@ -574,19 +574,23 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
 // Fetches special dates. If doctorId provided, fetch specific, otherwise fetch global.
 export async function fetchSpecialDates(doctorId?: string): Promise<ApiResponse<any[]>> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    let url = `${baseUrl}/api/admin/special-dates`;
+    const whereClause: any = {};
     if (doctorId) {
-      url += `?doctorId=${encodeURIComponent(doctorId)}`;
+      // Fetch dates specific to this doctor
+      whereClause.doctorId = doctorId;
+    } else {
+      // Fetch only global dates (doctorId is null)
+      whereClause.doctorId = null;
     }
+
+    const specialDates = await prisma.specialDate.findMany({
+      where: whereClause,
+      orderBy: {
+        date: 'asc',
+      },
+    });
     
-    const response = await fetch(url);
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `Failed to fetch special dates: ${response.statusText}`);
-    }
-    const data = await response.json();
-    return { success: true, data };
+    return { success: true, data: specialDates };
   } catch (error) {
     console.error('Error fetching special dates:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
@@ -605,29 +609,36 @@ interface CreateSpecialDatePayload {
 // Creates a special date (global or doctor-specific)
 export async function createSpecialDate(payload: CreateSpecialDatePayload): Promise<ApiResponse<any>> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'; 
-    const response = await fetch(`${baseUrl}/api/admin/special-dates`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      // Send the full payload (API will handle logic based on doctorId presence)
-      body: JSON.stringify(payload), 
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('API Error creating special date:', errorData);
-      throw new Error(errorData.error || `Failed to create special date: ${response.statusText}`);
+    const { date, name, type, reason, doctorId } = payload;
+    
+    // Ensure date is properly formatted
+    let dateObject: Date;
+    if (typeof date === 'string') {
+      // Parse the string date to a Date object
+      const [year, month, day] = date.split('-').map(Number);
+      dateObject = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+    } else {
+      dateObject = date;
     }
-    const data = await response.json();
+    
+    const newSpecialDate = await prisma.specialDate.create({
+      data: {
+        date: dateObject,
+        name: name || (doctorId ? (reason || 'Blocked') : 'Unnamed Date'),
+        type: type || (doctorId ? 'UNAVAILABLE' : 'OTHER'),
+        reason,
+        doctorId: doctorId || null,
+      }
+    });
+    
     // Revalidate relevant paths
     revalidatePath('/admin/special-dates');
-    if (payload.doctorId) {
-      revalidatePath(`/admin/doctors/${payload.doctorId}/schedule`);
+    if (doctorId) {
+      revalidatePath(`/admin/doctors/${doctorId}/schedule`);
     }
     revalidatePath('/admin/schedule'); // Revalidate main schedule page too
-    return { success: true, data };
+    
+    return { success: true, data: newSpecialDate };
   } catch (error) {
     console.error('Error creating special date:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
@@ -637,19 +648,14 @@ export async function createSpecialDate(payload: CreateSpecialDatePayload): Prom
 // deleteSpecialDate action remains the same, uses ID
 export async function deleteSpecialDate(specialDateId: string): Promise<ApiResponse> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'; 
-    const response = await fetch(`${baseUrl}/api/admin/special-dates/${specialDateId}`, { 
-      method: 'DELETE',
+    await prisma.specialDate.delete({
+      where: { id: specialDateId }
     });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `Failed to delete special date: ${response.statusText}`);
-    }
+    
     // Revalidate paths after delete
     revalidatePath('/admin/special-dates');
-    // We don't know the doctorId here easily, so revalidating broadly might be needed,
-    // or the component calling delete could trigger its own data refresh.
-    revalidatePath('/admin/schedule'); 
+    revalidatePath('/admin/schedule');
+    
     return { success: true };
   } catch (error) {
     console.error('Error deleting special date:', error);

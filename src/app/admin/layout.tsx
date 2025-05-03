@@ -32,8 +32,7 @@ const menuItems = [
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart2 },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
   { href: '/admin/content', label: 'Content', icon: FileText, hideOnMobile: true },
-  { href: '/admin/gallery', label: 'Gallery', icon: ImageIcon, hideOnMobile: true },
-  { href: '/admin/seo', label: 'SEO', icon: Search, hideOnMobile: true }
+  { href: '/admin/gallery', label: 'Gallery', icon: ImageIcon, hideOnMobile: true }
 ];
 
 export default function AdminLayout({

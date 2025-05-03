@@ -137,7 +137,7 @@ const BookingModalContent = ({ isOpen, onClose }: BookingModalProps) => {
                   transition={{ duration: 0.2 }}
                   className="p-6"
                 >
-                  {state.currentStep === 0 && <DoctorSelection />}
+                  {state.currentStep === 0 && <DoctorSelection onNext={handleNext} />}
                   {state.currentStep === 1 && <DateTimeSelection onBack={handleBack} />}
                   {state.currentStep === 2 && <PatientDetails onBack={handleBack} />}
                   {state.currentStep === 3 && (
