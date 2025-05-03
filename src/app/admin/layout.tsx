@@ -186,8 +186,8 @@ export default function AdminLayout({
         </div>
       </aside>
 
-      {/* Main Content Wrapper */}
-      <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden">
+      {/* Main Content Wrapper - Apply flex-col and remove overflow-hidden */}
+      <div className="flex-1 flex flex-col min-w-0 relative">
         {/* Mobile Header */}
         <header className="sticky top-0 z-10 md:hidden bg-white border-b border-gray-200 flex-shrink-0 h-16">
           <div className="flex items-center justify-between h-full px-4">
@@ -202,13 +202,15 @@ export default function AdminLayout({
           </div>
         </header>
 
-        {/* Page Content Area */}
-        <main className="flex-1 overflow-auto w-full h-[calc(100vh-4rem-2.5rem)] md:h-[calc(100vh-2.5rem)]">
+        {/* Page Content Area - Make it grow and scroll, remove explicit height */}
+        <main className="flex-1 overflow-y-auto w-full">
           {children}
         </main>
 
-        {/* Admin Footer */}
-        <AdminFooter />
+        {/* Wrapper div for Admin Footer to apply flex-shrink-0 */}
+        <div className="flex-shrink-0">
+          <AdminFooter />
+        </div>
       </div>
     </div>
   );

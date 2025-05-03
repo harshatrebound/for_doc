@@ -97,6 +97,17 @@ export default function RootLayout({
               color: 'var(--card-foreground)',
               border: '1px solid var(--border)',
             },
+            success: {
+              style: {
+                background: 'white',
+                color: '#1f2937',
+                border: '1px solid #e5e7eb',
+              },
+              iconTheme: {
+                primary: '#22c55e',
+                secondary: 'white',
+              },
+            },
           }}
         />
       </body>
