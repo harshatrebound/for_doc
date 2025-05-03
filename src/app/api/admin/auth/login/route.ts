@@ -14,19 +14,19 @@ export async function POST(request: Request) {
 
     // Simple credential check
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      // Create a JWT token
+      // Create a JWT token with longer expiration
       const token = sign(
         { email, role: 'admin' },
         JWT_SECRET,
-        { expiresIn: '24h' }
+        { expiresIn: '7d' } // Extended from 24h to 7 days
       );
 
-      // Set the token in an HTTP-only cookie
+      // Set the token in an HTTP-only cookie with longer max age
       cookies().set('admin_token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 60 * 60 * 24, // 24 hours
+        maxAge: 60 * 60 * 24 * 7, // 7 days (extended from 24 hours)
         path: '/',
       });
 

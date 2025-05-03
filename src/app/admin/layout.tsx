@@ -151,7 +151,7 @@ export default function AdminLayout({
                   
                   return (
                     <li key={item.href}>
-                      <a
+                      <Link
                         href={item.href}
                         className={cn(
                           'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
@@ -162,7 +162,7 @@ export default function AdminLayout({
                       >
                         <item.icon className="w-5 h-5" />
                         {item.label}
-                      </a>
+                      </Link>
                     </li>
                   );
                 })}

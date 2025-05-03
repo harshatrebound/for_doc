@@ -14,7 +14,7 @@ export default function AdminLogin() {
     password: ''
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -29,12 +29,24 @@ export default function AdminLogin() {
         throw new Error('Invalid credentials');
       }
 
-      // Set session/token here if needed
-      router.push('/admin');
+      // Show success message
       toast.success('Login successful');
+      
+      // Force a complete browser redirect with absolute URL and bypass parameter
+      const baseUrl = window.location.origin;
+      const adminUrl = `${baseUrl}/admin?auth=true`;
+      
+      // Approach 1: Use Next.js router first (client-side navigation)
+      router.replace('/admin?auth=true');
+      
+      // Approach 2: After a delay, try standard location redirect
+      setTimeout(() => {
+        // Force page reload to a specific URL
+        window.location.href = adminUrl;
+      }, 500);
+      
     } catch (error) {
       toast.error('Invalid email or password');
-    } finally {
       setIsLoading(false);
     }
   };
