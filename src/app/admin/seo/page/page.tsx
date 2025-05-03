@@ -92,7 +92,7 @@ export default function SEOPage() {
   });
 
   // Social media settings
-  const [socialSettings, setSSocialSettings] = useState<SocialMediaSettings>({
+  const [socialSettings, setSocialSettings] = useState<SocialMediaSettings>({
     twitterUsername: '@sportsortho',
     facebookAppId: '',
     facebookPageUrl: 'https://facebook.com/sportsorthoinstitute',
@@ -116,7 +116,7 @@ export default function SEOPage() {
           }
           
           if (data.social) {
-            setSSocialSettings(data.social);
+            setSocialSettings(data.social);
           }
         }
       } catch (error) {
@@ -462,7 +462,7 @@ export default function SEOPage() {
                   <label className="block text-sm font-medium mb-1">Twitter Username</label>
                   <Input
                     value={socialSettings.twitterUsername}
-                    onChange={(e) => setSSocialSettings({...socialSettings, twitterUsername: e.target.value})}
+                    onChange={(e) => setSocialSettings({...socialSettings, twitterUsername: e.target.value})}
                     placeholder="@yourusername"
                   />
                 </div>
@@ -471,7 +471,7 @@ export default function SEOPage() {
                   <label className="block text-sm font-medium mb-1">Facebook App ID</label>
                   <Input
                     value={socialSettings.facebookAppId}
-                    onChange={(e) => setSSocialSettings({...socialSettings, facebookAppId: e.target.value})}
+                    onChange={(e) => setSocialSettings({...socialSettings, facebookAppId: e.target.value})}
                     placeholder="123456789012345"
                   />
                 </div>
@@ -480,7 +480,7 @@ export default function SEOPage() {
                   <label className="block text-sm font-medium mb-1">Facebook Page URL</label>
                   <Input
                     value={socialSettings.facebookPageUrl}
-                    onChange={(e) => setSSocialSettings({...socialSettings, facebookPageUrl: e.target.value})}
+                    onChange={(e) => setSocialSettings({...socialSettings, facebookPageUrl: e.target.value})}
                     placeholder="https://facebook.com/yourpage"
                   />
                 </div>
@@ -489,7 +489,7 @@ export default function SEOPage() {
                   <label className="block text-sm font-medium mb-1">LinkedIn Company Page</label>
                   <Input
                     value={socialSettings.linkedInCompanyPage}
-                    onChange={(e) => setSSocialSettings({...socialSettings, linkedInCompanyPage: e.target.value})}
+                    onChange={(e) => setSocialSettings({...socialSettings, linkedInCompanyPage: e.target.value})}
                     placeholder="https://linkedin.com/company/yourcompany"
                   />
                 </div>
@@ -543,4 +543,4 @@ export default function SEOPage() {
       </div>
     </div>
   );
-} 
+}
