@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 interface Doctor {
   id: string;
@@ -23,6 +24,7 @@ interface Doctor {
   speciality: string;
   fee: number;
   image?: string;
+  isActive?: boolean;
 }
 
 interface DoctorModalProps {
@@ -38,6 +40,7 @@ export default function DoctorModal({ isOpen, onClose, doctor, onSuccess }: Doct
     speciality: '',
     fee: '',
     image: '',
+    isActive: true,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -48,6 +51,7 @@ export default function DoctorModal({ isOpen, onClose, doctor, onSuccess }: Doct
         speciality: doctor.speciality,
         fee: doctor.fee.toString(),
         image: doctor.image || '',
+        isActive: doctor.isActive !== undefined ? doctor.isActive : true,
       });
     } else if (isOpen && !doctor) {
       // Reset form when opening for Add
@@ -56,6 +60,7 @@ export default function DoctorModal({ isOpen, onClose, doctor, onSuccess }: Doct
         speciality: '',
         fee: '',
         image: '',
+        isActive: true,
       });
     }
   }, [isOpen, doctor]);
@@ -188,6 +193,27 @@ export default function DoctorModal({ isOpen, onClose, doctor, onSuccess }: Doct
                 className="h-10 border-gray-300 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
                 placeholder="https://example.com/image.jpg"
               />
+            </div>
+
+            {/* Active Status Toggle */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="isActive" className="text-sm font-medium text-gray-700">
+                  Active Status
+                </Label>
+                <Switch
+                  id="isActive"
+                  checked={formData.isActive}
+                  onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                  className="data-[state=checked]:bg-[#8B5C9E]"
+                />
+              </div>
+              <p className="text-xs text-gray-500">
+                {formData.isActive 
+                  ? "Doctor is currently active and will appear in booking options."
+                  : "Doctor is inactive and won't appear in booking options."
+                }
+              </p>
             </div>
           </div>
 

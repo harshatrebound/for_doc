@@ -15,6 +15,7 @@ model Doctor {
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
   image        String?
+  isActive     Boolean          @default(true)
   appointments Appointment[]
   schedules    DoctorSchedule[]
   specialDates SpecialDate[]

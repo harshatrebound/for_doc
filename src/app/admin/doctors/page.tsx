@@ -51,6 +51,7 @@ interface Doctor {
   speciality: string;
   fee: number;
   image?: string;
+  isActive?: boolean;
 }
 
 const specialtyColors: { [key: string]: { bg: string; text: string } } = {

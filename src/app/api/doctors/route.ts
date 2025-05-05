@@ -9,8 +9,11 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    // Fetch doctors from the database
+    // Fetch doctors from the database - only active doctors
     const dbDoctors = await prisma.doctor.findMany({
+      where: {
+        isActive: true
+      },
       include: {
         schedules: true
       },

@@ -19,6 +19,7 @@ const doctorSchema = z.object({
     })
   ]),
   image: z.string().optional().transform(val => val || undefined),
+  isActive: z.boolean().optional().default(true),
 });
 
 export async function GET(request: NextRequest) {
