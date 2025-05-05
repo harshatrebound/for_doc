@@ -27,6 +27,14 @@ interface Doctor {
   isActive?: boolean;
 }
 
+interface FormData {
+  name: string;
+  speciality: string;
+  fee: string;
+  image: string;
+  isActive: boolean;
+}
+
 interface DoctorModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -35,7 +43,7 @@ interface DoctorModalProps {
 }
 
 export default function DoctorModal({ isOpen, onClose, doctor, onSuccess }: DoctorModalProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     speciality: '',
     fee: '',
@@ -80,15 +88,13 @@ export default function DoctorModal({ isOpen, onClose, doctor, onSuccess }: Doct
       const endpoint = doctor ? `/api/admin/doctors/${doctor.id}` : '/api/admin/doctors'; // Use correct PUT endpoint
       const method = doctor ? 'PUT' : 'POST';
 
+      // Ensure isActive is a boolean, not a string
       const payload = {
         ...formData,
         fee: fee,
-        // ID is now part of the URL for PUT, not needed in payload
+        isActive: Boolean(formData.isActive),
+        ...(doctor && { id: doctor.id }) // Include ID for PUT requests (needed for validation)
       };
-      // Remove id from payload if present (for PUT)
-      if (method === 'PUT') {
-          delete (payload as any).id; 
-      }
 
       console.log(`Submitting ${method} to ${endpoint} with payload:`, payload);
 
