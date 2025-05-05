@@ -231,42 +231,43 @@ export default function SchedulePage() {
             </div>
           </div>
 
-          {/* Doctor Selector */}
+          {/* Doctor Selector - Simplified UI */}
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
             {filteredDoctors.map((doctor) => (
-              <div key={doctor.id} className="flex-shrink-0 flex items-center gap-1">
-                <Button
-                  variant={selectedDoctor === doctor.id ? "default" : "outline"}
-                  size="sm"
-                  className={`${
-                    selectedDoctor === doctor.id 
-                      ? 'bg-[#8B5C9E] hover:bg-[#8B5C9E]/90 text-white' 
-                      : 'border-gray-200'
-                  }`}
+              <div key={doctor.id} className="flex-shrink-0">
+                <div 
+                  className={`
+                    relative flex items-center px-3 py-1.5 rounded-md cursor-pointer
+                    ${selectedDoctor === doctor.id ? 'bg-[#8B5C9E] text-white' : 'bg-white border border-gray-200 text-gray-700'}
+                    ${highlightedDoctorId === doctor.id ? 'ring-2 ring-[#8B5C9E] ring-offset-1' : ''}
+                    transition-all hover:shadow-sm
+                  `}
                   onClick={() => setSelectedDoctor(doctor.id)}
+                  title={`Select ${doctor.name}'s schedule`}
                 >
-                  {doctor.name}
-                </Button>
-                {/* Highlight toggle button */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`p-1 h-8 w-8 ${
-                    highlightedDoctorId === doctor.id 
-                      ? 'bg-[#8B5C9E]/20 border-[#8B5C9E] text-[#8B5C9E]' 
-                      : 'border-gray-200 text-gray-400'
-                  }`}
-                  onClick={() => {
-                    if (highlightedDoctorId === doctor.id) {
-                      setHighlightedDoctorId(null);
-                    } else {
-                      setHighlightedDoctorId(doctor.id);
-                    }
-                  }}
-                  title={`${highlightedDoctorId === doctor.id ? 'Disable' : 'Enable'} highlighting for ${doctor.name}'s blocks`}
-                >
-                  <span className="block h-3 w-3 rounded-full bg-current"></span>
-                </Button>
+                  <span className="font-medium">{doctor.name}</span>
+                  
+                  {/* Highlight indicator dot */}
+                  <div 
+                    className={`
+                      ml-2 h-3 w-3 rounded-full flex-shrink-0 transition-all
+                      ${highlightedDoctorId === doctor.id 
+                        ? 'bg-white border border-[#8B5C9E]/70' 
+                        : selectedDoctor === doctor.id 
+                          ? 'bg-white/50 border border-white/70' 
+                          : 'bg-gray-200 border border-gray-300'}
+                    `}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent triggering the parent click
+                      if (highlightedDoctorId === doctor.id) {
+                        setHighlightedDoctorId(null);
+                      } else {
+                        setHighlightedDoctorId(doctor.id);
+                      }
+                    }}
+                    title={`${highlightedDoctorId === doctor.id ? 'Remove' : 'Add'} visual highlighting for ${doctor.name}'s schedule blocks`}
+                  />
+                </div>
               </div>
             ))}
           </div>
@@ -451,15 +452,20 @@ export default function SchedulePage() {
               </table>
             </div>
             
-            {/* Information about highlighting */}
+            {/* Information about highlighting - Improved explanation */}
             <div className="mt-4 text-sm text-gray-500 flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-[#8B5C9E]/20 border border-[#8B5C9E]"></div>
               <span>
-                Purple highlight indicates a specific doctor's schedule block. 
-                {highlightedDoctorId && (
-                  <span className="font-medium text-[#8B5C9E]">
-                    {' '}Currently highlighting: {doctorsWithSchedule.find(d => d.id === highlightedDoctorId)?.name}
-                  </span>
+                {highlightedDoctorId ? (
+                  <>
+                    <span className="font-medium text-[#8B5C9E]">
+                      {doctorsWithSchedule.find(d => d.id === highlightedDoctorId)?.name}
+                    </span>'s schedule is highlighted for quick reference. Click the dot next to their name to remove highlighting.
+                  </>
+                ) : (
+                  <>
+                    Click the dot next to a doctor's name to highlight their schedule blocks in the weekly overview.
+                  </>
                 )}
               </span>
             </div>

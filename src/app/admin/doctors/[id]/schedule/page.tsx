@@ -477,60 +477,86 @@ export default function DoctorSchedulePage() {
                 </Popover>
               </div>
 
-              <div>
-                <label className="text-sm font-medium block mb-1">Block Type</label>
-                <div className="flex items-center gap-2 mb-4">
-                  <Button
-                    type="button"
-                    variant={!isTimeBlock ? "default" : "outline"}
-                    className={!isTimeBlock ? "bg-[#8B5C9E]" : ""}
-                    onClick={() => setIsTimeBlock(false)}
-                  >
-                    Full Day
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={isTimeBlock ? "default" : "outline"}
-                    className={isTimeBlock ? "bg-[#8B5C9E]" : ""}
-                    onClick={() => setIsTimeBlock(true)}
-                  >
-                    Specific Hours
-                  </Button>
+              <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                <div className="flex-1">
+                  <h3 className="text-base font-medium mb-2">Block Type</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="fullDayBlock"
+                        name="blockType"
+                        checked={!isTimeBlock}
+                        onChange={() => setIsTimeBlock(false)}
+                        className="w-4 h-4 text-[#8B5C9E] focus:ring-[#8B5C9E]"
+                      />
+                      <label htmlFor="fullDayBlock" className="text-sm font-medium text-gray-700">
+                        Full Day Block
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="timeBlock"
+                        name="blockType"
+                        checked={isTimeBlock}
+                        onChange={() => setIsTimeBlock(true)}
+                        className="w-4 h-4 text-[#8B5C9E] focus:ring-[#8B5C9E]"
+                      />
+                      <label htmlFor="timeBlock" className="text-sm font-medium text-gray-700">
+                        Specific Time Block
+                      </label>
+                    </div>
+                  </div>
                 </div>
+
+                {isTimeBlock && (
+                  <div className="flex-1 space-y-4">
+                    <div>
+                      <h3 className="text-base font-medium mb-2">Time Range</h3>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Start Time</label>
+                          <Input
+                            type="time"
+                            value={blockStartTime}
+                            onChange={(e) => setBlockStartTime(e.target.value)}
+                            className="w-full text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">End Time</label>
+                          <Input
+                            type="time"
+                            value={blockEndTime}
+                            onChange={(e) => setBlockEndTime(e.target.value)}
+                            className="w-full text-sm"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Specific time blocks will make these hours unavailable for booking while keeping the rest of the day open.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {isTimeBlock && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium block mb-1">Start Time</label>
-                    <Input
-                      type="time"
-                      value={blockStartTime}
-                      onChange={(e) => setBlockStartTime(e.target.value)}
-                      className="w-full bg-white border-[#8B5C9E]/20 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium block mb-1">End Time</label>
-                    <Input
-                      type="time"
-                      value={blockEndTime}
-                      onChange={(e) => setBlockEndTime(e.target.value)}
-                      className="w-full bg-white border-[#8B5C9E]/20 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
-                    />
-                  </div>
-                </div>
-              )}
-              
-              <div>
-                <label htmlFor="blockReason" className="text-sm font-medium block mb-1">Reason (Optional)</label>
-                <Input 
-                  id="blockReason"
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Reason for Block {isTimeBlock && `(${blockStartTime} - ${blockEndTime})`}
+                </label>
+                <Input
                   value={blockReason}
                   onChange={(e) => setBlockReason(e.target.value)}
-                  placeholder="e.g., Vacation, Conference"
-                  className="w-full bg-white border-[#8B5C9E]/20 focus:border-[#8B5C9E] focus:ring-[#8B5C9E] text-[#8B5C9E] placeholder-[#8B5C9E]/50"
+                  placeholder={isTimeBlock ? "e.g., Meeting, Training, Lunch..." : "e.g., Holiday, Out of Office..."}
+                  className="w-full"
                 />
+                {isTimeBlock && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    This time block will prevent patients from booking appointments during the specified hours.
+                  </p>
+                )}
               </div>
               <Button onClick={handleAddBlock} disabled={isSubmittingBlock || !selectedBlockDate} className="w-full bg-[#8B5C9E] hover:bg-[#8B5C9E]/90">
                 {isSubmittingBlock ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}

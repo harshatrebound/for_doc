@@ -255,6 +255,43 @@ export async function GET(request: Request) {
       }); 
     }
 
+    // Find any TIME_BLOCK entries for this date
+    const timeBlocks = allSpecialDates.filter(specialDate => 
+      isSameDayInIST(specialDate.date, selectedDate) && 
+      specialDate.type === 'TIME_BLOCK'
+    );
+    
+    // Create a structure to hold blocked times
+    const blockedTimeRanges: Array<{start: string, end: string, reason: string}> = [];
+    
+    // Parse time blocks from the reason field (format: TIME:09:00-12:00:Meeting)
+    if (timeBlocks.length > 0) {
+      console.log(`[Available Slots API] Found ${timeBlocks.length} time-specific blocks for ${formatISTDate(selectedDate)} (IST)`);
+      
+      timeBlocks.forEach(block => {
+        if (block.reason && block.reason.startsWith('TIME:')) {
+          try {
+            // Extract time range from format TIME:START-END:REASON
+            const timePattern = /TIME:(\d{2}:\d{2})-(\d{2}:\d{2}):(.*)/;
+            const match = block.reason.match(timePattern);
+            
+            if (match && match.length >= 3) {
+              const [_, startTime, endTime, blockReason] = match;
+              blockedTimeRanges.push({
+                start: startTime,
+                end: endTime,
+                reason: blockReason || block.name || 'Time Block'
+              });
+              
+              console.log(`[Available Slots API] Parsed time block: ${startTime} - ${endTime}: ${blockReason}`);
+            }
+          } catch (err) {
+            console.error(`[Available Slots API] Error parsing time block reason: ${block.reason}`, err);
+          }
+        }
+      });
+    }
+
     console.log(`[Available Slots API] Date ${dateStringForCheck} is valid. Proceeding to generate slots.`);
     
     // --- Generate Slots ---
@@ -327,6 +364,16 @@ export async function GET(request: Request) {
     const totalSlotTime = slotDuration + bufferTime; 
     const now = new Date(); // Get current time for past check
 
+    // Helper function to check if a time is within a blocked range
+    const isTimeInBlockedRange = (timeStr: string): { blocked: boolean, reason?: string } => {
+      for (const range of blockedTimeRanges) {
+        if (timeStr >= range.start && timeStr < range.end) {
+          return { blocked: true, reason: range.reason };
+        }
+      }
+      return { blocked: false };
+    };
+
     while (isBefore(currentTime, endTime)) {
       const hours = currentTime.getHours();
       const minutes = currentTime.getMinutes();
@@ -352,6 +399,14 @@ export async function GET(request: Request) {
       else if (bookedTimes.has(timeStr)) {
           isAvailable = false;
           skipReason = 'Already booked';
+      }
+      // Check 4: Is this time in a blocked range?
+      else {
+          const blockCheck = isTimeInBlockedRange(timeStr);
+          if (blockCheck.blocked) {
+              isAvailable = false;
+              skipReason = `Blocked: ${blockCheck.reason}`;
+          }
       }
 
       if (isAvailable) {
