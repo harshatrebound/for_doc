@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -158,24 +158,25 @@ export default function AppointmentModal({
   }, [formData.doctorId, formData.date, isOpen]);
 
   // Handle input changes
-  const handleChange = (field: string, value: string | Date) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleChange = (field: keyof Appointment, value: string | Date | null) => {
+    setFormData((prev: Appointment) => {
+      const newState = { ...prev, [field]: value };
+      if (field === 'status' && value === 'CANCELLED') {
+        newState.time = ''; // Clear time when status is CANCELLED
+        setAvailableTimeSlots([]); // Clear available slots as time is not relevant
+      }
+      if ((field === 'date' || field === 'doctorId') && newState.status !== 'CANCELLED') {
+        newState.time = '';
+      }
+      return newState;
+    });
     
-    // Clear error for this field if any
     if (formErrors[field]) {
-      setFormErrors(prev => {
-        const newErrors = {...prev};
+      setFormErrors((prevErrors: {[key: string]: string}) => {
+        const newErrors = {...prevErrors};
         delete newErrors[field];
         return newErrors;
       });
-    }
-    
-    // If date or doctor changes, reset time (as slots will refetch)
-    if ((field === 'date' || field === 'doctorId') && formData.time) {
-       setFormData(prev => ({ ...prev, time: '' }));
     }
   };
 
@@ -195,7 +196,7 @@ export default function AppointmentModal({
       errors.phone = 'Please enter a valid phone number';
     }
     
-    if (!formData.time) {
+    if (formData.status !== 'CANCELLED' && !formData.time) {
       errors.time = 'Time is required';
     }
     
@@ -208,7 +209,8 @@ export default function AppointmentModal({
   };
 
   // Handle form submission
-  const handleSubmit = async () => {
+  const handleSubmit = async (event?: FormEvent<HTMLFormElement>) => {
+    if (event) event.preventDefault();
     if (!validateForm()) return;
     
     setIsSubmitting(true);
@@ -249,7 +251,7 @@ export default function AppointmentModal({
             <Input
               id="patientName"
               value={formData.patientName || ''}
-              onChange={(e) => handleChange('patientName', e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('patientName', e.target.value)}
               placeholder="Enter patient name"
               className={`text-xs sm:text-sm h-8 sm:h-10 ${formErrors.patientName ? 'border-red-500' : ''}`}
               disabled={isPastAppointment}
@@ -266,7 +268,7 @@ export default function AppointmentModal({
                 id="email"
                 type="email"
                 value={formData.email || ''}
-                onChange={(e) => handleChange('email', e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('email', e.target.value)}
                 placeholder="Enter patient email"
                 className={`text-xs sm:text-sm h-8 sm:h-10 ${formErrors.email ? 'border-red-500' : ''}`}
                 disabled={isPastAppointment}
@@ -281,7 +283,7 @@ export default function AppointmentModal({
                 id="phone"
                 type="tel"
                 value={formData.phone || ''}
-                onChange={(e) => handleChange('phone', e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('phone', e.target.value)}
                 placeholder="Enter patient phone"
                 className={`text-xs sm:text-sm h-8 sm:h-10 ${formErrors.phone ? 'border-red-500' : ''}`}
                 disabled={isPastAppointment}
@@ -343,7 +345,7 @@ export default function AppointmentModal({
                 id="date"
                 type="date"
                 value={formData.date ? format(new Date(formData.date), 'yyyy-MM-dd') : ''}
-                onChange={(e) => handleChange('date', new Date(e.target.value))}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('date', new Date(e.target.value))}
                 disabled={isPastAppointment || !isNewAppointment}
                 min={format(new Date(), 'yyyy-MM-dd')} 
                 className={`text-xs sm:text-sm h-8 sm:h-10 ${formErrors.date ? 'border-red-500' : ''}`}
@@ -351,25 +353,29 @@ export default function AppointmentModal({
             </div>
             <div className="space-y-1">
               <Label htmlFor="time" className="text-xs sm:text-sm font-medium">Time</Label>
-              <Select 
-                value={formData.time || ''} 
-                onValueChange={(value) => handleChange('time', value)}
-                disabled={isPastAppointment || !formData.doctorId || !formData.date || isLoadingSlots || availableTimeSlots.length === 0}
+              <Select
+                value={formData.time || ''}
+                onValueChange={(val: string) => handleChange('time', val)}
+                disabled={isLoadingSlots || formData.status === 'CANCELLED'}
               >
-                <SelectTrigger id="time" className={`text-xs sm:text-sm h-8 sm:h-10 ${formErrors.time ? 'border-red-500' : ''}`}>
-                  <SelectValue placeholder={isLoadingSlots ? 'Loading times...' : (availableTimeSlots.length === 0 ? 'No slots available' : 'Select time')} />
+                <SelectTrigger id="time" disabled={isLoadingSlots || formData.status === 'CANCELLED'}>
+                  <SelectValue placeholder={isLoadingSlots ? "Loading..." : (formData.status === 'CANCELLED' ? "N/A - Cancelled" : "Select time")} />
                 </SelectTrigger>
-                <SelectContent className="max-h-60 overflow-y-auto">
-                  {availableTimeSlots.map(time => (
-                    <SelectItem key={time} value={time}>
-                      {time}
+                <SelectContent>
+                  {formData.status !== 'CANCELLED' && availableTimeSlots.length > 0 ? (
+                    availableTimeSlots.map(slot => (
+                      <SelectItem key={slot} value={slot}>
+                        {slot}
+                      </SelectItem>
+                    ))
+                  ) : formData.status !== 'CANCELLED' ? (
+                    <SelectItem value="" disabled>
+                      {isLoadingSlots ? "Loading..." : "No slots available"}
                     </SelectItem>
-                  ))}
+                  ) : null
                 </SelectContent>
               </Select>
-              {formErrors.time && (
-                <p className="text-xs text-red-500">{formErrors.time}</p>
-              )}
+              {formErrors.time && <p className="text-xs text-red-500 pt-1">{formErrors.time}</p>}
             </div>
           </div>
         </div>

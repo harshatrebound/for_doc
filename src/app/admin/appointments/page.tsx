@@ -80,20 +80,30 @@ export default function AppointmentsPage() {
     setIsLoading(true);
     try {
       let appointmentResult;
+      const defaultListViewFilters: any = {
+        startDate: startOfMonth(selectedMonth),
+        endDate: endOfMonth(selectedMonth),
+        // Default to show only active appointments in list view
+        status: { notIn: ['CANCELLED', 'NO_SHOW', 'COMPLETED'] } 
+      };
+
       if (viewMode === 'list') {
         appointmentResult = await fetchAppointments(
           pagination.page,
           pagination.pageSize,
-          {
-            startDate: startOfMonth(selectedMonth),
-            endDate: endOfMonth(selectedMonth)
-          }
+          defaultListViewFilters
         );
       } else {
-        appointmentResult = await fetchAppointments(pagination.page, pagination.pageSize);
+        // For calendar view, fetch all statuses for the month to display them correctly
+        // Or decide if calendar should also respect some default filters
+        appointmentResult = await fetchAppointments(pagination.page, pagination.pageSize, {
+            startDate: startOfMonth(selectedMonth),
+            endDate: endOfMonth(selectedMonth)
+            // No status filter here, or a different one for calendar if needed
+        }); 
       }
       const [calendarAppointmentResult, doctorResult] = await Promise.all([
-        fetchAllAppointmentsForCalendar(),
+        fetchAllAppointmentsForCalendar(), // This fetches ALL for full calendar display
         fetchDoctors()
       ]);
 
