@@ -262,10 +262,10 @@ export default function AppointmentModal({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 p-4 sm:p-6">
           <div>
-            <Label htmlFor="patientName" className="font-medium text-xs sm:text-sm">Patient Name</Label>
+            <Label htmlFor="patientName" className="font-semibold text-xs sm:text-sm">Patient Name</Label>
             <Input 
               id="patientName" 
-              className="h-9 sm:h-10 mt-1 text-sm"
+              className="h-9 sm:h-10 mt-1 text-sm focus:ring-2 focus:ring-[#8B5C9E]/50 focus:border-[#8B5C9E]"
               value={formData.patientName || ''} 
               onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('patientName', e.target.value)} 
               disabled={isPastAppointment}
@@ -276,11 +276,11 @@ export default function AppointmentModal({
           {/* Responsive grid for Email and Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="email" className="font-medium text-xs sm:text-sm">Email</Label>
+              <Label htmlFor="email" className="font-semibold text-xs sm:text-sm">Email</Label>
               <Input 
                 id="email" 
                 type="email"
-                className="h-9 sm:h-10 mt-1 text-sm"
+                className="h-9 sm:h-10 mt-1 text-sm focus:ring-2 focus:ring-[#8B5C9E]/50 focus:border-[#8B5C9E]"
                 value={formData.email || ''} 
                 onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('email', e.target.value)} 
                 disabled={isPastAppointment}
@@ -288,11 +288,11 @@ export default function AppointmentModal({
               {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
             </div>
             <div>
-              <Label htmlFor="phone" className="font-medium text-xs sm:text-sm">Phone</Label>
+              <Label htmlFor="phone" className="font-semibold text-xs sm:text-sm">Phone</Label>
               <Input 
                 id="phone" 
                 type="tel"
-                className="h-9 sm:h-10 mt-1 text-sm"
+                className="h-9 sm:h-10 mt-1 text-sm focus:ring-2 focus:ring-[#8B5C9E]/50 focus:border-[#8B5C9E]"
                 value={formData.phone || ''} 
                 onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('phone', e.target.value)} 
                 disabled={isPastAppointment}
@@ -304,11 +304,11 @@ export default function AppointmentModal({
           {/* Responsive grid for Date and Time - NOW ALWAYS 2 COLUMNS */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="date" className="font-medium text-xs sm:text-sm">Date</Label>
+              <Label htmlFor="date" className="font-semibold text-xs sm:text-sm">Date</Label>
               <Input 
                 type="date" 
                 id="date" 
-                className="h-9 sm:h-10 mt-1 text-sm"
+                className="h-9 sm:h-10 mt-1 text-sm focus:ring-2 focus:ring-[#8B5C9E]/50 focus:border-[#8B5C9E]"
                 value={formData.date ? format(new Date(formData.date), 'yyyy-MM-dd') : ''} 
                 onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('date', e.target.value ? new Date(e.target.value) : null)} 
                 disabled={isPastAppointment}
@@ -317,13 +317,13 @@ export default function AppointmentModal({
             
             {formData.status !== 'CANCELLED' && (
               <div>
-                <Label htmlFor="time" className="font-medium text-xs sm:text-sm">Time</Label>
+                <Label htmlFor="time" className="font-semibold text-xs sm:text-sm">Time</Label>
                 <Select 
                   value={formData.time || ''} 
                   onValueChange={(value: any) => handleChange('time', value)} 
                   disabled={isLoadingSlots || isPastAppointment}
                 >
-                  <SelectTrigger className="h-9 sm:h-10 mt-1 text-sm">
+                  <SelectTrigger className="h-9 sm:h-10 mt-1 text-sm focus:ring-2 focus:ring-[#8B5C9E]/50 focus:border-[#8B5C9E]">
                     <SelectValue placeholder={isLoadingSlots ? "Loading..." : "Select time"} />
                   </SelectTrigger>
                   <SelectContent className="overflow-y-hidden">
@@ -342,13 +342,13 @@ export default function AppointmentModal({
           </div>
 
           <div>
-            <Label htmlFor="doctorId" className="font-medium text-xs sm:text-sm">Doctor</Label>
+            <Label htmlFor="doctorId" className="font-semibold text-xs sm:text-sm">Doctor</Label>
             <Select 
               value={formData.doctorId || ''} 
               onValueChange={(value: any) => handleChange('doctorId', value)} 
               disabled={isPastAppointment}
             >
-              <SelectTrigger className="h-9 sm:h-10 mt-1 text-sm">
+              <SelectTrigger className="h-9 sm:h-10 mt-1 text-sm focus:ring-2 focus:ring-[#8B5C9E]/50 focus:border-[#8B5C9E]">
                 <SelectValue placeholder="Select doctor" />
               </SelectTrigger>
               <SelectContent>
@@ -361,9 +361,9 @@ export default function AppointmentModal({
           </div>
           
           <div>
-            <Label htmlFor="status" className="font-medium text-xs sm:text-sm">Status</Label>
+            <Label htmlFor="status" className="font-semibold text-xs sm:text-sm">Status</Label>
             <Select value={formData.status} onValueChange={(value: any) => handleChange('status', value)} disabled={isPastAppointment && formData.status !== 'CANCELLED' }>
-              <SelectTrigger className="h-9 sm:h-10 mt-1 text-sm">
+              <SelectTrigger className="h-9 sm:h-10 mt-1 text-sm focus:ring-2 focus:ring-[#8B5C9E]/50 focus:border-[#8B5C9E]">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
@@ -392,7 +392,11 @@ export default function AppointmentModal({
               <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="w-full sm:w-auto mb-2 sm:mb-0">
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting || (formData.status !== 'CANCELLED' && isLoadingSlots)} className="w-full sm:w-auto">
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || (formData.status !== 'CANCELLED' && isLoadingSlots)} 
+                className="w-full sm:w-auto bg-[#8B5C9E] hover:bg-[#794e8a] text-white"
+              >
                 {isSubmitting ? 'Saving...' : (isNewAppointment ? 'Create Appointment' : 'Save Changes')}
               </Button>
             </div>
