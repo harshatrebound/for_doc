@@ -13,7 +13,7 @@ import { UserPlus, Users, Award, Phone, ArrowRight } from 'lucide-react';
 import BookingButton from '@/components/BookingButton';
 import { Readable } from 'stream';
 import HeroSection from '@/components/ui/HeroSection';
-import { useState, useEffect } from 'react';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import BookingModal from '@/components/booking/BookingModal';
 import { cn } from '@/lib/utils';
@@ -25,7 +25,7 @@ const allStaff = [
     slug: 'dr-naveen-kumar-l-v',
     name: 'Dr. Naveen Kumar LV',
     title: 'MBBS, MS Orth (India), FRCS Orth (Eng), MCh Hip & Knee (UK), MSc Orth (UK), Dip SICOT (Italy), FEBOT (Portugal), MRCGP (UK), Dip FIFA SM (Switzerland) (FSEM (UK))',
-    imageUrl: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/313414809_424129516595915_5712394841841282653_n-500x500.jpg',
+    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/313414809_424129516595915_5712394841841282653_n-500x500.jpg',
     role: 'Director',
   },
   // Associate Consultant
@@ -34,7 +34,7 @@ const allStaff = [
     name: 'Dr. Sameer KM',
     title: 'Associate Consultant – Sports Orthopedics Institute & Manipal Hospitals, Sarjapur Road',
     qualifications: 'MBBS, MS(Ortho), DNB (Ortho), Dip.FIFA(SM)(Switzerland), Dip SICOT(Belgium), Fellowship in Arthroscopy & Arthroplasty (SOI)',
-    imageUrl: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/Sameer-Photo-500x500.webp',
+    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/Sameer-Photo-500x500.webp',
     role: 'Consultant',
   },
   // Sports Psychologist
@@ -43,7 +43,7 @@ const allStaff = [
     name: 'Shama Kellogg',
     title: 'Sports Psychologist',
     qualifications: 'MSc (Sports Psychology), MA (Clinical Psychology) Sterling University, Scotland, UK',
-    imageUrl: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/Shama-Kellog-500x500.webp',
+    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/Shama-Kellog-500x500.webp',
     role: 'Psychologist',
   },
   // Fellows
@@ -51,14 +51,14 @@ const allStaff = [
     slug: 'dr-aravind-naik',
     name: 'Dr. Aravind Naik',
     title: 'MBBS, MS Orth',
-    imageUrl: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/IMG-20240923-WA0008-500x500.jpg',
+    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/IMG-20240923-WA0008-500x500.jpg',
     role: 'Fellow',
   },
   {
     slug: 'dr-akash-rathod',
     name: 'Dr. Akash Rathod',
     title: 'MBBS, MS Orth',
-    imageUrl: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/IMG-20241013-WA0023-500x500.jpg',
+    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/IMG-20241013-WA0023-500x500.jpg',
     role: 'Fellow',
   },
   // Physiotherapists
@@ -66,14 +66,14 @@ const allStaff = [
     slug: 'atharva-mishra',
     name: 'Atharva Mishra',
     title: 'MPT (Sports), CDNT (HPE, London), KCAT',
-    imageUrl: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/Dr-Atharva-Mishra-500x500.webp',
+    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/Dr-Atharva-Mishra-500x500.webp',
     role: 'Physiotherapist',
   },
   {
     slug: 'anjali-khandelwal',
     name: 'Anjali Khandelwal',
     title: 'MPT (Orthopedics), CDNT (HPE, London)',
-    imageUrl: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/Dr.-Anjali-Khandelwal-500x500.webp',
+    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/Dr.-Anjali-Khandelwal-500x500.webp',
     role: 'Physiotherapist',
   },
   // Staff
@@ -81,42 +81,42 @@ const allStaff = [
     slug: 'nihal-jayaram',
     name: 'Nihal Jayaram',
     title: 'Manager',
-    imageUrl: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
+    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
     role: 'Staff',
   },
   {
     slug: 'archana',
     name: 'Archana',
     title: 'Front Desk Executive & Secretary',
-    imageUrl: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
+    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
     role: 'Staff',
   },
   {
     slug: 'jenifer',
     name: 'Jenifer',
     title: 'Front Desk Executive',
-    imageUrl: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
+    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
     role: 'Staff',
   },
   {
     slug: 'amala',
     name: 'Amala',
     title: 'Qualified Nurse',
-    imageUrl: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
+    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
     role: 'Staff',
   },
    {
     slug: 'soumen-staff', // Differentiating slug
     name: 'Soumen',
     title: 'Qualified Nurse',
-    imageUrl: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
+    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
     role: 'Staff',
   },
   {
     slug: 'laljith',
     name: 'Laljith',
     title: 'Front Desk Executive',
-    imageUrl: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
+    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
     role: 'Staff',
   },
   // Manipal Hospital Staff
@@ -124,14 +124,14 @@ const allStaff = [
     slug: 'arjun-mannattil',
     name: 'Arjun Mannattil',
     title: 'BCom with CA, (MBA) Financial Coordinator & Admission Facilitator Phone: 9916113224',
-    imageUrl: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/IMG-20241013-WA0027-500x500.jpg',
+    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/IMG-20241013-WA0027-500x500.jpg',
     role: 'ManipalStaff',
   },
   {
     slug: 'soumen-parikshit',
     name: 'Soumen Parikshit',
     title: 'Front Desk Executive & Qualified Nursing Support',
-    imageUrl: 'https://sportsorthopedics.in/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
+    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
     role: 'ManipalStaff',
   },
 ];
@@ -152,8 +152,8 @@ const groupStaffByRole = (staffList: typeof allStaff) => {
 const filterableRoles = ['Psychologist', 'Fellow', 'Physiotherapist', 'Staff', 'ManipalStaff'];
 
 export default function SurgeonsStaffPage() {
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<string | null>(null); // null means 'All'
+  const [isBookingModalOpen, setIsBookingModalOpen] = React.useState(false);
+  const [activeFilter, setActiveFilter] = React.useState<string | null>(null); // null means 'All'
   const groupedStaff = groupStaffByRole(allStaff);
 
   // Define section titles and icons based on role

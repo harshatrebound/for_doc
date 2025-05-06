@@ -18,12 +18,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'sportsorthopedics.in',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.sportsorthopedics.in',
+        hostname: '73n.0c8.myftpupload.com',
         pathname: '/**',
       }
     ],
