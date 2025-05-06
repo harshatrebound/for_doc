@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { ArrowRight, MapPin, Phone, Mail, Instagram, Facebook, Twitter, Linkedin } from 'lucide-react';
-import { useState } from 'react'; // Import useState
-import BookingModal from '@/components/booking/BookingModal'; // Import BookingModal
+// import { useState } from 'react'; // Removed useState as it's no longer used
+import BookingModal from '@/components/booking/BookingModal'; // Keep BookingModal import if needed elsewhere, otherwise remove
 
 // Define props if Book an Appointment needs to trigger a modal managed by the parent layout/page
 // interface SiteFooterProps {
@@ -11,18 +11,13 @@ import BookingModal from '@/components/booking/BookingModal'; // Import BookingM
 // }
 
 export default function SiteFooter(/*{ onBookAppointmentClick }: SiteFooterProps*/) {
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false); // Add state for modal
+  // const [isBookingModalOpen, setIsBookingModalOpen] = useState(false); // Removed state for modal
 
-  // If the booking modal is managed globally or via context, you might not need props here
-  // For simplicity, the example below assumes the button links directly or modal logic is elsewhere
-  const handleBookAppointment = () => {
-    setIsBookingModalOpen(true); // Set state to open modal
-    // Option 1: Trigger modal via prop function
-    // if (onBookAppointmentClick) onBookAppointmentClick();
-    // Option 2: Trigger modal via global state/context (not shown here)
-    // Option 3: Navigate to a dedicated booking page
-    console.log("Book appointment clicked - implement modal trigger or navigation");
-  };
+  // Removed handleBookAppointment function as it's no longer used
+  // const handleBookAppointment = () => {
+  //   setIsBookingModalOpen(true); // Set state to open modal
+  //   // ... other options ...
+  // };
 
   return (
     <footer className="bg-gray-100 pt-16 pb-8">
@@ -59,26 +54,16 @@ export default function SiteFooter(/*{ onBookAppointmentClick }: SiteFooterProps
                 { name: 'Gallery', href: '/gallery' },
                 { name: 'Blogs', href: '/blogs' },
                 { name: 'Contact', href: '/contact' },
-                { name: 'Book an Appointment', href: '#', action: handleBookAppointment }
+                { name: 'Book an Appointment', href: '/book' }
               ].map((link) => (
                 <li key={link.name}>
-                  {link.action ? (
-                    <button 
-                      onClick={handleBookAppointment}
-                      className="text-gray-700 hover:text-[#8B5C9E] transition-colors duration-300 flex items-center"
-                    >
-                      <ArrowRight className="w-4 h-4 mr-2 text-[#8B5C9E]" />
-                      {link.name}
-                    </button>
-                  ) : (
-                    <Link 
-                      href={link.href}
-                      className="text-gray-700 hover:text-[#8B5C9E] transition-colors duration-300 flex items-center"
-                    >
-                      <ArrowRight className="w-4 h-4 mr-2 text-[#8B5C9E]" />
-                      {link.name}
-                    </Link>
-                  )}
+                  <Link 
+                    href={link.href}
+                    className="text-gray-700 hover:text-[#8B5C9E] transition-colors duration-300 flex items-center"
+                  >
+                    <ArrowRight className="w-4 h-4 mr-2 text-[#8B5C9E]" />
+                    {link.name}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -150,11 +135,6 @@ export default function SiteFooter(/*{ onBookAppointmentClick }: SiteFooterProps
           </p>
         </div>
       </div>
-      {/* Render the BookingModal */}
-      <BookingModal 
-        isOpen={isBookingModalOpen}
-        onClose={() => setIsBookingModalOpen(false)}
-      />
     </footer>
   );
 } 

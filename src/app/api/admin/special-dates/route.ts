@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 import { format } from 'date-fns';
+import { revalidatePath } from 'next/cache';
 
 // Cache special dates for 5 minutes
 const CACHE_TIME = 5 * 60 * 1000;
@@ -164,6 +165,16 @@ export async function PUT(request: NextRequest) {
       }
     });
     
+    // Revalidate paths
+    revalidatePath('/admin/special-dates');
+    revalidatePath('/admin/schedule');
+    if (doctorId || existingSpecialDate.doctorId) {
+      const docId = doctorId || existingSpecialDate.doctorId;
+      revalidatePath(`/admin/doctors/${docId}/schedule`);
+    }
+    // Revalidate the frontend API
+    revalidatePath('/api/available-slots');
+    
     return NextResponse.json({
       success: true,
       data: updatedSpecialDate,
@@ -188,9 +199,22 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    const specialDate = await prisma.specialDate.findUnique({
+      where: { id }
+    });
+
     await prisma.specialDate.delete({
       where: { id },
     });
+
+    // Revalidate paths
+    revalidatePath('/admin/special-dates');
+    revalidatePath('/admin/schedule');
+    if (specialDate?.doctorId) {
+      revalidatePath(`/admin/doctors/${specialDate.doctorId}/schedule`);
+    }
+    // Revalidate the frontend API
+    revalidatePath('/api/available-slots');
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 // DELETE: Delete a specific special date entry
 export async function DELETE(
@@ -33,6 +34,15 @@ export async function DELETE(
     await prisma.specialDate.delete({
       where: { id: id },
     });
+
+    // Revalidate paths
+    revalidatePath('/admin/special-dates');
+    revalidatePath('/admin/schedule');
+    if (existingEntry.doctorId) {
+      revalidatePath(`/admin/doctors/${existingEntry.doctorId}/schedule`);
+    }
+    // Revalidate the frontend API
+    revalidatePath('/api/available-slots');
 
     return NextResponse.json({ message: 'Special date entry deleted successfully' }, { status: 200 });
   } catch (error) {

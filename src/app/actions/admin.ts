@@ -1152,6 +1152,9 @@ export async function createSpecialDate(payload: CreateSpecialDatePayload): Prom
     }
     revalidatePath('/admin/schedule'); // Revalidate main schedule page too
     
+    // Also revalidate frontend API routes
+    revalidatePath('/api/available-slots');
+    
     return { success: true, data: newSpecialDate };
   } catch (error) {
     console.error('Error creating special date:', error);
@@ -1169,6 +1172,9 @@ export async function deleteSpecialDate(specialDateId: string): Promise<ApiRespo
     // Revalidate paths after delete
     revalidatePath('/admin/special-dates');
     revalidatePath('/admin/schedule');
+    
+    // Also revalidate frontend API routes
+    revalidatePath('/api/available-slots');
     
     return { success: true };
   } catch (error) {
