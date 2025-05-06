@@ -54,7 +54,7 @@ export default function SiteFooter(/*{ onBookAppointmentClick }: SiteFooterProps
                 { name: 'Gallery', href: '/gallery' },
                 { name: 'Blogs', href: '/blogs' },
                 { name: 'Contact', href: '/contact' },
-                { name: 'Book an Appointment', href: '/book' }
+                { name: 'Book an Appointment', href: '/book-appointment' }
               ].map((link) => (
                 <li key={link.name}>
                   <Link 
