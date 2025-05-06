@@ -8,8 +8,6 @@ const nextConfig = {
   
   // Image configuration
   images: {
-    loader: 'custom',
-    loaderFile: './lib/image-loader.js',
     unoptimized: false,
     // Fallback patterns just in case the loader isn't used
     remotePatterns: [
@@ -20,7 +18,12 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'sportsortopedics.in',
+        hostname: 'sportsorthopedics.in',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.sportsorthopedics.in',
         pathname: '/**',
       }
     ],
