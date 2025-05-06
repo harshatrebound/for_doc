@@ -188,22 +188,23 @@ export async function GET(request: Request) {
       });
     }
 
-    // Check 2: Doctor's schedule active on this day?
-    const dayOfWeek = selectedDate.getDay(); // 0-6, Sun-Sat
+    // Check 2: Doctor's schedule active on this day? Use IST day.
+    const dayOfWeek = istDate.getDay(); // Use the IST date's day of week (0-6, Sun-Sat)
     
     const schedule = await prisma.doctorSchedule.findFirst({
       where: {
         doctorId: doctorId,
-        dayOfWeek: dayOfWeek,
+        dayOfWeek: dayOfWeek, // Use the correct IST day of week
         isActive: true,
       },
     });
     if (!schedule) {
-      console.log(`[Available Slots API] No active schedule found for doctor ${doctorId} on date ${dateStringForCheck} (IST) (Day ${dayOfWeek}).`);
+      // Log using the correct day number based on IST
+      console.log(`[Available Slots API] No active schedule found for doctor ${doctorId} on date ${dateStringForCheck} (IST) (Day ${dayOfWeek} in IST).`);
       return NextResponse.json({ 
         disabledDates, 
         slots: [],
-        error: `Doctor is not available on ${format(istDate, 'EEEE')}s (IST)` 
+        error: `Doctor is not available on ${format(istDate, 'EEEE')}s (IST)` // Error message uses istDate already
       });
     }
 
