@@ -874,11 +874,61 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
     if (!id) {
       return { success: false, error: 'Appointment ID is required for update' };
     }
+
+    // ---- START OF SIMPLIFICATION FOR CANCELLATION/NO-SHOW ----
+    if (status === 'CANCELLED' || status === 'NO_SHOW') {
+      console.log(`[updateAppointment] Path for ${status}: Directly updating status and clearing time for ID: ${id}`);
+      try {
+        const appointmentToUpdate = await prisma.appointment.findUnique({ where: { id } });
+        if (!appointmentToUpdate) {
+          return { success: false, error: `Appointment with ID ${id} not found for status update.` };
+        }
+
+        const updatedAppointment = await prisma.appointment.update({
+          where: { id: id },
+          data: {
+            status: status,
+            time: null, // Explicitly set time to null
+            // Preserve other fields from input, falling back to existing if not provided in modal
+            patientName: patientName || appointmentToUpdate.patientName,
+            email: email || appointmentToUpdate.email,
+            phone: phone || appointmentToUpdate.phone,
+            date: appointmentDate, // Keep the date from the form (appointmentDate is already defined)
+            doctorId: doctorId || appointmentToUpdate.doctorId,
+            customerId: customerId === undefined ? appointmentToUpdate.customerId : customerId, // Handle explicit null for customerId
+            // notes: appointmentData.notes === undefined ? appointmentToUpdate.notes : appointmentData.notes, // Example if you have notes
+          },
+          include: {
+            doctor: { select: { name: true, speciality: true, fee: true } }
+          }
+        });
+
+        revalidatePath('/admin/appointments');
+        revalidatePath('/api/available-slots'); 
+
+        return {
+          success: true,
+          data: {
+            ...updatedAppointment,
+            dateInIST: formatISTDate(new Date(updatedAppointment.date)),
+            dayOfWeekIST: convertToIST(new Date(updatedAppointment.date)).getDay()
+          },
+          message: `Appointment status set to ${status}. Time cleared.`
+        };
+      } catch (error) {
+        console.error(`Error during targeted ${status} update for ID ${id}:`, error);
+        return { success: false, error: `Failed to set status to ${status}.` };
+      }
+    }
+    // ---- END OF SIMPLIFICATION ----
+
+    // Original comprehensive update logic follows
+    // Ensure required fields are present for active appointment updates
     if (!patientName || !appointmentDate || !time || !status || !doctorId) {
-      return { success: false, error: 'Missing required appointment fields for update' };
+      return { success: false, error: 'Missing required appointment fields for update (patient, date, time, status, doctor)' };
     }
 
-    // Get existing appointment to check if anything changed
+    // Get existing appointment to check if anything changed (this is somewhat redundant now if CANCELLED path taken, but harmless)
     const existingAppointment = await prisma.appointment.findUnique({
       where: { id }
     });
@@ -902,7 +952,12 @@ export const updateAppointment = async (appointmentData: any): Promise<ApiRespon
     });
     
     // Only do availability checks if the time, date, or doctor is changing
-    if (isDateChanged || isTimeChanged || existingAppointment.doctorId !== doctorId) {
+    // AND the status is NOT being set to 'CANCELLED' (or some other inactive status)
+    if (
+      (isDateChanged || isTimeChanged || existingAppointment.doctorId !== doctorId) &&
+      status !== 'CANCELLED' && 
+      status !== 'NO_SHOW' // Potentially add other "inactive" statuses here if needed
+    ) {
       // 1. Check if doctor works on this day and time (basic availability)
       const availability = await isDoctorAvailable(doctorId, appointmentDate, time);
       if (!availability.available) {
@@ -1208,28 +1263,40 @@ export async function fetchDoctorById(doctorId: string) {
 // Action to delete a doctor
 export async function deleteDoctor(doctorId: string): Promise<ApiResponse> {
   try {
-    // Check if the doctor exists (optional, delete operation will fail safely if not found)
-    const doctor = await prisma.doctor.findUnique({ where: { id: doctorId } });
-    if (!doctor) {
-      return { success: false, error: 'Doctor not found' };
-    }
+    // Optional: Check if the doctor has any upcoming appointments
+    // and handle accordingly (e.g., prevent deletion or reassign)
 
-    // Perform the deletion
-    await prisma.doctor.delete({ 
-      where: { id: doctorId } 
+    await prisma.doctor.delete({
+      where: { id: doctorId },
     });
-
-    console.log(`Successfully deleted doctor with ID: ${doctorId}`);
-    revalidatePath('/admin/doctors'); // Revalidate the doctors list page
+    revalidatePath('/admin/doctors'); // Or wherever doctors are listed
     return { success: true, message: 'Doctor deleted successfully' };
-
   } catch (error) {
-    console.error(`Error deleting doctor with ID ${doctorId}:`, error);
-    // Check for specific Prisma error related to foreign key constraints
-    if (error instanceof Error && (error as any).code === 'P2003') { 
-      // Foreign key constraint violation (e.g., doctor has appointments)
-      return { success: false, error: 'Cannot delete doctor: They have existing appointments or schedules associated. Please reassign or remove them first.' };
+    console.error("Error deleting doctor:", error);
+    // Check for specific Prisma errors, e.g., record not found
+    if ((error as any).code === 'P2025') {
+      return { success: false, error: 'Doctor not found or already deleted.' };
     }
-    return { success: false, error: 'Failed to delete doctor' };
+    return { success: false, error: 'Failed to delete doctor. Please try again.' };
+  }
+}
+
+// New action to delete an appointment
+export async function deleteAppointmentAction(appointmentId: string): Promise<ApiResponse> {
+  try {
+    await prisma.appointment.delete({
+      where: { id: appointmentId },
+    });
+    // Revalidate paths where appointments are shown, e.g., admin appointments page and possibly user-facing views
+    revalidatePath('/admin/appointments');
+    // Consider revalidating other relevant paths if appointments appear elsewhere
+    // revalidatePath('/my-appointments'); 
+    return { success: true, message: 'Appointment deleted successfully.' };
+  } catch (error) {
+    console.error("Error deleting appointment:", error);
+    if ((error as any).code === 'P2025') { // Prisma error code for record not found
+      return { success: false, error: 'Appointment not found or already deleted.' };
+    }
+    return { success: false, error: 'Failed to delete appointment. Please try again.' };
   }
 }

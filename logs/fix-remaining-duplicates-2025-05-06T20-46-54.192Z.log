@@ -1,0 +1,47 @@
+[2025-05-06T20:46:54.193Z] Starting cleanup of remaining duplicate appointments...
+[2025-05-06T20:46:54.195Z] Checking for specific visual duplicates identified in the calendar...
+[2025-05-06T20:46:54.195Z] Checking for duplicates of patient "Sanjay Thomas" on 2025-05-01 at 09:30
+[2025-05-06T20:46:54.973Z]   Found 2 duplicate appointments
+[2025-05-06T20:46:54.974Z]   Keeping appointment 952e83d3-ddd1-450d-97f6-97917c0b5612 (created Fri Apr 25 2025 11:43:00 GMT+0530 (India Standard Time))
+[2025-05-06T20:46:54.974Z]   Deleting duplicate appointment 7db0469d-8078-4380-b5ce-8e751a151e9f...
+[2025-05-06T20:46:55.147Z]   Successfully deleted duplicate appointment 7db0469d-8078-4380-b5ce-8e751a151e9f
+[2025-05-06T20:46:55.147Z] Checking for duplicates of patient "Jose M P" on 2025-05-03 at 11:00
+[2025-05-06T20:46:55.218Z]   Found 2 duplicate appointments
+[2025-05-06T20:46:55.218Z]   Keeping appointment b49aa58d-4ab3-4283-850e-19bdfc56c637 (created Thu Apr 17 2025 10:02:00 GMT+0530 (India Standard Time))
+[2025-05-06T20:46:55.218Z]   Deleting duplicate appointment 180568e1-c8cb-456b-925c-3d3a3a8c824b...
+[2025-05-06T20:46:55.293Z]   Successfully deleted duplicate appointment 180568e1-c8cb-456b-925c-3d3a3a8c824b
+[2025-05-06T20:46:55.293Z] Checking for duplicates of patient "Ayush Ayus" on 2025-05-03 at 09:00
+[2025-05-06T20:46:55.360Z]   No duplicates found (found 0 appointments)
+[2025-05-06T20:46:55.360Z] Checking for duplicates of patient "Karthik d Karthik d" on 2025-05-05 at 10:40
+[2025-05-06T20:46:55.434Z]   Found 2 duplicate appointments
+[2025-05-06T20:46:55.435Z]   Keeping appointment 7776c68d-7907-40bf-a3a6-d8739292801f (created Tue Apr 29 2025 14:43:00 GMT+0530 (India Standard Time))
+[2025-05-06T20:46:55.435Z]   Deleting duplicate appointment 541d2296-d8ab-4dac-ae42-04c8bc3d4b52...
+[2025-05-06T20:46:55.572Z]   Successfully deleted duplicate appointment 541d2296-d8ab-4dac-ae42-04c8bc3d4b52
+[2025-05-06T20:46:55.572Z] Checking for duplicates of patient "deiva sigamani" on 2025-05-05 at 10:50
+[2025-05-06T20:46:55.658Z]   Found 2 duplicate appointments
+[2025-05-06T20:46:55.659Z]   Keeping appointment 70299195-56b7-4be5-8c43-49002499ed43 (created Tue Apr 29 2025 14:48:00 GMT+0530 (India Standard Time))
+[2025-05-06T20:46:55.659Z]   Deleting duplicate appointment e8fbe443-b5ca-48da-9907-36d609f14c71...
+[2025-05-06T20:46:55.733Z]   Successfully deleted duplicate appointment e8fbe443-b5ca-48da-9907-36d609f14c71
+[2025-05-06T20:46:55.734Z] Checking for duplicates of patient "Biraj Bora" on 2025-05-08 at 11:00
+[2025-05-06T20:46:55.802Z]   Found 2 duplicate appointments
+[2025-05-06T20:46:55.803Z]   Keeping appointment 95990ade-a3f1-4219-a4c9-c08907b59361 (created Tue Apr 29 2025 17:36:00 GMT+0530 (India Standard Time))
+[2025-05-06T20:46:55.803Z]   Deleting duplicate appointment a0f81468-1192-4a6e-9feb-bce44aa65d05...
+[2025-05-06T20:46:55.887Z]   Successfully deleted duplicate appointment a0f81468-1192-4a6e-9feb-bce44aa65d05
+[2025-05-06T20:46:55.888Z] Checking for duplicates of patient "Rohan Kumar" on 2025-05-10 at 11:00
+[2025-05-06T20:46:55.962Z]   Found 2 duplicate appointments
+[2025-05-06T20:46:55.962Z]   Keeping appointment bf030d26-c463-4bca-81be-45f86718a69e (created Thu May 01 2025 01:39:00 GMT+0530 (India Standard Time))
+[2025-05-06T20:46:55.963Z]   Deleting duplicate appointment 546e6905-d031-427f-b273-927b8eb3e9a8...
+[2025-05-06T20:46:56.031Z]   Successfully deleted duplicate appointment 546e6905-d031-427f-b273-927b8eb3e9a8
+[2025-05-06T20:46:56.032Z] Removed 6 specific visual duplicate appointments
+[2025-05-06T20:46:56.032Z] Checking for all exact duplicate appointments (same patient, date, time)...
+[2025-05-06T20:46:56.183Z] No exact duplicate appointments found
+[2025-05-06T20:46:56.183Z] Adding PostgreSQL constraints to prevent future duplicates...
+[2025-05-06T20:46:56.335Z] Created unique index for active doctor names
+[2025-05-06T20:46:56.592Z] Created unique index for appointments to prevent exact duplicates
+[2025-05-06T20:46:56.593Z] Summary of duplicate appointment removal:
+[2025-05-06T20:46:56.593Z]   - Specific duplicates removed: 6
+[2025-05-06T20:46:56.593Z]   - All other exact duplicates removed: 0
+[2025-05-06T20:46:56.593Z]   - Total appointments removed: 6
+[2025-05-06T20:46:56.593Z]   - Database constraints created: Yes
+[2025-05-06T20:46:56.594Z] Successfully removed all duplicate appointments
+[2025-05-06T20:46:56.594Z] Duplicate fixing operations completed

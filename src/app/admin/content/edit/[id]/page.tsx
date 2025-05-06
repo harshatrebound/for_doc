@@ -18,6 +18,7 @@ import { toast } from 'react-hot-toast';
 import ImageUploader from '@/components/admin/ImageUploader';
 import SEOFields from '@/components/admin/SEOFields.jsx';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import SurgeonDetailsContentEditor from '@/components/admin/SurgeonDetailsContentEditor';
 
 // Types (same as new page)
 type Category = {
@@ -410,11 +411,26 @@ export default function EditContentPage({ params }: { params: { id: string } }) 
           />
         </div>
 
+        {/* Surgeon Details Editor (only for surgeons-staff page type) */}
+        {pageType === 'surgeons-staff' && pageData && (
+          <SurgeonDetailsContentEditor pageSlug={slug} />
+        )}
+
         {/* Submit Button */}
-        <div className="flex justify-end pt-4 border-t">
-          <Button type="submit" disabled={saving} className="bg-[#8B5C9E] hover:bg-[#7A4C8C]">
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            {saving ? 'Saving...' : 'Save Changes'}
+        <div className="mt-8 flex justify-end">
+          <Button 
+            type="submit" 
+            className="bg-[#8B5C9E] hover:bg-[#8B5C9E]/90"
+            disabled={saving}
+          >
+            {saving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save Changes'
+            )}
           </Button>
         </div>
       </form>

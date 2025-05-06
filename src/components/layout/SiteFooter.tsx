@@ -26,9 +26,10 @@ export default function SiteFooter(/*{ onBookAppointmentClick }: SiteFooterProps
           {/* Google Map */}
           <div className="relative h-[300px] md:h-auto rounded-xl overflow-hidden shadow-lg">
             <iframe 
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.0385700410145!2d77.63429397578755!3d12.972502915594354!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae144386d29863%3A0x77af829881bfcf3e!2sSports%20Orthopedics%20Institute!5e0!3m2!1sen!2sin!4v1679891234567!5m2!1sen!2sin" 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.9339623430733!2d77.6387069!3d12.9119659!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae154f9c34faf7%3A0x20d81f3cad291c58!2sSports%20Orthopedics%20Institute%20%7C%20Dr%20Naveen%20Kumar%20LV%20%7C%20Knee%20Shoulder%20Hip%20Ankle%20Elbow%20Wrist%20Surgeon%20%26%20Sports%20Injury%20Specialist!5e0!3m2!1sen!2sin!4v1746568791014!5m2!1sen!2sin" 
               width="100%" 
               height="100%" 
+              style={{ border:0 }}
               allowFullScreen 
               loading="lazy" 
               referrerPolicy="no-referrer-when-downgrade"
@@ -111,16 +112,16 @@ export default function SiteFooter(/*{ onBookAppointmentClick }: SiteFooterProps
               
               {/* Social Media Links */}
               <div className="flex space-x-4 pt-4">
-                <a href="https://instagram.com/sports.orthopedics" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
+                <a href="https://www.instagram.com/drnaveenkumarlv" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
                   <Instagram className="w-5 h-5 text-[#8B5C9E] group-hover:text-white transition-colors duration-300" />
                 </a>
-                <a href="https://facebook.com/SportsOrthopedicsInstitute" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
+                <a href="https://www.facebook.com/profile.php?id=100064057982646" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
                   <Facebook className="w-5 h-5 text-[#8B5C9E] group-hover:text-white transition-colors duration-300" />
                 </a>
-                <a href="https://twitter.com/SportsOrthoInst" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
+                <a href="https://x.com/Naveen_Lokikere" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
                   <Twitter className="w-5 h-5 text-[#8B5C9E] group-hover:text-white transition-colors duration-300" />
                 </a>
-                <a href="https://linkedin.com/company/sports-orthopedics-institute" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
+                <a href="https://www.linkedin.com/in/dr-naveen-kumar-lv/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="w-10 h-10 rounded-full bg-[#8B5C9E]/10 flex items-center justify-center hover:bg-[#8B5C9E] group transition-colors duration-300">
                   <Linkedin className="w-5 h-5 text-[#8B5C9E] group-hover:text-white transition-colors duration-300" />
                 </a>
               </div>

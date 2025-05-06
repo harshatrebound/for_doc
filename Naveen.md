@@ -1,0 +1,210 @@
+# Dr. Naveen Kumar L.V
+
+## Qualifications
+- MBBS, MS Orth (India)
+- FRCS Orth (Eng)
+- MCh Hip & Knee (UK)
+- MSc Orth (UK)
+- Dip SICOT (Italy)
+- FEBOT (Portugal)
+- MRCGP (UK)
+- Dip FIFA SM (Switzerland)
+- FSEM (UK)
+
+## Expertise
+- Excellent Arthroscopy Surgeon
+- Ligament Reconstruction Surgeon
+- Muscle, Tendon Soft Tissue Surgery Expert
+- Stem Cell Therapy & Cartilage Regeneration Expert
+- Robotic Hip & Knee Replacement Surgeon (Mako Certified)
+- Shoulder Replacement Surgeon (Computer Navigated)
+- Well Experienced Pelvi-Acetabular Surgeon
+
+## Professional Biography
+Dr Naveen is the Prestigious John Charnley Gold Medalist, Wrightington Hospital, UK, Topper at dip SICOT, Italy and Best Trainee awardee – BIOS, UK. He achieved the distinction at FEBOT, Portugal and FRCS Orth I – England. He has achieved 10 qualifications to his credit so far! He has the highest number of qualifications among all the orthopedic surgeons in Karnataka and possibly India. He has completed several fellowships in UK and Germany in Arthroplasty and Arthroscopic surgeries. He has presented his papers on various podiums across the globe! His name and photographs have been etched on the Hall of Fame at [Wrightington Hospital, Wrightington, Lancashire, UK](https://www.wwl.nhs.uk/wrightington-hospital) and also at [König-Ludwig-Haus Hospital, Würzburg, Germany](https://www.med.uni-wuerzburg.de/en/orthopaedie/chair-of-orthopedic-and-orthopedic-clinic-koenig-ludwig-haus/). With over 24 years of vast experience in the diverse fields of Shoulder, Knee & Ankle Arthroscopy, Hip & Knee Arthroplasty and Trauma, Dr Naveen has returned to his homeland to serve the people over here.
+
+## Awards & Distinctions
+- "Service Excellence in Sports Injury Surgeries" – Vijay Karnataka & Bangalore Mirror Health Excellence Award – Jan 2025
+- Excellence in Sports Orthopedics & Regenerative Medicine – Dr. APJ Abdul Kalam Health Awards – July 2024
+- Best Presentation Award – British Indian Orthopaedic Society (BIOS) Conference, Cumbria, UK – July 2017
+- Wrightington Gold Medal, UK – May 2017
+- Prestigious German Fellowship award – Diploma SICOT, Italy – Sep 2016
+- Best Research Fellow presentation award – Wrightington Gold Medal Research day, UK – June 2016
+- 2nd Price – State level Post-Graduate Orthopaedic Quiz, Mysore, India – Jul 2003
+- Honors – Ophthalmology, BLDEA's Medical College, Bijapur, India – Dec 1996
+- Sir John Charnley Award – Best Adult Pathology paper, NWOA, Manchester, UK – Co-author – Dec 2017
+- Best Poster award (Selected for) – BIOS Conference, UK – Co-author – July 2017
+- Gold medal – Wrightington Gold Medal Research day, UK – Co-author – June 2016
+- Distinction (90%) – FEBOT, Lisbon, Portugal – Oct 2017
+- Merit – MCh, Edgehill University, UK – August 2017
+- Distinction (77.5%) – FRCS Orth Part 1, UK – Nov 2016
+- Topper – Dip SICOT, Italy – Sep 2016
+- Merit – MSc, Salford University, UK – June 2016
+- Distinction, 3rd Rank – MBBS, 1st Phase – Karnataka University, India – Dec 1994
+- Distinction, 64th Rank – State level – SSLC Exams – Karnataka State, India – Apr 1991
+
+## Professional Qualifications
+- Dip FIFA – FIFA Medical, Switzerland – Oct 2019
+- FRCS Tr & Orth – Royal College of Surgeons, England – Nov 2017
+- FEBOT – European Board of Orthopaedics & Trauma, Lisbon, Portugal – Oct 2017
+- MCh Hip & Knee – Edgehill University, UK – July 2017
+- FSEM – UK – Oct 2017
+- Diploma SICOT – Société Internationale de Chirurgie Orthopédique et de Traumatologie, Rome- Sep 2016
+- MSc Trauma & Orth – Salford University, UK – June 2016
+- MRCGP – RCGP, UK – Oct 2008
+- MS Orthopaedics – MAHE University, Manipal – Jul 2004
+- MBBS – B.L.D.E.A's medical college, Bijapur – Mar 1999
+
+## Additional Credentials
+- Certified Advanced Trauma Life Support (ATLS®) Provider accreditation – American College of Surgeons
+- Certified Advanced Life Support (ALS) Provider accreditation – Resuscitation Council (United Kingdom)
+
+## Professional Visits
+- Regrow Biosciences, Stem Cell research center and Factory, Mumbai – Jul 2023
+- Link implants Factory (Waldemar Link GmbH & Co), Hamburg, Germany – Jan 2018
+- Medartis Centre, Basel, Switzerland – Mar 2017
+- DePuy Synthes, Leeds, UK – Oct 2017
+
+## Faculty & Guest Lectures
+- Faculty – Panelist – IASCON, Bangalore – Sep 2024
+- Faculty – Chair-person – Live Surgery – IASCON, Bangalore – Sep 2024
+- Faculty – The Knee Innovations Arthro-lab – Arthroscopy Knee – Arthrex – Bangalore – Aug 2024
+- Faculty – Meet the Masters – Shoulder Arthroscopy CME – DePuy Synthes – Bangalore – Jul 2024
+- Faculty – Bangalore Knee Conference – Bangalore – Dec 2023
+- Faculty – Shoulder Cadaveric Arthroscopy Course – Ramaiah Medical College, Bangalore – June 2023
+- Faculty – Bangalore Arthroscopy Course, Bangalore – Oct 2022
+- Faculty – AutoCart An Expert Insight into Cartilage Regeneration – International Arthrex Virtual Conference – Sep 2021
+- Faculty – Nishta 93 Multi Speciality CME – Mar 2020
+- Faculty – MCh / FRCS Preparation Course, Wrightington Hospital, UK – Jan 2018
+- Faculty – FRCS Viva Course, Orthopaedic Network, Sheffield, UK – Jan 2018
+- Klinikum Rechts Der Isar, Munich, Germany – Pelvic Discontinuity– Aug 2017
+- König – Ludwig – Haus, Würzburg, Germany – Peri-prosthetic fracture management – Aug 2017
+
+## Conferences
+- KOACON – Karnataka Orthopaedic Association, Bangalore– Feb 2025
+- IASCON – Indian Arthroscopy Society Conference, Bangalore – Sep 2024
+- KOACON – Karnataka Orthopaedic Association, Shivamogga – Feb 2024
+- IASCON – Indian Arthroscopy Association Conference, Coimbatore – Oct 2022
+- IOACON, Indian Orthopaedic Association Conference, Goa – Dec 2021
+- Symbios Custom Hip user group meeting, Cardiff – Jan 2018
+- WIROC – 52nd annual conference – Bombay Orthopaedic Society, India – Dec 2017
+- British Indian Orthopaedic Society, Carlisle, UK – July 2017
+- EFORT Annual Congress, Vienna, Austria – June 2017
+- BHS – British Hip Society, London, UK – Mar 2017
+- SICOT Orthopaedic World Congress, Rome, Italy – Sep 2016
+- IOS UK Conference, Leicester, UK – July 2016
+- IOS UK Conference, Liverpool, UK – July 2015
+- IOACON – Indian Orthopaedic Association Conference – Dec 2003
+- KOACON – Karnataka Orthopaedic Association Conference, India – Feb 2003
+- KOACON – Kerala Orthopaedic Association Conference, India – Jan 2003
+
+## Podium Presentations
+### Primary Author
+- European Congress of Radiology, Vienna, Austria – "Trauma CT scans with pelvic compression devices in-situ: Helpful or Hindrance?" – March 2018
+- North West Orthopaedic Association (NWOA) Research Day, Manchester, UK – Management of pelvic discontinuity in Revision Arthroplasty – Dec 2017
+- North West Orthopaedic Association (NWOA) Research Day, Manchester, UK – Long term Outcomes of Total Hip Arthroplasty for failed femoral neck fracture osteosynthesis – Dec 2017
+- British Indian Orthopaedic Society Conference, Cumbria, UK – "Total Hip Arthroplasty for Failed Osteosynthesis post Neck of Femur Fracture" – July 2017
+- EFORT 18th Annual Congress, Vienna, Austria – "Outcomes of Total Hip Arthroplasty following Infectious Arthritis" – June 2017
+- Wrightington Gold Medal Research Day, Wrightington, UK – "Management of Pelvic Discontinuity in Revision Arthroplasty" – May 2017
+- Wrightington Gold Medal Research Day, Wrightington, UK – "Total Hip Arthroplasty for Failed Osteosynthesis post Neck of Femur Fracture" – May 2017
+- British Hip Society, London, UK – "Primary Total Hip Replacement Following Infective Arthritis (Up to 41 Year Follow Up)" – Mar 2017
+- Grand Round Presentation, Royal Albert Edward Infirmary, Wigan, UK – "A case of non-traumatic compartment syndrome" – Dec 2016
+- SICOT Orthopaedic World Congress, Rome, Italy – "Missed Pelvic Fractures due to CT Scan in Pelvic Binders" – Sep 2016
+- IOS UK Conference, Leicester, UK – "Outcomes of the Distal femoral replacement for salvage Knee revisions" –July 2016
+- IOS UK Conference, Leicester, UK – "Outcomes of conservative management of primary patellar dislocation" –July 2016
+- Wrightington Gold Medal Research Day, Wrightington, UK – "Total Hip Arthroplasty for Infectious Arthritis" – June 2016
+- Wrightington Gold Medal Research Day, Wrightington, UK – "Short term outcomes of Hinged Knee Arthroplasty for complex revisions" –June 2016
+- IOS UK Conference, Liverpool, UK – "Outcomes of C stem Asian hip replacement" – July 2015
+
+### Co-author
+- SICOT Orthopaedic World Congress, Cape Town, South Africa – "Long term outcome of knee arthroplasty in patients upto 40 years of age" – Dec 2018
+- SICOT Orthopaedic World Congress, Cape Town, South Africa – "Proximal Femoral Replacement – A solution for profound femoral bone loss?" – Dec 2018
+- North West Orthopaedic Association (NWOA) Research Day, Manchester, UK –Impaction Bone Grafting of Femur in Revision Hip Arthroplasty. Does length of stem matter? – Dec 2017
+- British Indian Orthopaedic Society Conference, Cumbria, UK – – "Alpha-Defensin test in Prosthetic Hip and Knee Infection"– July 2017
+- EFORT 18th Annual Congress, Vienna, Austria – "Impaction Bone Grafting Of Femur In Revision Hip Arthroplasty" – June 2017
+- Wrightington Gold Medal Research Day, Wrightington, UK – "Primary Knee Arthroplasty in Patients 40 years of age and younger" – May 2017
+- Wrightington Gold Medal Research Day, Wrightington, UK – "Alpha-Defensin test in Prosthetic Hip and Knee Infection" – May 2017
+- Wrightington Gold Medal Research Day, Wrightington, UK – "Outcomes of Dynamic Hip Screw Vs Multiple Cancellous Screws for Intra-capsular Fracture Neck of Femur in Young Patients" – May 2017
+- Wrightington Gold Medal Research Day, Wrightington, UK – "Proximal Femoral Replacement – A Viable Solution for Profound Femoral Bone Loss?" – May 2017
+- SICOT Orthopaedic World Congress, Rome, Italy – "Femoral Impaction Bone Grafting in Revision Hip Arthroplasty: 5-19 years follow-up" – Sep 2016
+- British Hip Society- Societa Italiana Dell'anca, Milan, Italy – "Metallic Augments with Cemented Sockets and Impaction Bone grafting in Acetabular Reconstruction" – Nov 2015
+
+## Poster Presentations
+- European Congress of Radiology, Vienna, Austria – "Trauma CT scans with pelvic compression devices in-situ: Helpful or Hindrance?" – March 2018
+- British Indian Orthopaedic Society Conference, Cumbria, UK "Management of Pelvic Discontinuity in Revision Arthroplasty" – July 2017
+- British Indian Orthopaedic Society Conference, Cumbria, UK – "Primary Knee Arthroplasty in Patients 40 years of age and younger"– (Co-author) – July 2017
+- Wrightington Gold Medal Research Day, Wrightington, UK – MRI Spine – How appropriate is our urgent referrals? – Co-author – May 2017
+- Wrightington Gold Medal Research Day, Wrightington, UK – Perioperative Anticoagulation Bridging Therapy for Elective Hip/Knee Joint Arthroplasty – May 2017
+- British Hip Society, London, UK – "Outcomes of Asian C-stem Primary Total Hip Arthroplasty in Femora with Abnormal Anatomy" – Mar 2017
+- Wrightington Gold Medal Research Day Presentation, Wrightington, UK – "Missed Pelvic Fractures due to CT Scan in Pelvic Binders" – June 2016
+
+## Courses
+- Physiotherapy in Disc Herniation and the McKenzie method – Udemy – March 2025
+- Stride Summit ACL Focus 2025 – Kochi, India – March 2025
+- Arthrex Cadaveric Shoulder Replacement Course, Arthrex GMBH – Munich, Germany – Oct 2024
+- Depuy Synthes Advanced Shoulder Arthroscopy Cadaver Course – Bangkok, Thailand – Apr 2024
+- Stryker Mako Total Hip Surgical Training Lab – Bangalore, India – Mar 2024
+- Stryker Mako Total Knee Surgical Training Lab – Pune, India – Jul 2023
+- Arthrex Technology Symposium – Delhi, India – Jun 2023
+- Arthrex Technology Symposium – Dubai – Jun 2019
+- Avon Patello-femoral Arthroplasty Surgical Technique – Wrightington, UK – Feb 2018
+- Symbios Custom Hip-plan – Cardiff, Wales – Jan 2018
+- Periprosthetic Infection Therapy – ENDO-Klinik, Hamburg, Germany – Jan 2018
+- MP Reconstruction Prosthesis – Hip – ENDO-Klinik, Hamburg, Germany – Jan 2018
+- SP-CL Cementless Hip System – ENDO-Klinik, Hamburg, Germany – Jan 2018
+- Impaction Bone Grafting Workshop – Wrightington, UK – Sep 2017
+- FRCS Orth preparation course – Newcastle, UK – Jan 2017
+- Complex Primary & Revision Hip Course – Leeds, UK – Jan 2017
+- Primary through to Revision TKR course – Stanmore, UK – Nov 2016
+- Wrightington Hip, Knee and Ankle Arthroplasty Updates – Wrightington, UK – May 2016
+- Fracture of Pelvis & Acetabulum management Course – York, UK – June 2016
+- AO Trauma Course – Bengaluru, India – Feb 2016
+- Flat Foot Reconstruction Seminar – Wrightington, UK – Nov 2015
+- Advanced Trauma Life Support (ATLS) Course – Wakefield, UK – Sep 2015
+- Zimmer Hip Arthroplasty Workshop – Wiston, UK – Oct 2015
+- Depuy Knee Implant Workshop – Leeds, April 2016
+- Stryker Hoffman External Fixator Course – Wrightington, UK – Aug 2015
+- Cemented Hip Arthroplasty Course – Wrightington, UK – Jun 2015
+- Core Skills in Orthopaedic Surgery – Wrightington, UK – Mar 2015
+- Advanced Life Support (ALS) Course – Edinburgh, Scotland – Apr 2015
+- Mastering your risk workshop – Medical Protection Society, Manchester – Oct 2012
+- Basic Surgical Skills (BSS) Course – Kings College Hospital, London – May 2005
+
+## Continued Medical Education (CMEs)
+- Clinical Negligence – Medical & Legal Issues – Wrightington, UK – May 2016
+- Non-union Bone stimulation – Exogen Seminar – Wrightington, UK – Oct 2015
+- 22nd Mangalore Orthopaedic Course – Karnataka Orthopaedic Association, India – Apr 2004
+- Paediatric Rheumatology – Kasturba Medical College, Mangalore, India – Mar 2004
+- Orthopaedics – Kasturba Medical College, Manipal, India – Nov 2003
+- CME – Karnataka Orthopaedic Association, India – Jan 2003
+- SCORE – 2002 – Sri Ramachandra Medical College, Chennai, India – Nov 2002
+- Hand injuries – Kerala Orthopaedic Association, India – Sep 2002
+
+## Publications
+1. K Syam, P Unnikrishnan, N Lokikere, A Gambhir, N Shah, M Porter, Proximal femoral replacement in non-neoplastic revision hip arthroplasty : five-year results, Bone & Joint Open 3(3):229-235, Mar 2022
+2. Amit Singh, N Lokikere, Akash A. Saraogi, N Unnikrishnan, James Davenport, Missed Lisfranc injuries-surgical vs conservative treatment. Irish Journal of Medical Science, 190(3), Sep 2020.
+3. N. Lokikere, A. Saraogi, U. Sonar, M. Porter, P. Kay, H. Wynn-Jones, N. Shah. Outcomes of distal femoral replacement for complex knee revisions with bone loss. Bone Joint J Jul 2016, 98-B (SUPP 14) 7.
+4. N. Lokikere, C. Jakaraddi, H. Wynn-Jones, N. Shah. Results of Asian C-stem in femora with abnormal anatomy. Bone Joint J Jun 2016, 98-B (SUPP 13) 3.
+5. U. Sonar, N. Lokikere, A. Kumar, B. Coupe, R. Gilbert. Outcomes of conservative management of primary patellar dislocation. Bone Joint J Jul 2016, 98-B (SUPP 14) 5.
+6. A. Saraogi, N. Lokikere, P. Siney, H. Nagai, B. Purbach, V. Raut, P. Kay. Femoral impaction bone grafting in revision hip arthroplasty: five- to 19-year follow-up. Bone Joint J Jul 2016, 98-B (SUPP 14) 10.
+7. A Saraogi, N Lokikere, V Raut. "Greater Trochanteric Pain Syndrome- A Review Article". EC Orthopaedics 4.1 (2016): 429-434.
+8. N. Lokikere, "Type II SLAP Tear of Shoulder – management options" – Critical review of the literature – Salford University, UK – Nov 2014.
+9. N. Lokikere, "Choice of the implant for Total hip replacement in a young patient with Diabetes mellitus" – Critical review of the literature – Salford University – Jan 2014.
+
+## Executive & Management Experience
+- SICOT India – Steering Committee Member – Sports Medicine – 2018 -19
+- SICOT India – Steering Committee Member – Exams & Alumni – 2018 -19
+- Spearheaded development of Orthopaedic pathways at Wigan Borough Care commissioning group (CCG), UK – 2014-15
+- Orthopaedic Lead for ULC group of Surgeries at Wigan, UK – 2010 – 2015
+- Information Technology Lead and Prescribing lead for Wigan CCG, UK – 2012-2015
+- Chief PG coordinator – South Indian CME in Orthopaedics at Mangalore -2003 & 2004
+- Cultural Secretary of B.L.D.E.A Medical College, Bijapur during my MBBS training – Event management – intercollegiate level – 1997-98
+
+## Affiliations & Memberships
+- Karnataka Medical Council (KMC – India) – 51965
+- General Medical Council (GMC – UK) – 6032305
+- Indian Orthopaedic Association (IOA) – LM13639
+- Indian Arthroscopy Society – LM-3504
+- British Indian Orthopaedic Society – 2017/05/1012
+- Société Internationale de Chirurgie Orthopédique et de Traumatologie (SICOT) – 26771
+- Bangalore Orthopaedic Society – N43

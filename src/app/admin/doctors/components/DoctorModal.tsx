@@ -17,6 +17,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SurgeonDetailsEditor from '@/components/admin/SurgeonDetailsEditor';
 
 interface Doctor {
   id: string;
@@ -127,7 +129,7 @@ export default function DoctorModal({ isOpen, onClose, doctor, onSuccess }: Doct
   // Use Dialog open prop and onOpenChange for controlled state
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-white">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] bg-white overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-gray-900">
             {doctor ? 'Edit Doctor' : 'Add New Doctor'}
@@ -137,108 +139,112 @@ export default function DoctorModal({ isOpen, onClose, doctor, onSuccess }: Doct
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4 space-y-4">
-            {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                Name
-              </Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="h-10 border-gray-300 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
-                required
-                placeholder="Enter doctor's name"
-              />
-            </div>
+        <Tabs value="basic" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="basic">Doctor Information</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="basic">
+            <form onSubmit={handleSubmit}>
+              <div className="grid gap-4 py-4 space-y-4">
+                {/* Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                    Name
+                  </Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="h-10 border-gray-300 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
+                    required
+                    placeholder="Enter doctor's name"
+                  />
+                </div>
 
-            {/* Speciality */}
-            <div className="space-y-2">
-              <Label htmlFor="speciality" className="text-sm font-medium text-gray-700">
-                Speciality
-              </Label>
-              <Input
-                id="speciality"
-                value={formData.speciality}
-                onChange={(e) => setFormData({ ...formData, speciality: e.target.value })}
-                className="h-10 border-gray-300 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
-                required
-                placeholder="e.g., Orthopedic"
-              />
-            </div>
+                {/* Speciality */}
+                <div className="space-y-2">
+                  <Label htmlFor="speciality" className="text-sm font-medium text-gray-700">
+                    Speciality
+                  </Label>
+                  <Input
+                    id="speciality"
+                    value={formData.speciality}
+                    onChange={(e) => setFormData({ ...formData, speciality: e.target.value })}
+                    className="h-10 border-gray-300 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
+                    required
+                    placeholder="e.g., Orthopedic"
+                  />
+                </div>
 
-            {/* Consultation Fee */}
-            <div className="space-y-2">
-              <Label htmlFor="fee" className="text-sm font-medium text-gray-700">
-                Fee (₹)
-              </Label>
-              <Input
-                id="fee"
-                type="number"
-                value={formData.fee}
-                onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
-                className="h-10 border-gray-300 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
-                required
-                min="0"
-                placeholder="e.g., 1000"
-              />
-            </div>
+                {/* Consultation Fee */}
+                <div className="space-y-2">
+                  <Label htmlFor="fee" className="text-sm font-medium text-gray-700">
+                    Fee (₹)
+                  </Label>
+                  <Input
+                    id="fee"
+                    type="number"
+                    value={formData.fee}
+                    onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
+                    className="h-10 border-gray-300 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
+                    required
+                    min="0"
+                    placeholder="e.g., 1000"
+                  />
+                </div>
 
-            {/* Image URL */}
-            <div className="space-y-2">
-              <Label htmlFor="image" className="text-sm font-medium text-gray-700">
-                Image URL (Optional)
-              </Label>
-              <Input
-                id="image"
-                type="url"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                className="h-10 border-gray-300 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
+                {/* Image URL */}
+                <div className="space-y-2">
+                  <Label htmlFor="image" className="text-sm font-medium text-gray-700">
+                    Image URL (Optional)
+                  </Label>
+                  <Input
+                    id="image"
+                    type="url"
+                    value={formData.image}
+                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                    className="h-10 border-gray-300 focus:border-[#8B5C9E] focus:ring-[#8B5C9E]"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
 
-            {/* Active Status Toggle */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="isActive" className="text-sm font-medium text-gray-700">
-                  Active Status
-                </Label>
-                <Switch
-                  id="isActive"
-                  checked={formData.isActive}
-                  onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
-                  className="data-[state=checked]:bg-[#8B5C9E]"
-                />
+                {/* Active Status Toggle */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="isActive" className="text-sm font-medium text-gray-700">
+                      Active Status
+                    </Label>
+                    <Switch
+                      id="isActive"
+                      checked={formData.isActive}
+                      onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                      className="data-[state=checked]:bg-[#8B5C9E]"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {formData.isActive 
+                      ? "Doctor is currently active and will appear in booking options."
+                      : "Doctor is inactive and won't appear in booking options."
+                    }
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-gray-500">
-                {formData.isActive 
-                  ? "Doctor is currently active and will appear in booking options."
-                  : "Doctor is inactive and won't appear in booking options."
-                }
-              </p>
-            </div>
-          </div>
 
-          <DialogFooter className="mt-6">
-            <DialogClose asChild>
-              <Button type="button" variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button 
-              type="submit" 
-              disabled={isSubmitting}
-              className="bg-[#8B5C9E] hover:bg-[#8B5C9E]/90"
-            >
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {doctor ? 'Update Doctor' : 'Add Doctor'}
-            </Button>
-          </DialogFooter>
-        </form>
+              <DialogFooter className="mt-6">
+                <DialogClose asChild>
+                  <Button type="button" variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button type="submit" disabled={isSubmitting} className="bg-[#8B5C9E] hover:bg-[#7A4F8B] text-white">
+                  {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  {doctor ? 'Save Changes' : 'Add Doctor'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </TabsContent>
+        </Tabs>
 
       </DialogContent>
     </Dialog>
   );
-} 
+}

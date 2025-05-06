@@ -1,0 +1,169 @@
+[2025-05-06T20:25:49.959Z] Starting advanced visual duplicate appointment check...
+[2025-05-06T20:25:49.961Z] Checking for specific visual duplicates identified in the calendar...
+[2025-05-06T20:25:49.961Z] Checking for duplicates of patient "nishi prem" on 2025-05-01 at 09:00
+[2025-05-06T20:25:50.503Z]   Found 2 duplicate appointments
+[2025-05-06T20:25:50.503Z]   Keeping appointment 271d012f-bf17-4150-9553-fd96c894cd2b (created Fri Apr 25 2025 15:26:00 GMT+0530 (India Standard Time))
+[2025-05-06T20:25:50.503Z]   Deleting duplicate appointment 58666f38-f499-4c37-b76f-3272cf8ca884...
+[2025-05-06T20:25:50.632Z]   Successfully deleted duplicate appointment 58666f38-f499-4c37-b76f-3272cf8ca884
+[2025-05-06T20:25:50.632Z] Checking for duplicates of patient "THIPPESHA M N" on 2025-05-01 at 09:05
+[2025-05-06T20:25:50.692Z]   Found 2 duplicate appointments
+[2025-05-06T20:25:50.692Z]   Keeping appointment 3ffcecb4-dc4b-4e8c-bf6b-e3a6a7d7b8ab (created Mon Apr 28 2025 14:35:00 GMT+0530 (India Standard Time))
+[2025-05-06T20:25:50.693Z]   Deleting duplicate appointment 51afbb28-4c4f-436d-9cd4-11c93d8c481f...
+[2025-05-06T20:25:50.747Z]   Successfully deleted duplicate appointment 51afbb28-4c4f-436d-9cd4-11c93d8c481f
+[2025-05-06T20:25:50.747Z] Checking for duplicates of patient "monalin m" on 2025-05-03 at 09:00
+[2025-05-06T20:25:50.798Z]   Found 2 duplicate appointments
+[2025-05-06T20:25:50.798Z]   Keeping appointment 2876a376-1727-4f72-bb52-997f00df37e5 (created Thu Apr 24 2025 14:17:00 GMT+0530 (India Standard Time))
+[2025-05-06T20:25:50.799Z]   Deleting duplicate appointment 0f09f19c-1039-40a0-a09f-94145947b6a4...
+[2025-05-06T20:25:50.855Z]   Successfully deleted duplicate appointment 0f09f19c-1039-40a0-a09f-94145947b6a4
+[2025-05-06T20:25:50.856Z] Checking for duplicates of patient "Vijaya Ratnam N" on 2025-05-03 at 09:05
+[2025-05-06T20:25:50.907Z]   Found 2 duplicate appointments
+[2025-05-06T20:25:50.908Z]   Keeping appointment 80d18afb-c130-4f06-80f4-23737d7e5cdf (created Mon Apr 28 2025 13:15:00 GMT+0530 (India Standard Time))
+[2025-05-06T20:25:50.908Z]   Deleting duplicate appointment 319c26fc-7eef-4e71-80cd-e78eb0d742e3...
+[2025-05-06T20:25:50.961Z]   Successfully deleted duplicate appointment 319c26fc-7eef-4e71-80cd-e78eb0d742e3
+[2025-05-06T20:25:50.961Z] Checking for duplicates of patient "Vijaya Ratnam N" on 2025-05-05 at 09:00
+[2025-05-06T20:25:51.013Z]   Found 2 duplicate appointments
+[2025-05-06T20:25:51.013Z]   Keeping appointment 53163201-89ed-49b5-8df0-dbc0a4e98a79 (created Wed Apr 30 2025 16:03:00 GMT+0530 (India Standard Time))
+[2025-05-06T20:25:51.014Z]   Deleting duplicate appointment e5453ad8-d425-4624-947e-52220fca4379...
+[2025-05-06T20:25:51.071Z]   Successfully deleted duplicate appointment e5453ad8-d425-4624-947e-52220fca4379
+[2025-05-06T20:25:51.072Z] Checking for duplicates of patient "Harsha Mudumba" on 2025-05-07 at 09:20
+[2025-05-06T20:25:51.123Z]   No duplicates found (found 0 appointments)
+[2025-05-06T20:25:51.123Z] Removed 5 specific visual duplicate appointments
+[2025-05-06T20:25:51.123Z] Checking for duplicates with exactly the same time but different timeSlots...
+[2025-05-06T20:25:51.238Z] No exact time duplicates found
+[2025-05-06T20:25:51.239Z] Checking for visual duplicates (same patient name on same day)...
+[2025-05-06T20:25:51.368Z] Found 32 sets of potential visual duplicates
+[2025-05-06T20:25:51.369Z] Duplicate set: undefined with doctor undefined on Mon Feb 10 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.369Z]   Times: 11:10, 16:55
+[2025-05-06T20:25:51.369Z]   Time slots: 11:10 - 11:15, 16:55 - 17:00
+[2025-05-06T20:25:51.369Z]   IDs: 5e2f5b68-a0ae-4186-9a78-14bf4ad4204b, e3139d93-8cab-43c1-883a-fa19ce221ff7
+[2025-05-06T20:25:51.369Z] Duplicate set: undefined with doctor undefined on Tue Feb 11 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.370Z]   Times: 11:40, 11:30
+[2025-05-06T20:25:51.370Z]   Time slots: 11:40 - 11:45, 11:30 - 11:35
+[2025-05-06T20:25:51.370Z]   IDs: bdd16526-a14e-4d30-a1a3-70ab94662227, 0c4b6b5f-08a9-4a4d-972f-f486f03aa510
+[2025-05-06T20:25:51.370Z] Duplicate set: undefined with doctor undefined on Tue Feb 11 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.370Z]   Times: 11:40, 11:30
+[2025-05-06T20:25:51.370Z]   Time slots: 11:40 - 11:45, 11:30 - 11:35
+[2025-05-06T20:25:51.370Z]   IDs: ffea388e-c043-46b2-93ae-c40379262545, f836369a-1db9-43e6-b21c-b1974feeebfc
+[2025-05-06T20:25:51.371Z] Duplicate set: undefined with doctor undefined on Wed Feb 12 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.371Z]   Times: 08:55, 14:30
+[2025-05-06T20:25:51.371Z]   Time slots: 08:55 - 09:00, 14:30 - 14:35
+[2025-05-06T20:25:51.371Z]   IDs: 36826075-f967-4fcc-93b1-f492caf22251, d050e204-46ed-4cc5-81ea-104b872cbfd0
+[2025-05-06T20:25:51.372Z] Duplicate set: undefined with doctor undefined on Thu Feb 13 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.372Z]   Times: 10:55, 10:40
+[2025-05-06T20:25:51.372Z]   Time slots: 10:55 - 11:00, 10:40 - 10:45
+[2025-05-06T20:25:51.372Z]   IDs: d3a05012-49f4-4f84-b5e3-23e0f285d4e0, 026825bd-9759-4d87-9df1-e93c2ff37ec7
+[2025-05-06T20:25:51.372Z] Duplicate set: undefined with doctor undefined on Thu Feb 13 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.373Z]   Times: 10:55, 10:40
+[2025-05-06T20:25:51.373Z]   Time slots: 10:55 - 11:00, 10:40 - 10:45
+[2025-05-06T20:25:51.373Z]   IDs: dbc65c31-d3d8-4c8f-8002-6960bafaf1a6, 718f1b98-67e3-4f96-a300-5bdba9765e9f
+[2025-05-06T20:25:51.373Z] Duplicate set: undefined with doctor undefined on Sat Feb 22 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.374Z]   Times: 09:55, 10:15
+[2025-05-06T20:25:51.374Z]   Time slots: 09:55 - 10:00, 10:15 - 10:20
+[2025-05-06T20:25:51.374Z]   IDs: cef19cfc-6e73-4514-96fc-075fa3d5f251, 7fa7855e-792a-485e-97d1-12eadfddad88
+[2025-05-06T20:25:51.374Z] Duplicate set: undefined with doctor undefined on Sat Feb 22 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.374Z]   Times: 09:55, 10:15
+[2025-05-06T20:25:51.374Z]   Time slots: 09:55 - 10:00, 10:15 - 10:20
+[2025-05-06T20:25:51.374Z]   IDs: ca60eab4-d953-46ae-86eb-34f781db27b4, 468982e6-d020-4124-aef8-fb4f916ffad5
+[2025-05-06T20:25:51.375Z] Duplicate set: undefined with doctor undefined on Tue Feb 25 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.375Z]   Times: 10:30, 10:35
+[2025-05-06T20:25:51.375Z]   Time slots: 10:30 - 10:35, 10:35 - 10:40
+[2025-05-06T20:25:51.375Z]   IDs: d78bdca9-d0ac-43d6-813d-a1b0af747832, e41e9159-da57-4a54-8ce3-96ba334c6a69
+[2025-05-06T20:25:51.375Z] Duplicate set: undefined with doctor undefined on Tue Feb 25 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.375Z]   Times: 10:30, 10:35
+[2025-05-06T20:25:51.376Z]   Time slots: 10:30 - 10:35, 10:35 - 10:40
+[2025-05-06T20:25:51.376Z]   IDs: 41cdb52e-2884-4273-94bd-9caa91ff6bae, c05e03ec-bd40-4da7-952c-4fda9bbe6d3d
+[2025-05-06T20:25:51.376Z] Duplicate set: undefined with doctor undefined on Sat Mar 01 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.376Z]   Times: 09:30, 10:35
+[2025-05-06T20:25:51.376Z]   Time slots: 09:30 - 09:35, 10:35 - 10:40
+[2025-05-06T20:25:51.376Z]   IDs: cb9c6ef0-d2cd-4d0c-a01c-c3fb4c94b83c, 3d04e512-4145-413c-b816-6fb0cf83bf44
+[2025-05-06T20:25:51.376Z] Duplicate set: undefined with doctor undefined on Sat Mar 01 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.376Z]   Times: 09:30, 10:35
+[2025-05-06T20:25:51.376Z]   Time slots: 09:30 - 09:35, 10:35 - 10:40
+[2025-05-06T20:25:51.376Z]   IDs: 2856cd24-112b-4d2b-8a31-897d1a3ef337, 91479159-9c1a-4adb-91ca-abb9cf52a5b6
+[2025-05-06T20:25:51.377Z] Duplicate set: undefined with doctor undefined on Mon Mar 10 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.377Z]   Times: 10:55, 09:15
+[2025-05-06T20:25:51.377Z]   Time slots: 10:55 - 11:00, 09:15 - 09:20
+[2025-05-06T20:25:51.377Z]   IDs: 962cd5e1-b668-4e45-a89e-d393e4fc3c64, 389cad61-c0bc-4d05-884a-e7c0bf0117c5
+[2025-05-06T20:25:51.377Z] Duplicate set: undefined with doctor undefined on Mon Mar 10 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.377Z]   Times: 10:55, 09:15
+[2025-05-06T20:25:51.377Z]   Time slots: 10:55 - 11:00, 09:15 - 09:20
+[2025-05-06T20:25:51.378Z]   IDs: a841395b-cef2-4495-b89a-d7bf5c7d7a5b, bd0251bf-c8bf-4990-ae1c-aac1ad93fda1
+[2025-05-06T20:25:51.378Z] Duplicate set: undefined with doctor undefined on Fri Mar 14 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.378Z]   Times: 14:00, 15:50
+[2025-05-06T20:25:51.378Z]   Time slots: 14:00 - 14:05, 15:50 - 15:55
+[2025-05-06T20:25:51.378Z]   IDs: 8638bfcc-9eac-476e-bbdf-b57b1b8bc4cd, 643c48eb-0120-4224-b06d-6fa9edaf55ac
+[2025-05-06T20:25:51.378Z] Duplicate set: undefined with doctor undefined on Fri Mar 14 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.378Z]   Times: 10:45, 10:55
+[2025-05-06T20:25:51.378Z]   Time slots: 10:45 - 10:50, 10:55 - 11:00
+[2025-05-06T20:25:51.379Z]   IDs: 8029c654-f3af-42b3-99fe-2065e2c518bc, a9599e36-c859-4016-b7be-627b192c3159
+[2025-05-06T20:25:51.379Z] Duplicate set: undefined with doctor undefined on Fri Mar 14 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.379Z]   Times: 10:45, 10:55
+[2025-05-06T20:25:51.379Z]   Time slots: 10:45 - 10:50, 10:55 - 11:00
+[2025-05-06T20:25:51.379Z]   IDs: b5d3eedb-3104-4b9b-acd4-7b9b2f7985e0, e3b5870c-b56e-46f0-8911-4ef7581836c1
+[2025-05-06T20:25:51.379Z] Duplicate set: undefined with doctor undefined on Sat Mar 15 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.379Z]   Times: 14:40, 15:25
+[2025-05-06T20:25:51.379Z]   Time slots: 14:40 - 14:45, 15:25 - 15:30
+[2025-05-06T20:25:51.380Z]   IDs: 5ee488f4-9bbe-486e-a4b6-9c2d6c40fb8c, 5d4badec-9e51-43a6-ba3d-53e7e5ca906b
+[2025-05-06T20:25:51.380Z] Duplicate set: undefined with doctor undefined on Sat Mar 15 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.380Z]   Times: 09:30, 09:05
+[2025-05-06T20:25:51.380Z]   Time slots: 09:30 - 09:35, 09:05 - 09:10
+[2025-05-06T20:25:51.380Z]   IDs: 45c985d6-7e3a-46f3-b86f-a9a81953da81, cd3e908d-a26d-460d-b915-0e02f09045c7
+[2025-05-06T20:25:51.380Z] Duplicate set: undefined with doctor undefined on Sat Mar 15 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.380Z]   Times: 09:30, 09:05
+[2025-05-06T20:25:51.380Z]   Time slots: 09:30 - 09:35, 09:05 - 09:10
+[2025-05-06T20:25:51.380Z]   IDs: b6e664b9-e5a9-4766-98f4-84dd21fea087, cbdef164-c53b-4faa-b008-ceb2aac7cd51
+[2025-05-06T20:25:51.381Z] Duplicate set: undefined with doctor undefined on Mon Mar 17 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.381Z]   Times: 09:55, 10:05
+[2025-05-06T20:25:51.381Z]   Time slots: 09:55 - 10:00, 10:05 - 10:10
+[2025-05-06T20:25:51.381Z]   IDs: 508d09c2-3330-4b24-baea-1e2bcd35c617, 79ff11d0-ee0e-495e-9ac2-d27e0f1d55ce
+[2025-05-06T20:25:51.381Z] Duplicate set: undefined with doctor undefined on Mon Mar 17 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.381Z]   Times: 09:55, 10:05
+[2025-05-06T20:25:51.382Z]   Time slots: 09:55 - 10:00, 10:05 - 10:10
+[2025-05-06T20:25:51.382Z]   IDs: 9495fac4-f6cf-4318-8ff8-0a3260e7582d, e4f6598f-7ecb-44b2-a802-1afaadc7c4c8
+[2025-05-06T20:25:51.382Z] Duplicate set: undefined with doctor undefined on Mon Mar 17 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.382Z]   Times: 11:40, 11:15
+[2025-05-06T20:25:51.382Z]   Time slots: 11:40 - 11:45, 11:15 - 11:20
+[2025-05-06T20:25:51.382Z]   IDs: dfcbbe76-877d-473a-addc-2ffc935681a1, 00a7244a-301e-4be4-b50a-337f370c59d0
+[2025-05-06T20:25:51.382Z] Duplicate set: undefined with doctor undefined on Mon Mar 17 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.383Z]   Times: 11:40, 11:15
+[2025-05-06T20:25:51.383Z]   Time slots: 11:40 - 11:45, 11:15 - 11:20
+[2025-05-06T20:25:51.383Z]   IDs: 38487a49-38f2-4e2a-954b-129550b1c557, 76db2fac-2f3f-46e9-9a3c-fbad409ab5d2
+[2025-05-06T20:25:51.383Z] Duplicate set: undefined with doctor undefined on Sat Apr 05 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.383Z]   Times: 09:45, 10:35
+[2025-05-06T20:25:51.383Z]   Time slots: 09:45 - 09:50, 10:35 - 10:40
+[2025-05-06T20:25:51.383Z]   IDs: e85f527a-0c1b-41f7-bdbc-44406010a8b2, 34adfe0f-5c9f-4bbc-bca2-341e7d111079
+[2025-05-06T20:25:51.383Z] Duplicate set: undefined with doctor undefined on Sat Apr 05 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.383Z]   Times: 09:45, 10:35
+[2025-05-06T20:25:51.383Z]   Time slots: 09:45 - 09:50, 10:35 - 10:40
+[2025-05-06T20:25:51.384Z]   IDs: ce7f06a5-ab41-42a6-8c08-917a24856cf3, af0409a3-de16-4c2c-b498-106e8e5c0315
+[2025-05-06T20:25:51.384Z] Duplicate set: undefined with doctor undefined on Mon Apr 07 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.384Z]   Times: 10:10, 10:00
+[2025-05-06T20:25:51.384Z]   Time slots: 10:10 - 10:15, 10:00 - 10:05
+[2025-05-06T20:25:51.384Z]   IDs: 8a54edee-d25e-4dc1-a1b5-7e1e0b5ef742, 6fde93db-1e2d-4994-a711-3c215c17eff8
+[2025-05-06T20:25:51.384Z] Duplicate set: undefined with doctor undefined on Mon Apr 07 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.384Z]   Times: 10:10, 10:00
+[2025-05-06T20:25:51.384Z]   Time slots: 10:10 - 10:15, 10:00 - 10:05
+[2025-05-06T20:25:51.384Z]   IDs: fdcf884b-b663-442c-ac39-78f2d4398ebf, 48e21da0-1096-4745-b3de-1a9a81d36b49
+[2025-05-06T20:25:51.385Z] Duplicate set: undefined with doctor undefined on Sat Apr 12 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.385Z]   Times: 14:45, 14:55
+[2025-05-06T20:25:51.385Z]   Time slots: 14:45 - 14:50, 14:55 - 15:00
+[2025-05-06T20:25:51.385Z]   IDs: c3f7f82e-23cf-4c65-a160-9ad7b878b628, 9c773749-3093-4945-b7e4-cea35f072e15
+[2025-05-06T20:25:51.385Z] Duplicate set: undefined with doctor undefined on Thu Apr 17 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.385Z]   Times: 09:10, 09:25
+[2025-05-06T20:25:51.385Z]   Time slots: 09:10 - 09:15, 09:25 - 09:30
+[2025-05-06T20:25:51.385Z]   IDs: 65567013-6bd0-4ac5-b3bc-b6e96af28d39, 0d1b51eb-acdc-4e4f-b6ea-e910bbca829c
+[2025-05-06T20:25:51.385Z] Duplicate set: undefined with doctor undefined on Thu Apr 17 2025 05:30:00 GMT+0530 (India Standard Time) (2 appointments)
+[2025-05-06T20:25:51.386Z]   Times: 09:10, 09:25
+[2025-05-06T20:25:51.386Z]   Time slots: 09:10 - 09:15, 09:25 - 09:30
+[2025-05-06T20:25:51.386Z]   IDs: 1c0b3ace-07e2-42cf-bf0a-2fe7d2c6503b, 433bc0a9-8f71-453a-a9ad-429322bba3fa
+[2025-05-06T20:25:51.386Z] Duplicate set: undefined with doctor undefined on Mon May 05 2025 05:30:00 GMT+0530 (India Standard Time) (4 appointments)
+[2025-05-06T20:25:51.386Z]   Times: 09:20, 09:40, 12:40, 10:00
+[2025-05-06T20:25:51.386Z]   Time slots: none, none, none, none
+[2025-05-06T20:25:51.386Z]   IDs: f79e7db8-86e4-44d6-ac05-7577618a2814, 8e3a8de1-8371-44bd-aae3-f23da8fbe2c8, 659ff303-ee9c-40af-af51-a301587d7729, 7dc49d8f-161e-46f4-9393-6c255a475a16
+[2025-05-06T20:25:51.386Z] Removed 0 visual duplicate appointments
+[2025-05-06T20:25:51.386Z] Summary of visual duplicate appointment removal:
+[2025-05-06T20:25:51.386Z]   - Specific duplicates removed: 5
+[2025-05-06T20:25:51.387Z]   - Exact time duplicates removed: 0
+[2025-05-06T20:25:51.387Z]   - Same day patient duplicates removed: 0
+[2025-05-06T20:25:51.387Z]   - Total appointments removed: 5
+[2025-05-06T20:25:51.387Z] All visual duplicate fixing operations completed successfully

@@ -4,7 +4,8 @@ import fs from 'fs';
 import csv from 'csv-parser';
 import Image from 'next/image';
 import React from 'react';
-import { notFound } from 'next/navigation';
+// Fix import for notFound
+import { notFound } from 'next/dist/client/components/not-found';
 import { Container } from '@/components/ui/container';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Award, BookOpen, Briefcase, GraduationCap, Medal, User, FileText, Building, Users, Stethoscope, Globe, Bookmark, Heart, Phone } from 'lucide-react';
@@ -71,14 +72,41 @@ async function getStaffMemberBySlug(slug: string): Promise<StaffMember | null> {
   });
 }
 
-function extractImageUrl(contentBlocks: ContentBlock[]): string {
+function extractImageUrl(contentBlocks: ContentBlock[], slug?: string): string {
+  // For specific doctors, use their custom images
+  if (slug === 'dr-sameer-km') {
+    return '/images/dr-sameer.webp';
+  }
+  
+  if (slug === 'dr-naveen-kumar-l-v') {
+    return '/images/naveen.jpg';
+  }
+  
+  if (slug === 'shama-kellogg') {
+    return '/images/shama-kellogg.webp';
+  }
+  
+  // For other doctors, use the image from content blocks
   const imageBlock = contentBlocks.find(block => block.type === 'image');
   return imageBlock?.src || '/placeholder-staff.jpg';
 }
 
 function parseContentBlocks(contentBlocksJSON: string): ContentBlock[] {
   try {
-    return JSON.parse(contentBlocksJSON);
+    // First try direct parsing
+    try {
+      return JSON.parse(contentBlocksJSON);
+    } catch (innerError) {
+      // If that fails, try to clean the string first
+      // Replace escaped quotes with temporary placeholders
+      let cleaned = contentBlocksJSON.replace(/\\\"([^\"]*)\\\"/g, '___ESCAPED_QUOTE___$1___ESCAPED_QUOTE___');
+      // Replace escaped backslashes
+      cleaned = cleaned.replace(/\\\\/g, '\\');
+      // Put back the escaped quotes
+      cleaned = cleaned.replace(/___ESCAPED_QUOTE___/g, '\"');
+      
+      return JSON.parse(cleaned);
+    }
   } catch (error: any) {
     console.error('Error parsing content blocks JSON:', error);
     return [];
@@ -212,8 +240,24 @@ export default async function StaffMemberPage({ params }: { params: { slug: stri
     notFound();
   }
 
+  // Add null check for staffMember
+  if (!staffMember || !staffMember.ContentBlocksJSON) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <SiteHeader theme="light" />
+        <Container className="pt-24 pb-16">
+          <div className="text-center py-12">
+            <h1 className="text-2xl font-bold text-gray-900">Staff Member Not Found</h1>
+            <p className="mt-4 text-gray-600">The requested staff member could not be found.</p>
+          </div>
+        </Container>
+        <SiteFooter />
+      </main>
+    );
+  }
+
   const contentBlocks = parseContentBlocks(staffMember.ContentBlocksJSON);
-  const imageUrl = extractImageUrl(contentBlocks);
+  const imageUrl = extractImageUrl(contentBlocks, params.slug);
   const qualifications = extractQualifications(contentBlocks);
   const position = extractPosition(contentBlocks);
   const name = staffMember.Title.split('|')[0].trim();

@@ -16,12 +16,9 @@ interface DoctorCardProps {
 
 const DoctorCard = ({ doctor, isSelected, onSelect }: DoctorCardProps) => (
   <motion.div
-    layout
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -20 }}
-    whileHover={{ scale: 1.02 }}
-    whileTap={{ scale: 0.98 }}
     onClick={() => onSelect(doctor)}
     className={`
       relative w-full rounded-2xl overflow-hidden cursor-pointer
@@ -126,22 +123,24 @@ const DoctorSelection = ({ onNext }: DoctorSelectionProps = {}) => {
     const fetchDoctors = async () => {
       try {
         setIsLoading(true);
-        
-        // Fetch doctors from the API
+        console.log('DoctorSelection: Fetching /api/doctors...');
         const response = await fetch('/api/doctors');
-        
+        console.log('DoctorSelection: API response status:', response.status);
+
         if (!response.ok) {
-          throw new Error('Failed to fetch doctors');
+          console.error('DoctorSelection: API response not OK', response);
+          throw new Error(`Failed to fetch doctors. Status: ${response.status}`);
         }
         
         const data = await response.json();
+        console.log('DoctorSelection: Data received from API:', data);
         setDoctors(data);
         setError(null);
       } catch (err) {
-        console.error('Error fetching doctors:', err);
+        console.error('DoctorSelection: Error in fetchDoctors catch block:', err);
         
         // Fallback to database values if API fails
-        setDoctors([
+        const fallbackDoctors = [
           {
             id: 'dr-sameer',
             name: 'Dr. Sameer',
@@ -162,7 +161,9 @@ const DoctorSelection = ({ onNext }: DoctorSelectionProps = {}) => {
             experience: 10,
             rating: 4.7
           }
-        ]);
+        ];
+        console.log('DoctorSelection: Setting fallback doctors:', fallbackDoctors);
+        setDoctors(fallbackDoctors);
         
         setError('Using backup doctor data. Some information may not be up-to-date.');
       } finally {
@@ -190,6 +191,9 @@ const DoctorSelection = ({ onNext }: DoctorSelectionProps = {}) => {
       onNext();
     }
   };
+
+  console.log('DoctorSelection: doctors state before render:', doctors);
+  console.log('DoctorSelection: filteredDoctors before render:', filteredDoctors);
 
   if (isLoading) {
     return (
@@ -266,15 +270,15 @@ const DoctorSelection = ({ onNext }: DoctorSelectionProps = {}) => {
 
       {/* Doctor List */}
       <div className="space-y-4 overflow-y-auto max-h-[calc(60vh-10rem)] overscroll-contain pb-6 scroll-smooth">
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence>
           {filteredDoctors.length > 0 ? (
             filteredDoctors.map((doctor) => (
               <DoctorCard
                 key={doctor.id}
                 doctor={doctor}
                 isSelected={state.doctor?.id === doctor.id}
-                onSelect={(doctor) => {
-                  handleDoctorSelect(doctor);
+                onSelect={(selectedDoctor) => {
+                  handleDoctorSelect(selectedDoctor);
                 }}
               />
             ))

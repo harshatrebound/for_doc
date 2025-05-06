@@ -1,0 +1,82 @@
+[
+  {
+    "id": "other-doctors",
+    "name": "Dr. Naveen & Team",
+    "fee": 1000,
+    "speciality": "Sports Orthopedics Team",
+    "createdAt": "2025-05-01T10:42:45.639Z",
+    "updatedAt": "2025-05-06T03:21:23.304Z",
+    "image": null,
+    "isActive": false
+  },
+  {
+    "id": "8134c5a1-aad1-4f98-9dde-3335077f2290",
+    "name": "Dr Naveen",
+    "fee": 1000,
+    "speciality": "Orthopedic",
+    "createdAt": "2025-05-06T07:30:24.271Z",
+    "updatedAt": "2025-05-06T09:50:07.975Z",
+    "image": null,
+    "isActive": false
+  },
+  {
+    "id": "426f57a5-b2cd-4027-a790-a77e960a7703",
+    "name": "Dr. Naveen",
+    "fee": 1000,
+    "speciality": "Orthopedic",
+    "createdAt": "2025-05-06T07:43:47.094Z",
+    "updatedAt": "2025-05-06T09:50:15.196Z",
+    "image": null,
+    "isActive": false
+  },
+  {
+    "id": "4bcc6177-0875-4789-92e1-efe9b2181901",
+    "name": "Sports Orthopaedic Doctors",
+    "fee": 1000,
+    "speciality": "Orthopedic",
+    "createdAt": "2025-05-06T07:37:58.676Z",
+    "updatedAt": "2025-05-06T11:22:07.313Z",
+    "image": null,
+    "isActive": false
+  },
+  {
+    "id": "dr-sameer",
+    "name": "Dr. Sameer",
+    "fee": 800,
+    "speciality": "Sports Orthopedics Team",
+    "createdAt": "2025-05-01T10:42:45.203Z",
+    "updatedAt": "2025-05-06T15:50:17.749Z",
+    "image": "https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/Sameer-Photo-500x500.webp",
+    "isActive": true
+  },
+  {
+    "id": "531a972a-3ead-4356-91d5-0cbd0f8f10cc",
+    "name": "Dr. Naveen & Team",
+    "fee": 1000,
+    "speciality": "Sports Orthopedics Team",
+    "createdAt": "2025-05-01T11:36:03.273Z",
+    "updatedAt": "2025-05-06T15:50:50.746Z",
+    "image": "https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/313414809_424129516595915_5712394841841282653_n.jpg",
+    "isActive": false
+  },
+  {
+    "id": "6a6d2933-665c-4863-8a4c-1ba1e089273a",
+    "name": "Dr. Naveen & Team",
+    "fee": 1000,
+    "speciality": "Orthopedic",
+    "createdAt": "2025-05-01T11:45:03.244Z",
+    "updatedAt": "2025-05-06T15:50:59.224Z",
+    "image": "https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/313414809_424129516595915_5712394841841282653_n.jpg",
+    "isActive": false
+  },
+  {
+    "id": "2e3de056-4948-4038-982f-74338d1f1e62",
+    "name": "Dr. Naveen & Team",
+    "fee": 1000,
+    "speciality": "Sports Orthopedics Team",
+    "createdAt": "2025-05-01T11:46:15.953Z",
+    "updatedAt": "2025-05-06T15:51:06.382Z",
+    "image": "https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/313414809_424129516595915_5712394841841282653_n.jpg",
+    "isActive": true
+  }
+]

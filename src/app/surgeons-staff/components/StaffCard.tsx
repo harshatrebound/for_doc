@@ -9,7 +9,7 @@ interface StaffCardProps {
   staff: {
     slug: string;
     name: string;
-    position: string;
+    title: string;
     qualifications: string;
     imageUrl: string;
     contactInfo?: string;
@@ -58,10 +58,10 @@ export function StaffCard({ staff }: StaffCardProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-[#8B5C9E]/80 to-transparent opacity-70"></div>
           
           {/* Position tag */}
-          {staff.position && (
+          {staff.title && (
             <div className="absolute top-4 right-4 bg-[#8B5C9E] text-white text-xs font-medium px-2 py-1 rounded-md">
-              {staff.position.includes('Consultant') ? 'Surgeon' : 
-               staff.position.includes('Psychologist') ? 'Specialist' : 'Staff'}
+              {staff.title.includes('Consultant') ? 'Surgeon' : 
+               staff.title.includes('Psychologist') ? 'Specialist' : 'Staff'}
             </div>
           )}
         </div>
@@ -71,8 +71,8 @@ export function StaffCard({ staff }: StaffCardProps) {
             {staff.name}
           </h3>
           
-          {staff.position && (
-            <p className="text-gray-700 font-medium mb-2">{staff.position}</p>
+          {staff.title && (
+            <p className="text-gray-700 font-medium mb-2">{staff.title}</p>
           )}
           
           {staff.qualifications && (

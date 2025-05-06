@@ -25,7 +25,8 @@ export async function POST(request: NextRequest) {
       'poster_presentations': 'Poster Presentations',
       'courses': 'Courses',
       'technical_skills': 'Technical Skills Courses',
-      'work_experience': 'Professional Work Experience',
+      // For Dr. Sameer, work experience is stored in Additional Credentials
+      'work_experience': 'Additional Credentials',
       'languages': 'Languages',
       'hobbies': 'Hobbies',
       'areas_of_interest': 'Areas of interest',
@@ -43,87 +44,114 @@ export async function POST(request: NextRequest) {
     };
 
     const csvSectionTitle = sectionKeyMapping[sectionKey] || sectionKey;
+    // Use a modifiable variable for JSON lookup title
+    let jsonLookupTitle = sectionKeyMapping[sectionKey] || sectionKey;
+
     console.log(`Mapped section key "${sectionKey}" to CSV section title: "${csvSectionTitle}"`);
     
-    // Read the CSV file
+    // For Shama Kellogg, if the section is 'work_experience', ensure it looks for a specific 'Work Experience' key
+    // in her JSON, not fall back to 'Additional Credentials' via the general mapping.
+    if (doctorSlug.toLowerCase() === 'shama-kellogg' && sectionKey === 'work_experience') {
+      jsonLookupTitle = 'Work Experience'; // This key does not exist in shama.json, so section will be hidden
+      console.log(`Adjusted for Shama & work_experience: looking for JSON key "${jsonLookupTitle}"`);
+    }
+
+    // For Dr. Sameer, Dr. Naveen, and Shama Kellogg, we'll prioritize JSON data over CSV
+    const useJsonOnly = doctorSlug.toLowerCase() === 'dr-sameer-km' || 
+                        doctorSlug.toLowerCase() === 'dr-naveen-kumar-l-v' || 
+                        doctorSlug.toLowerCase() === 'shama-kellogg';
+    
+    // Map slugs to their JSON file names - needed for cases where slug doesn't match JSON filename
+    const slugToJsonFile: Record<string, string> = {
+      'dr-sameer-km': 'sameer.json',
+      'dr-naveen-kumar-l-v': 'naveen.json',
+      'shama-kellogg': 'shama.json'
+    };
+    
+    // Read the CSV file (unless we're specifically looking for Dr. Sameer's data)
     const filePath = path.join(process.cwd(), 'surgeons_data.csv');
     let results: any[] = [];  // Create a variable to store results
 
-    try {
-      console.log(`Reading CSV file from: ${filePath}`);
-      const fileContent = fs.readFileSync(filePath, 'utf8');
-      
-      // Parse the CSV data safely with handling for escaped commas and quoted values
-      const lines = fileContent.split('\n');
-      console.log(`CSV file contains ${lines.length} lines`);
-      
-      // Skip the header line
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
+    // If it's Dr. Sameer or Dr. Naveen, skip CSV lookup and go straight to JSON
+    if (!useJsonOnly) {
+      try {
+        console.log(`Reading CSV file from: ${filePath}`);
+        const fileContent = fs.readFileSync(filePath, 'utf8');
         
-        // Properly parse CSV with quoted values
-        // This regex will match: value,value,"quoted value with, commas"
-        const parseCSVLine = (line: string): string[] => {
-          const result: string[] = [];
-          let currentValue = '';
-          let insideQuotes = false;
+        // Parse the CSV data safely with handling for escaped commas and quoted values
+        const lines = fileContent.split('\n');
+        console.log(`CSV file contains ${lines.length} lines`);
+        
+        // Skip the header line
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
           
-          for (let j = 0; j < line.length; j++) {
-            const char = line[j];
+          // Properly parse CSV with quoted values
+          // This regex will match: value,value,"quoted value with, commas"
+          const parseCSVLine = (line: string): string[] => {
+            const result: string[] = [];
+            let currentValue = '';
+            let insideQuotes = false;
             
-            if (char === '"') {
-              insideQuotes = !insideQuotes;
-            } else if (char === ',' && !insideQuotes) {
-              // End of field
+            for (let j = 0; j < line.length; j++) {
+              const char = line[j];
+              
+              if (char === '"') {
+                insideQuotes = !insideQuotes;
+              } else if (char === ',' && !insideQuotes) {
+                // End of field
+                result.push(currentValue.trim());
+                currentValue = '';
+              } else {
+                currentValue += char;
+              }
+            }
+            
+            // Add the last field
+            if (currentValue) {
               result.push(currentValue.trim());
-              currentValue = '';
-            } else {
-              currentValue += char;
             }
+            
+            // Remove quotes from values
+            return result.map(val => {
+              if (val.startsWith('"') && val.endsWith('"')) {
+                return val.substring(1, val.length - 1);
+              }
+              return val;
+            });
+          };
+          
+          const fields = parseCSVLine(line);
+          
+          if (fields.length < 3) {
+            console.log(`Line ${i} has fewer than 3 fields: ${line}`);
+            continue;
           }
           
-          // Add the last field
-          if (currentValue) {
-            result.push(currentValue.trim());
-          }
+          const slug = fields[0].toLowerCase();
+          const section = fields[1].toLowerCase();
+          const content = fields[2];
           
-          // Remove quotes from values
-          return result.map(val => {
-            if (val.startsWith('"') && val.endsWith('"')) {
-              return val.substring(1, val.length - 1);
+          console.log(`Parsed line ${i} - slug: "${slug}", section: "${section}"`);
+          
+          if (slug === doctorSlug.toLowerCase() && 
+              section === csvSectionTitle.toLowerCase()) {
+            console.log(`Found match in CSV - Line ${i}: slug="${slug}", section="${section}"`);
+            if (content) {
+              results.push(content);
             }
-            return val;
-          });
-        };
-        
-        const fields = parseCSVLine(line);
-        
-        if (fields.length < 3) {
-          console.log(`Line ${i} has fewer than 3 fields: ${line}`);
-          continue;
-        }
-        
-        const slug = fields[0].toLowerCase();
-        const section = fields[1].toLowerCase();
-        const content = fields[2];
-        
-        console.log(`Parsed line ${i} - slug: "${slug}", section: "${section}"`);
-        
-        if (slug === doctorSlug.toLowerCase() && 
-            section === csvSectionTitle.toLowerCase()) {
-          console.log(`Found match in CSV - Line ${i}: slug="${slug}", section="${section}"`);
-          if (content) {
-            results.push(content);
           }
         }
+        
+        console.log(`CSV search completed. Found ${results.length} results.`);
+        // Do NOT return here - we'll check JSON if results are empty
+      } catch (error) {
+        console.error('Error reading or parsing CSV file:', error);
+        // Continue to check JSON as fallback instead of returning an error
       }
-      
-      console.log(`CSV search completed. Found ${results.length} results.`);
-      // Do NOT return here - we'll check JSON if results are empty
-    } catch (error) {
-      console.error('Error reading or parsing CSV file:', error);
-      // Continue to check JSON as fallback instead of returning an error
+    } else {
+      console.log(`Skipping CSV lookup for Dr. Sameer, going straight to JSON`);
     }
 
     // If no results found in CSV, try looking for a JSON file
@@ -131,34 +159,52 @@ export async function POST(request: NextRequest) {
       try {
         // Convert slug for filename matching (e.g., dr-naveen-kumar-l-v → naveen)
         let simpleSlug = doctorSlug.toLowerCase();
-        if (simpleSlug.startsWith('dr-')) {
-          // Extract name from dr-name-surname format
-          const parts = simpleSlug.substring(3).split('-');
-          if (parts.length > 0) {
-            simpleSlug = parts[0]; // Use first name only for JSON lookup
-          }
-        }
+        console.log(`Original doctorSlug: ${doctorSlug}`);
         
-        const jsonPath = path.join(process.cwd(), 'surgeon_details', `${simpleSlug}.json`);
-        console.log(`Looking for JSON file at: ${jsonPath}`);
+        // Get a list of all files in the surgeon_details directory
+        const surgeonDetailsDir = path.join(process.cwd(), 'surgeon_details');
+        const fileList = fs.readdirSync(surgeonDetailsDir);
+        console.log(`Listing all files in ${surgeonDetailsDir}:`);
+        console.log(`Files found: ${JSON.stringify(fileList)}`);
         
-        if (fs.existsSync(jsonPath)) {
-          console.log(`JSON file found for ${simpleSlug}`);
-          const jsonContent = fs.readFileSync(jsonPath, 'utf8');
+        // Get correct JSON filename from mapping, or fall back to slug + .json
+        const jsonFileName = slugToJsonFile[doctorSlug.toLowerCase()] || `${doctorSlug}.json`;
+        
+        // Construct expected path to the JSON file
+        const jsonFilePath = path.join(process.cwd(), 'surgeon_details', jsonFileName);
+        console.log(`Looking for JSON file at: ${jsonFilePath}`);
+        
+        if (fs.existsSync(jsonFilePath)) {
+          console.log(`JSON file found for ${doctorSlug}`);
+          const jsonContent = fs.readFileSync(jsonFilePath, 'utf8');
+          console.log(`JSON content: ${jsonContent.substring(0, 100)}...`); // Log first 100 chars
+          
           const doctorData = JSON.parse(jsonContent);
+          console.log(`Available keys in JSON: ${Object.keys(doctorData).join(', ')}`);
           
           // Look for the appropriate section in the JSON data
-          const jsonSectionTitle = sectionKeyMapping[sectionKey] || sectionKey;
-          console.log(`Looking for section "${jsonSectionTitle}" in JSON data`);
+          console.log(`Looking for section "${jsonLookupTitle}" in JSON data`);
+          // console.log(`Section key mapping: ${sectionKey} -> ${jsonLookupTitle}`); // Original log for reference
           
-          if (doctorData[jsonSectionTitle] && Array.isArray(doctorData[jsonSectionTitle])) {
-            console.log(`Found ${doctorData[jsonSectionTitle].length} items in JSON for section "${jsonSectionTitle}"`);
-            results = doctorData[jsonSectionTitle];
+          if (doctorData[jsonLookupTitle] && Array.isArray(doctorData[jsonLookupTitle])) {
+            console.log(`Found ${doctorData[jsonLookupTitle].length} items in JSON for section "${jsonLookupTitle}"`);
+            results = doctorData[jsonLookupTitle];
           } else {
-            console.log(`Section "${jsonSectionTitle}" not found in JSON data or is not an array`);
+            console.log(`Section "${jsonLookupTitle}" not found in JSON data or is not an array`);
+            // Try case-insensitive search as fallback
+            const caseInsensitiveKey = Object.keys(doctorData).find(
+              key => key.toLowerCase() === jsonLookupTitle.toLowerCase()
+            );
+            
+            if (caseInsensitiveKey && Array.isArray(doctorData[caseInsensitiveKey])) {
+              console.log(`Found matching section with different case: ${caseInsensitiveKey}`);
+              results = doctorData[caseInsensitiveKey];
+            } else {
+              console.log(`No case-insensitive match found either`);
+            }
           }
         } else {
-          console.log(`JSON file not found at: ${jsonPath}`);
+          console.log(`JSON file not found at: ${jsonFilePath}`);
         }
       } catch (error) {
         console.error('Error reading or parsing JSON file:', error);
@@ -179,4 +225,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

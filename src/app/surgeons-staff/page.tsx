@@ -13,18 +13,29 @@ import { UserPlus, Users, Award, Phone, ArrowRight } from 'lucide-react';
 import BookingButton from '@/components/BookingButton';
 import { Readable } from 'stream';
 import HeroSection from '@/components/ui/HeroSection';
-import * as React from 'react';
+import React from 'react'; 
 import { Button } from '@/components/ui/button';
 import BookingModal from '@/components/booking/BookingModal';
 import { cn } from '@/lib/utils';
 
+// Define an interface for staff members
+interface StaffMember {
+  slug: string;
+  name: string;
+  title: string;
+  qualifications?: string; // Optional as not all staff have it
+  imageUrl: string;
+  role: string;
+}
+
 // Hardcoded staff data based on surgeons.html
-const allStaff = [
+const allStaff: StaffMember[] = [
   // Director
   {
     slug: 'dr-naveen-kumar-l-v',
     name: 'Dr. Naveen Kumar LV',
-    title: 'MBBS, MS Orth (India), FRCS Orth (Eng), MCh Hip & Knee (UK), MSc Orth (UK), Dip SICOT (Italy), FEBOT (Portugal), MRCGP (UK), Dip FIFA SM (Switzerland) (FSEM (UK))',
+    title: 'Director & Chief Orthopedic Surgeon',
+    qualifications: 'MBBS, MS Orth (India), FRCS Orth (Eng), MCh Hip & Knee (UK), MSc Orth (UK), Dip SICOT (Italy), FEBOT (Portugal), MRCGP (UK), Dip FIFA SM (Switzerland) (FSEM (UK))',
     imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/313414809_424129516595915_5712394841841282653_n-500x500.jpg',
     role: 'Director',
   },
@@ -137,24 +148,42 @@ const allStaff = [
 ];
 
 // Helper function to group staff by role
-const groupStaffByRole = (staffList: typeof allStaff) => {
+function groupStaffByRole(staffList: StaffMember[]) {
   return staffList.reduce((acc, staff) => {
-    const role = staff.role || 'Staff'; // Default role
+    const role = staff.role;
     if (!acc[role]) {
       acc[role] = [];
     }
     acc[role].push(staff);
     return acc;
-  }, {} as Record<string, typeof allStaff>);
-};
+  }, {} as Record<string, StaffMember[]>);
+}
 
 // Define roles eligible for filtering
 const filterableRoles = ['Psychologist', 'Fellow', 'Physiotherapist', 'Staff', 'ManipalStaff'];
 
 export default function SurgeonsStaffPage() {
-  const [isBookingModalOpen, setIsBookingModalOpen] = React.useState(false);
-  const [activeFilter, setActiveFilter] = React.useState<string | null>(null); // null means 'All'
+  // Using React.useState to avoid TypeScript errors
+  const [isBookingModalOpen, setIsBookingModalOpen] = React.useState(false); 
+  const [activeFilter, setActiveFilter] = React.useState<string | null>(null); 
   const groupedStaff = groupStaffByRole(allStaff);
+
+  // Define roles that are already displayed in dedicated sections at the top
+  const topDisplayedRoles = ['Director', 'Consultant', 'Psychologist'];
+
+  // Filter staff for the filterable section
+  const filteredStaff = React.useMemo(() => { 
+    // Exclude staff who are already in top-displayed sections
+    const staffForFiltering = allStaff.filter(staff => !topDisplayedRoles.includes(staff.role));
+
+    if (!activeFilter) {
+      // If 'All Team Members' is selected, show remaining staff whose roles are in filterableRoles
+      // (Note: This implicitly means 'Psychologist' from filterableRoles won't match here if they were a topDisplayedRole)
+      return staffForFiltering.filter(staff => filterableRoles.includes(staff.role));
+    }
+    // Show staff matching the activeFilter role from the remaining staff
+    return staffForFiltering.filter(staff => staff.role === activeFilter);
+  }, [activeFilter]);
 
   // Define section titles and icons based on role
   const sections = [
@@ -169,11 +198,6 @@ export default function SurgeonsStaffPage() {
 
   // Get staff eligible for filtering
   const filterableStaff = allStaff.filter(staff => filterableRoles.includes(staff.role));
-
-  // Filter staff based on the active filter
-  const filteredStaff = activeFilter
-    ? filterableStaff.filter(staff => staff.role === activeFilter)
-    : filterableStaff;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -232,11 +256,11 @@ export default function SurgeonsStaffPage() {
       {/* Main Content Area */}
       <main className="container mx-auto px-4 py-12 md:py-16">
 
-          {/* --- Featured Personnel Section (Side-by-Side) --- */}
+          {/* --- Featured Personnel Section (Three Columns) --- */}
           <section className="mb-16">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {/* Render Director Card */}
-                  {groupedStaff['Director']?.map(staff => {
+                  {groupedStaff['Director']?.map((staff: StaffMember) => { 
                       const sectionInfo = sections.find(s => s.role === staff.role);
                       const SectionIcon = sectionInfo?.icon || Users;
                       return (
@@ -272,9 +296,14 @@ export default function SurgeonsStaffPage() {
                                       <p className="text-[#8B5C9E] font-medium text-lg mb-2 flex items-center justify-center md:justify-start">
                                           <SectionIcon className="w-5 h-5 mr-2" /> {sectionInfo?.title}
                                       </p>
-                                      <p className="text-sm text-gray-600 mb-4">
+                                      <p className="text-sm text-gray-700 mb-1 line-clamp-2">
                                           {staff.title}
                                       </p>
+                                      {staff.qualifications && (
+                                          <p className="text-xs text-gray-500 mb-4 line-clamp-3 italic">
+                                              {staff.qualifications}
+                                          </p>
+                                      )}
                                       
                                       {/* Add View Profile Button for Dr. Naveen */}
                                       {staff.slug === 'dr-naveen-kumar-l-v' && (
@@ -292,7 +321,7 @@ export default function SurgeonsStaffPage() {
                   })}
 
                   {/* Render Consultant Card */}
-                  {groupedStaff['Consultant']?.map(staff => {
+                  {groupedStaff['Consultant']?.map((staff: StaffMember) => { 
                      const sectionInfo = sections.find(s => s.role === staff.role);
                      const SectionIcon = sectionInfo?.icon || Users;
                      return (
@@ -327,14 +356,78 @@ export default function SurgeonsStaffPage() {
                                       <p className="text-[#8B5C9E] font-medium text-lg mb-2 flex items-center justify-center md:justify-start">
                                           <SectionIcon className="w-5 h-5 mr-2" /> {sectionInfo?.title}
                                       </p>
-                                      <p className="text-sm text-gray-600 mb-4">
+                                      <p className="text-sm text-gray-700 mb-1 line-clamp-2">
                                           {staff.title}
                                       </p>
+                                      {staff.qualifications && (
+                                          <p className="text-xs text-gray-500 mb-4 line-clamp-3 italic">
+                                              {staff.qualifications}
+                                          </p>
+                                      )}
                                       
                                       {/* Add View Profile Button for Dr. Sameer */}
                                       {staff.slug === 'dr-sameer-km' && (
                                         <Link 
                                           href="/surgeons-staff/sameer"
+                                          className="inline-flex items-center px-4 py-2 bg-[#8B5C9E] text-white rounded-md hover:bg-[#7A4F8C] transition-colors"
+                                        >
+                                          View Full Profile <ArrowRight className="ml-2 w-4 h-4" />
+                                        </Link>
+                                      )}
+                                  </div>
+                              </div>
+                          </div>
+                     );
+                  })}
+                  
+                  {/* Render Psychologist Card */}
+                  {groupedStaff['Psychologist']?.map((staff: StaffMember) => { 
+                     const sectionInfo = sections.find(s => s.role === staff.role);
+                     const SectionIcon = sectionInfo?.icon || Users;
+                     return (
+                          <div 
+                              key={staff.slug} 
+                              id={staff.role.toLowerCase()} 
+                              className="relative overflow-hidden rounded-xl shadow-xl border border-gray-200 group h-full flex flex-col"
+                          >
+                              <div className="absolute inset-0 bg-gradient-to-br from-[#8B5C9E]/5 via-white to-white group-hover:from-[#8B5C9E]/10 transition-all duration-500"></div>
+                              <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] group-hover:opacity-[0.04] transition-opacity duration-500"></div>
+                              <div className="relative p-8 flex-grow flex flex-col md:flex-row items-center gap-6">
+                                  <div className="flex-shrink-0 w-36 h-36 md:w-40 md:h-40 relative">
+                                       <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-[#8B5C9E]/15 to-transparent animate-pulse-slow opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
+                                      <Image
+                                          src={staff.imageUrl}
+                                          alt={staff.name}
+                                          fill
+                                          className="rounded-full object-cover object-center shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-500"
+                                          sizes="(max-width: 768px) 144px, 160px"
+                                      />
+                                  </div>
+                                  <div className="flex-grow text-center md:text-left">
+                                      <div className="mb-3">
+                                          <span className="inline-flex items-center bg-[#8B5C9E]/10 text-[#8B5C9E] px-3 py-1 rounded-full text-sm font-medium">
+                                              <SectionIcon className="w-4 h-4 mr-1.5" />
+                                              {sectionInfo?.title || staff.role}
+                                          </span>
+                                      </div>
+                                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                                          {staff.name}
+                                      </h2>
+                                      <p className="text-[#8B5C9E] font-medium text-lg mb-2 flex items-center justify-center md:justify-start">
+                                          <SectionIcon className="w-5 h-5 mr-2" /> {sectionInfo?.title}
+                                      </p>
+                                      <p className="text-sm text-gray-700 mb-1 line-clamp-2">
+                                          {staff.title}
+                                      </p>
+                                      {staff.qualifications && (
+                                          <p className="text-xs text-gray-500 mb-4 line-clamp-3 italic">
+                                              {staff.qualifications}
+                                          </p>
+                                      )}
+                                      {/* Add View Profile Button for Shama */}
+                                      {staff.slug === 'shama-kellogg' && (
+                                        <Link 
+                                          href="/surgeons-staff/shama-kellogg"
                                           className="inline-flex items-center px-4 py-2 bg-[#8B5C9E] text-white rounded-md hover:bg-[#7A4F8C] transition-colors"
                                         >
                                           View Full Profile <ArrowRight className="ml-2 w-4 h-4" />
@@ -387,7 +480,7 @@ export default function SurgeonsStaffPage() {
 
               {/* Filtered Staff Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {filteredStaff.map((staff) => {
+                  {filteredStaff.map((staff: StaffMember, index: number) => { 
                       // Role badge styling
                       const roleBadgeStyle = {
                         Psychologist: 'bg-blue-100 text-blue-800',
@@ -444,6 +537,15 @@ export default function SurgeonsStaffPage() {
                                 {staff.slug === 'dr-sameer-km' && (
                                   <Link 
                                     href="/surgeons-staff/sameer"
+                                    className="mt-3 inline-flex items-center text-[#8B5C9E] text-sm font-medium hover:text-[#7A4F8C]"
+                                  >
+                                    View Full Profile <ArrowRight className="ml-1 w-4 h-4" />
+                                  </Link>
+                                )}
+                                
+                                {staff.slug === 'shama-kellogg' && (
+                                  <Link 
+                                    href="/surgeons-staff/shama-kellogg"
                                     className="mt-3 inline-flex items-center text-[#8B5C9E] text-sm font-medium hover:text-[#7A4F8C]"
                                   >
                                     View Full Profile <ArrowRight className="ml-1 w-4 h-4" />

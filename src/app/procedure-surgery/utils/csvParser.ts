@@ -41,15 +41,51 @@ function safeJsonParse<T>(jsonString?: string, fallback: T = {} as T): T {
   }
 }
 
+// Helper function to replace &nbsp; with regular spaces in a string
+function replaceNbsp(text?: string): string {
+  if (!text) return '';
+  return text.replace(/&nbsp;/g, ' ');
+}
+
+// Helper function to recursively replace &nbsp; in content blocks
+function cleanContentBlocks(blocks: any[]): any[] {
+  if (!Array.isArray(blocks)) return [];
+  return blocks.map(block => {
+    const newBlock = { ...block };
+    if (typeof newBlock.text === 'string') {
+      newBlock.text = replaceNbsp(newBlock.text);
+    }
+    // If listItems exist and are strings, clean them too
+    if (Array.isArray(newBlock.listItems)) {
+      newBlock.listItems = newBlock.listItems.map((item: any) => {
+        if (typeof item === 'string') {
+          return replaceNbsp(item);
+        }
+        // If list items can be objects with text properties, handle them (example)
+        if (typeof item === 'object' && item !== null && typeof item.text === 'string') {
+          return { ...item, text: replaceNbsp(item.text) };
+        }
+        return item;
+      });
+    }
+    // Add more recursive cleaning if other nested structures with text exist
+    // For example, if blocks can have nested blocks:
+    // if (Array.isArray(newBlock.blocks)) { // Assuming a 'blocks' property for nested blocks
+    //   newBlock.blocks = cleanContentBlocks(newBlock.blocks);
+    // }
+    return newBlock;
+  });
+}
+
 // Helper to extract first paragraph from content blocks for summary
 function extractSummary(contentBlocks: any[]): string {
   if (!contentBlocks || contentBlocks.length === 0) return '';
   
   const firstPara = contentBlocks.find(block => block.type === 'paragraph');
   if (firstPara?.text) {
-    // Strip HTML and truncate
+    // Strip HTML
     const plainText = firstPara.text.replace(/<[^>]*>?/gm, '');
-    return plainText.length > 160 ? plainText.substring(0, 157) + '...' : plainText;
+    return plainText; // Return the full plain text without truncation
   }
   
   return '';
@@ -79,10 +115,11 @@ export async function getProceduresData(): Promise<{
     for (const row of parsedCsv.data) {
       // Only include rows that are procedure-surgery page type
       if (row.PageType === 'procedure-surgery' && row.Slug) {
-        const contentBlocks = safeJsonParse<any[]>(row.ContentBlocksJSON, []);
+        let rawContentBlocks = safeJsonParse<any[]>(row.ContentBlocksJSON, []);
+        const contentBlocks = cleanContentBlocks(rawContentBlocks);
         
         // Clean up title (remove site name)
-        const title = (row.Title || '').split('|')[0].trim();
+        const title = replaceNbsp((row.Title || '').split('|')[0].trim());
         
         // Get category from either CategoryJSON or custom CategoryID+CategoryName fields
         let categoryId = '';
@@ -151,9 +188,9 @@ export async function getProceduresData(): Promise<{
         }
         
         // Get or create a summary
-        let summary = row.Summary || '';
+        let summary = replaceNbsp(row.Summary || '');
         if (!summary && contentBlocks.length > 0) {
-          summary = extractSummary(contentBlocks);
+          summary = replaceNbsp(extractSummary(contentBlocks));
         }
         
         // Create a procedure object

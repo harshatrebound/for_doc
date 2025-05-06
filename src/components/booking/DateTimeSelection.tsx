@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { format, startOfDay, isBefore } from 'date-fns';
+import { format, startOfDay, isBefore, isToday, isAfter, parse, getHours, getMinutes, setHours, setMinutes } from 'date-fns';
 import { ChevronLeft, ChevronRight, Loader2, Sun, Cloud, Moon } from 'lucide-react';
 import { fetchSpecialDates, fetchDoctorSchedule } from '@/app/actions/admin';
 import type { DateTimeSelectionProps, Doctor, DoctorSchedule, SpecialDate } from '@/types/booking';
@@ -184,7 +184,27 @@ const DateTimeSelection = ({ onBack }: Omit<DateTimeSelectionProps, 'formData' |
     setShowTimeSheet(false);
   };
 
-  const categorizedSlots = useMemo(() => categorizeTimes(slots || []), [slots]);
+  const categorizedSlots = useMemo(() => {
+    if (!slots) return [];
+
+    let displayableSlots = slots;
+
+    if (selectedDate && isToday(selectedDate)) {
+      const now = new Date();
+      displayableSlots = slots.filter(slot => {
+        const [hourStr, minuteStr] = slot.split(':');
+        const slotHour = parseInt(hourStr, 10);
+        const slotMinute = parseInt(minuteStr, 10);
+        
+        // Create a date object for the slot on the selected (today's) date
+        const slotDateTime = setMinutes(setHours(startOfDay(selectedDate), slotHour), slotMinute);
+        
+        return isAfter(slotDateTime, now);
+      });
+    }
+    
+    return categorizeTimes(displayableSlots);
+  }, [slots, selectedDate]);
 
   if (isLoadingData) {
     return (

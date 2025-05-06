@@ -11,7 +11,8 @@ import {
   createAppointment,
   updateAppointment,
   fetchDoctors,
-  fetchAllAppointmentsForCalendar
+  fetchAllAppointmentsForCalendar,
+  deleteAppointmentAction
 } from '@/app/actions/admin';
 import { toast } from 'react-hot-toast';
 import {
@@ -20,11 +21,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, CalendarIcon, ListIcon, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2 } from 'lucide-react';
+import { ChevronDown, CalendarIcon, ListIcon, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, Trash2 } from 'lucide-react';
 import { Pagination, PaginationData } from '@/components/admin/Pagination';
 import AdminCalendar from '@/components/AdminCalendar';
 import DayAppointmentsDrawer from '@/components/DayAppointmentsDrawer';
 import AppointmentModal from '@/components/AppointmentModal';
+import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
 
 interface Doctor {
   name: string;
@@ -72,6 +74,11 @@ export default function AppointmentsPage() {
   const [prefilledTimeForModal, setPrefilledTimeForModal] = useState<string | undefined>(undefined);
   const [selectedMonth, setSelectedMonth] = useState<Date>(startOfMonth(new Date()));
 
+  // State for delete confirmation dialog
+  const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] = useState(false);
+  const [appointmentIdToDelete, setAppointmentIdToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false); // For loading state on confirm button
+
   useEffect(() => {
     loadInitialData();
   }, [pagination.page, pagination.pageSize, selectedMonth, viewMode]); // Reload when page, page size, month, or view changes
@@ -83,8 +90,7 @@ export default function AppointmentsPage() {
       const defaultListViewFilters: any = {
         startDate: startOfMonth(selectedMonth),
         endDate: endOfMonth(selectedMonth),
-        // Default to show only active appointments in list view
-        status: { notIn: ['CANCELLED', 'NO_SHOW', 'COMPLETED'] } 
+        // status: { notIn: ['CANCELLED', 'NO_SHOW', 'COMPLETED'] } // MODIFICATION: Removed to always fetch cancelled for list view
       };
 
       if (viewMode === 'list') {
@@ -185,7 +191,8 @@ export default function AppointmentsPage() {
       case 'COMPLETED':
         return 'bg-[#8B5C9E]/80 text-white';
       case 'CANCELLED':
-        return 'bg-red-100 text-red-800';
+        // MODIFICATION: Changed to dull grey styling
+        return 'bg-gray-100 text-gray-500 border border-gray-200 opacity-75'; 
       case 'NO_SHOW':
         return 'bg-gray-100 text-gray-800';
       default:
@@ -215,16 +222,44 @@ export default function AppointmentsPage() {
     return allStatuses.filter(status => status !== currentStatus);
   };
 
+  const handleDeleteAppointment = async (appointmentId: string) => {
+    setAppointmentIdToDelete(appointmentId);
+    setIsConfirmDeleteDialogOpen(true);
+  };
+
+  // Actual deletion logic to be called by the confirmation dialog
+  const executeDeleteAppointment = async () => {
+    if (!appointmentIdToDelete) return;
+
+    setIsDeleting(true);
+    const toastId = toast.loading('Deleting appointment...');
+    try {
+      const result = await deleteAppointmentAction(appointmentIdToDelete);
+      if (result.success) {
+        toast.success(result.message || 'Appointment deleted successfully', { id: toastId });
+        loadInitialData(); // Refresh data
+      } else {
+        toast.error(result.error || 'Failed to delete appointment', { id: toastId });
+      }
+    } catch (error) {
+      console.error('Error deleting appointment:', error);
+      toast.error('An error occurred while deleting the appointment.', { id: toastId });
+    }
+    setIsConfirmDeleteDialogOpen(false);
+    setAppointmentIdToDelete(null);
+    setIsDeleting(false);
+  };
+
   const columns = [
     {
       header: 'Patient',
       accessorKey: 'patientName',
       cell: (appointment: Appointment) => (
-        <div>
-          <div className="font-medium text-gray-900">
+        <div className={appointment.status === 'CANCELLED' ? 'text-gray-500 opacity-75' : ''}>
+          <div className={`font-medium ${appointment.status === 'CANCELLED' ? 'text-gray-500' : 'text-gray-900'}`}>
             {appointment.patientName || 'N/A'}
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm">
             {appointment.email && (
               <div className="truncate">{appointment.email}</div>
             )}
@@ -240,9 +275,9 @@ export default function AppointmentsPage() {
       header: 'Doctor',
       accessorKey: 'doctor',
       cell: (appointment: Appointment) => (
-        <div>
-          <div className="font-medium text-gray-900">{appointment.doctor?.name}</div>
-          <div className="text-sm text-gray-500">{appointment.doctor?.speciality}</div>
+        <div className={appointment.status === 'CANCELLED' ? 'text-gray-500 opacity-75' : ''}>
+          <div className={`font-medium ${appointment.status === 'CANCELLED' ? 'text-gray-500' : 'text-gray-900'}`}>{appointment.doctor?.name}</div>
+          <div className="text-sm">{appointment.doctor?.speciality}</div>
         </div>
       ),
       sortable: true,
@@ -251,11 +286,11 @@ export default function AppointmentsPage() {
       header: 'Date & Time',
       accessorKey: 'date',
       cell: (appointment: Appointment) => (
-        <div>
-          <div className="font-medium text-gray-900">
+        <div className={appointment.status === 'CANCELLED' ? 'text-gray-500 opacity-75' : ''}>
+          <div className={`font-medium ${appointment.status === 'CANCELLED' ? 'text-gray-500' : 'text-gray-900'}`}>
             {format(new Date(appointment.date), 'MMM d, yyyy')}
           </div>
-          <div className="text-sm text-gray-500">{appointment.time}</div>
+          <div className="text-sm">{appointment.time}</div>
         </div>
       ),
       sortable: true,
@@ -318,13 +353,34 @@ export default function AppointmentsPage() {
       cell: (appointment: Appointment) => {
         const fee = appointment.doctor?.fee ?? 0;
         return (
-          <div className="font-medium text-gray-900 hidden md:block">
+          <div className={`font-medium hidden md:block ${appointment.status === 'CANCELLED' ? 'text-gray-500 opacity-75' : 'text-gray-900'}`}>
             ₹{fee.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         );
       },
       sortable: true,
     },
+    // Actions Column
+    {
+      header: 'Actions',
+      cell: (appointment: Appointment) => (
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="icon"
+            className="hover:bg-red-100 hover:text-red-600"
+            onClick={() => handleDeleteAppointment(appointment.id)}
+            title="Delete Appointment"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+          {/* You can add Edit button here too if needed */}
+          {/* <Button variant="outline" size="icon" onClick={() => handleEditAppointment(appointment)} title="Edit Appointment">
+            <Edit2 className="h-4 w-4" />
+          </Button> */}
+        </div>
+      ),
+    }
   ];
 
   const handleUpdateAppointment = async (appointment: Appointment) => {
@@ -516,8 +572,28 @@ export default function AppointmentsPage() {
               prefilledTime={prefilledTimeForModal}
               doctors={doctors}
               onBookAgain={handleBookAgain}
+              onDelete={(appId: string) => { // For delete from modal, directly trigger confirmation
+                setAppointmentIdToDelete(appId);
+                setIsConfirmDeleteDialogOpen(true);
+                // No need to close modal here, confirmation will handle it or user can cancel
+              }}
             />
           )}
+          {/* Confirmation Dialog for Deletion */}
+          <ConfirmationDialog
+            isOpen={isConfirmDeleteDialogOpen}
+            onClose={() => {
+              setIsConfirmDeleteDialogOpen(false);
+              setAppointmentIdToDelete(null);
+            }}
+            onConfirm={executeDeleteAppointment}
+            title="Confirm Deletion"
+            description="Are you sure you want to permanently delete this appointment? This action cannot be undone."
+            confirmText="Delete"
+            // confirmButtonVariant="destructive" // Using className for brand color
+            confirmButtonClassName="bg-red-600 hover:bg-red-700 text-white"
+            isConfirming={isDeleting}
+          />
         </Card>
       )}
     </div>

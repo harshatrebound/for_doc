@@ -14,27 +14,27 @@ const videos = [
     category: 'Shoulder'
   },
   {
-    id: 'ycZw0IpY4ZE',
+    id: 'hxs2YjO1Zq0',
     title: 'Arthroscopy I Dr. Naveen Kumar L V I MHSR',
     category: 'General'
   },
   {
-    id: 'T08ELvn0G_c',
+    id: 'E-VpOLEQpcQ',
     title: 'Ganglion Cysts I Dr. Naveen Kumar LV I Manipal Hospitals Sarjapur Road',
     category: 'Hand & Wrist'
   },
   {
-    id: 'gKy5CUh_XT8',
+    id: 'TktJOoSjlPk',
     title: 'ELBOW OATS - CARTILAGE RECONSTRUCTION | Dr. Naveen Kumar LV | Sports Orthopedics Institute',
     category: 'Elbow'
   },
   {
-    id: 'f1UJ0Jfb58E',
+    id: 'iW29YPvDM-4',
     title: 'Hamstring tear repair | Dr. Naveen Kumar LV | Sports Orthopedics Institute',
     category: 'Hip'
   },
   {
-    id: 'fpHdtjdUu00',
+    id: 'yJPpSeOmW2Y',
     title: 'Carpal Tunnel Syndrome I Dr. Naveen Kumar LV I MHSR',
     category: 'Hand & Wrist'
   },

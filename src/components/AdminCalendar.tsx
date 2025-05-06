@@ -49,10 +49,16 @@ const AdminCalendar = ({
   const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date()));
   const [mobileWeekStart, setMobileWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 0 }));
 
-  const days = eachDayOfInterval({
-    start: startOfMonth(currentMonth),
-    end: endOfMonth(currentMonth),
+  // --- Desktop Grid Logic ---
+  const monthStartForGrid = startOfMonth(currentMonth);
+  const gridStartDay = startOfWeek(monthStartForGrid, { weekStartsOn: 0 }); // 0 for Sunday
+  const gridEndDay = addDays(gridStartDay, 41); // 6 weeks * 7 days - 1 day = 41 days after start (total 42 days)
+
+  const desktopDayCells = eachDayOfInterval({
+    start: gridStartDay,
+    end: gridEndDay,
   });
+  // --- End Desktop Grid Logic ---
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const previousMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -105,54 +111,64 @@ const AdminCalendar = ({
           ))}
         </div>
         <div className="grid grid-cols-7 gap-1 mt-2">
-          {days.map((day: Date) => {
-            const dayAppointments = getAppointmentsForDay(day);
-            const isCurrentMonth = isSameMonth(day, currentMonth);
+          {desktopDayCells.map((dateCell: Date) => {
+            const isCellInCurrentMonth = isSameMonth(dateCell, currentMonth);
+            const dayAppointments = isCellInCurrentMonth ? getAppointmentsForDay(dateCell) : [];
             const visibleAppointments = dayAppointments.slice(0, maxVisibleAppointments);
             const hiddenCount = dayAppointments.length - visibleAppointments.length;
+            
             return (
               <div
-                key={day.toString()}
-                className={`relative p-2 w-full aspect-square flex flex-col items-start justify-start hover:bg-gray-100 rounded-lg transition-colors cursor-pointer ${!isCurrentMonth && 'text-gray-400'} ${isSameDay(day, new Date()) ? 'ring-2 ring-[#8B5C9E]' : ''}`}
-                onClick={() => onDayClick(day)}
-                style={{ boxShadow: isSameDay(day, new Date()) ? `0 0 0 2px ${BRAND_PURPLE}` : undefined }}
+                key={dateCell.toString()}
+                className={`relative p-2 w-full aspect-square flex flex-col items-start justify-start rounded-lg transition-colors 
+                            ${isCellInCurrentMonth ? 'hover:bg-gray-100 cursor-pointer' : 'text-gray-400 bg-gray-50/50'} 
+                            ${isSameDay(dateCell, new Date()) && isCellInCurrentMonth ? 'ring-2 ring-[#8B5C9E]' : ''}`}
+                onClick={() => isCellInCurrentMonth && onDayClick(dateCell)}
+                style={{ boxShadow: isSameDay(dateCell, new Date()) && isCellInCurrentMonth ? `0 0 0 2px ${BRAND_PURPLE}` : undefined }}
               >
                 <time
-                  dateTime={format(day, 'yyyy-MM-dd')}
-                  className={`text-xs font-semibold mb-1 ${isSameDay(day, new Date()) ? 'text-[#8B5C9E]' : ''}`}
+                  dateTime={format(dateCell, 'yyyy-MM-dd')}
+                  className={`text-xs font-semibold mb-1 
+                              ${isSameDay(dateCell, new Date()) && isCellInCurrentMonth ? 'text-[#8B5C9E]' : ''}
+                              ${!isCellInCurrentMonth ? 'text-gray-400' : ''}`}
                 >
-                  {format(day, 'd')}
+                  {format(dateCell, 'd')}
                 </time>
-                <div className="flex flex-col gap-0.5 w-full">
-                  {visibleAppointments.map((appointment: Appointment) => (
-                    <button
-                      key={appointment.id}
-                      className="w-full text-left truncate text-xs bg-[#F3E8FF] border border-[#E9D5FF] rounded px-1 py-0.5 mb-0.5 hover:bg-[#E9D5FF] shadow-sm"
-                      onClick={e => {
-                        e.stopPropagation();
-                        onAppointmentClick(appointment);
-                      }}
-                      title={appointment.patientName || 'Appointment'}
-                      style={{ color: '#4B006E' }}
-                    >
-                      <span className="font-medium">{appointment.patientName || 'Appointment'}</span>
-                      {appointment.time && (
-                        <span className="ml-1 text-[10px] text-gray-500">{appointment.time}</span>
-                      )}
-                    </button>
-                  ))}
-                  {hiddenCount > 0 && (
-                    <button
-                      className="text-xs text-[#8B5C9E] mt-1 underline hover:text-[#6D28D9] font-semibold"
-                      onClick={e => {
-                        e.stopPropagation();
-                        onDayClick(day);
-                      }}
-                    >
-                      +{hiddenCount} more
-                    </button>
-                  )}
-                </div>
+                {isCellInCurrentMonth && (
+                  <div className="flex flex-col gap-0.5 w-full">
+                    {visibleAppointments.map((appointment: Appointment) => (
+                      <button
+                        key={appointment.id}
+                        className={`w-full text-left truncate text-xs rounded px-1 py-0.5 mb-0.5 shadow-sm 
+                                    ${appointment.status === 'CANCELLED' 
+                                      ? 'bg-gray-100 border border-gray-200 opacity-75 hover:bg-gray-200' 
+                                      : 'bg-[#F3E8FF] border border-[#E9D5FF] hover:bg-[#E9D5FF]'}`}
+                        onClick={e => {
+                          e.stopPropagation();
+                          onAppointmentClick(appointment);
+                        }}
+                        title={appointment.patientName || 'Appointment'}
+                        style={{ color: appointment.status === 'CANCELLED' ? '#6B7280' /* gray-500 */ : '#4B006E' }}
+                      >
+                        <span className="font-medium">{appointment.patientName || 'Appointment'}</span>
+                        {appointment.time && (
+                          <span className="ml-1 text-[10px] text-gray-500">{appointment.time}</span>
+                        )}
+                      </button>
+                    ))}
+                    {hiddenCount > 0 && (
+                      <button
+                        className="text-xs text-[#8B5C9E] mt-1 underline hover:text-[#6D28D9] font-semibold"
+                        onClick={e => {
+                          e.stopPropagation();
+                          onDayClick(dateCell); // Should still be onDayClick for the cell
+                        }}
+                      >
+                        +{hiddenCount} more
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -199,7 +215,10 @@ const AdminCalendar = ({
                   {visibleAppointments.map((appointment: Appointment) => (
                     <button
                       key={appointment.id}
-                      className="w-full text-left truncate text-xs bg-[#F3E8FF] border border-[#E9D5FF] rounded px-2 py-1 mb-0.5 hover:bg-[#E9D5FF] shadow-sm font-medium text-[#4B006E]"
+                      className={`w-full text-left truncate text-xs rounded px-2 py-1 mb-0.5 shadow-sm font-medium 
+                                  ${appointment.status === 'CANCELLED' 
+                                    ? 'bg-gray-100 border border-gray-200 text-gray-500 opacity-75 hover:bg-gray-200' 
+                                    : 'bg-[#F3E8FF] border border-[#E9D5FF] text-[#4B006E] hover:bg-[#E9D5FF]'}`}
                       onClick={e => {
                         e.stopPropagation();
                         onAppointmentClick(appointment);

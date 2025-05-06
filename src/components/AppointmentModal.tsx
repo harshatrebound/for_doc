@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format, isBefore, startOfDay } from 'date-fns';
 import { toast } from 'react-hot-toast';
 import { fetchAvailableSlots } from '@/app/actions/admin';
+import { Trash2 } from 'lucide-react';
 
 // Define the interface for an appointment - should match your backend model
 interface Doctor {
@@ -43,6 +44,7 @@ interface AppointmentModalProps {
   selectedDate?: Date; // For new appointments
   prefilledTime?: string; // ADDED: For pre-filling time from drawer
   onBookAgain?: (appointment: Appointment) => void; // NEW
+  onDelete?: (appointmentId: string) => void; // ADDED: For delete functionality
 }
 
 const statuses = ['SCHEDULED', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'];
@@ -56,7 +58,8 @@ export default function AppointmentModal({
   isNewAppointment = false,
   selectedDate,
   prefilledTime,
-  onBookAgain
+  onBookAgain,
+  onDelete
 }: AppointmentModalProps) {
   // Form state
   const [formData, setFormData] = useState<Appointment>({
@@ -234,180 +237,167 @@ export default function AppointmentModal({
     }
   };
 
+  const handleAttemptDelete = () => {
+    if (!formData.id) {
+      toast.error("Cannot delete an appointment without an ID.");
+      return;
+    }
+    if (onDelete) {
+      onDelete(formData.id); // Trigger the parent's delete process (which includes confirmation)
+      onClose(); // Close this modal now that the delete process has been initiated
+    } else {
+      toast.error("Delete functionality is not configured for this modal.");
+    }
+  };
+
+  // console.log('Dialog component:', Dialog); // Keep if needed for diagnostics, or remove
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-xs mx-1 sm:max-w-[425px] bg-white rounded-none sm:rounded-lg p-0 overflow-hidden m-0 sm:m-auto">
-        <DialogHeader className="px-2 pt-2 pb-2 sm:px-6 sm:pt-6 sm:pb-4 bg-[#8B5C9E]/5 border-b border-[#8B5C9E]/10">
-          <DialogTitle className="text-base sm:text-xl font-semibold text-[#8B5C9E]">
-            {isNewAppointment ? 'New Appointment' : isPastAppointment ? 'View Past Appointment' : 'Edit Appointment'}
+      <DialogContent className="sm:max-w-lg bg-white p-0">
+        <DialogHeader className="bg-[#8B5C9E] text-white px-4 sm:px-6 py-3 sm:py-4 rounded-t-lg">
+          <DialogTitle className="text-lg sm:text-xl">
+            {isNewAppointment ? 'Create New Appointment' : 'Appointment Details'}
           </DialogTitle>
         </DialogHeader>
-        <div className="p-2 sm:p-6 max-h-[80vh] overflow-y-auto space-y-3">
-          {/* Patient Name (Full Width) */}
-          <div className="space-y-1 mb-2">
-            <Label htmlFor="patientName" className="text-xs sm:text-sm font-medium">
-              Patient Name
-            </Label>
-            <Input
-              id="patientName"
-              value={formData.patientName || ''}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('patientName', e.target.value)}
-              placeholder="Enter patient name"
-              className={`text-xs sm:text-sm h-8 sm:h-10 ${formErrors.patientName ? 'border-red-500' : ''}`}
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 p-4 sm:p-6">
+          <div>
+            <Label htmlFor="patientName" className="font-medium text-xs sm:text-sm">Patient Name</Label>
+            <Input 
+              id="patientName" 
+              className="h-9 sm:h-10 mt-1 text-sm"
+              value={formData.patientName || ''} 
+              onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('patientName', e.target.value)} 
               disabled={isPastAppointment}
             />
-            {formErrors.patientName && (
-              <p className="text-xs text-red-500">{formErrors.patientName}</p>
-            )}
+            {formErrors.patientName && <p className="text-red-500 text-xs mt-1">{formErrors.patientName}</p>}
           </div>
-          {/* Email & Phone Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-            <div className="space-y-1">
-              <Label htmlFor="email" className="text-xs sm:text-sm font-medium">Email</Label>
-              <Input
-                id="email"
+
+          {/* Responsive grid for Email and Phone */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="email" className="font-medium text-xs sm:text-sm">Email</Label>
+              <Input 
+                id="email" 
                 type="email"
-                value={formData.email || ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('email', e.target.value)}
-                placeholder="Enter patient email"
-                className={`text-xs sm:text-sm h-8 sm:h-10 ${formErrors.email ? 'border-red-500' : ''}`}
+                className="h-9 sm:h-10 mt-1 text-sm"
+                value={formData.email || ''} 
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('email', e.target.value)} 
                 disabled={isPastAppointment}
               />
-              {formErrors.email && (
-                <p className="text-xs text-red-500">{formErrors.email}</p>
-              )}
+              {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="phone" className="text-xs sm:text-sm font-medium">Phone</Label>
-              <Input
-                id="phone"
+            <div>
+              <Label htmlFor="phone" className="font-medium text-xs sm:text-sm">Phone</Label>
+              <Input 
+                id="phone" 
                 type="tel"
-                value={formData.phone || ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('phone', e.target.value)}
-                placeholder="Enter patient phone"
-                className={`text-xs sm:text-sm h-8 sm:h-10 ${formErrors.phone ? 'border-red-500' : ''}`}
+                className="h-9 sm:h-10 mt-1 text-sm"
+                value={formData.phone || ''} 
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('phone', e.target.value)} 
                 disabled={isPastAppointment}
               />
-              {formErrors.phone && (
-                <p className="text-xs text-red-500">{formErrors.phone}</p>
-              )}
+              {formErrors.phone && <p className="text-red-500 text-xs mt-1">{formErrors.phone}</p>}
             </div>
           </div>
-          {/* Doctor & Status Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
-            <div className="space-y-1">
-              <Label htmlFor="doctor" className="text-xs sm:text-sm font-medium">Doctor</Label>
-              <Select 
-                value={formData.doctorId} 
-                onValueChange={(value) => handleChange('doctorId', value)}
+
+          {/* Responsive grid for Date and Time - NOW ALWAYS 2 COLUMNS */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="date" className="font-medium text-xs sm:text-sm">Date</Label>
+              <Input 
+                type="date" 
+                id="date" 
+                className="h-9 sm:h-10 mt-1 text-sm"
+                value={formData.date ? format(new Date(formData.date), 'yyyy-MM-dd') : ''} 
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('date', e.target.value ? new Date(e.target.value) : null)} 
                 disabled={isPastAppointment}
-              >
-                <SelectTrigger id="doctor" className={`text-xs sm:text-sm h-8 sm:h-10 ${formErrors.doctorId ? 'border-red-500' : ''}`}>
-                  <SelectValue placeholder="Select doctor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {doctors.map(doctor => (
-                    <SelectItem key={doctor.id} value={doctor.id}>
-                      {doctor.name} ({doctor.speciality})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {formErrors.doctorId && (
-                <p className="text-xs text-red-500">{formErrors.doctorId}</p>
-              )}
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="status" className="text-xs sm:text-sm font-medium">Status</Label>
-              <Select 
-                value={formData.status} 
-                onValueChange={(value) => handleChange('status', value)}
-                disabled={isPastAppointment}
-              >
-                <SelectTrigger id="status" className="text-xs sm:text-sm h-8 sm:h-10">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {statuses.map(status => (
-                    <SelectItem key={status} value={status}>
-                      {status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          {/* Date & Time Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <Label htmlFor="date" className="text-xs sm:text-sm font-medium">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={formData.date ? format(new Date(formData.date), 'yyyy-MM-dd') : ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => handleChange('date', new Date(e.target.value))}
-                disabled={isPastAppointment || !isNewAppointment}
-                min={format(new Date(), 'yyyy-MM-dd')} 
-                className={`text-xs sm:text-sm h-8 sm:h-10 ${formErrors.date ? 'border-red-500' : ''}`}
               />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="time" className="text-xs sm:text-sm font-medium">Time</Label>
-              <Select
-                value={formData.time || ''}
-                onValueChange={(val: string) => handleChange('time', val)}
-                disabled={isLoadingSlots || formData.status === 'CANCELLED'}
-              >
-                <SelectTrigger id="time" disabled={isLoadingSlots || formData.status === 'CANCELLED'}>
-                  <SelectValue placeholder={isLoadingSlots ? "Loading..." : (formData.status === 'CANCELLED' ? "N/A - Cancelled" : "Select time")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {formData.status !== 'CANCELLED' && availableTimeSlots.length > 0 ? (
-                    availableTimeSlots.map(slot => (
-                      <SelectItem key={slot} value={slot}>
-                        {slot}
-                      </SelectItem>
-                    ))
-                  ) : formData.status !== 'CANCELLED' ? (
-                    <SelectItem value="" disabled>
-                      {isLoadingSlots ? "Loading..." : "No slots available"}
-                    </SelectItem>
-                  ) : null
-                </SelectContent>
-              </Select>
-              {formErrors.time && <p className="text-xs text-red-500 pt-1">{formErrors.time}</p>}
-            </div>
+            
+            {formData.status !== 'CANCELLED' && (
+              <div>
+                <Label htmlFor="time" className="font-medium text-xs sm:text-sm">Time</Label>
+                <Select 
+                  value={formData.time || ''} 
+                  onValueChange={(value: any) => handleChange('time', value)} 
+                  disabled={isLoadingSlots || isPastAppointment}
+                >
+                  <SelectTrigger className="h-9 sm:h-10 mt-1 text-sm">
+                    <SelectValue placeholder={isLoadingSlots ? "Loading..." : "Select time"} />
+                  </SelectTrigger>
+                  <SelectContent className="overflow-y-hidden">
+                    {availableTimeSlots.length > 0 ? (
+                      availableTimeSlots.map((slot: any) => (
+                        <SelectItem key={slot} value={slot} className="text-sm">{slot}</SelectItem>
+                      ))
+                    ) : (
+                      <div className="px-2 py-1.5 text-xs sm:text-sm text-muted-foreground text-center">No slots available for this date/doctor</div>
+                    )}
+                  </SelectContent>
+                </Select>
+                {formErrors.time && <p className="text-red-500 text-xs mt-1">{formErrors.time}</p>}
+              </div>
+            )}
           </div>
-        </div>
-        {/* Footer: Buttons side by side and full width on mobile */}
-        <DialogFooter className="px-2 py-2 sm:px-6 sm:py-4 bg-gray-50 border-t">
-          <div className="flex flex-col sm:flex-row gap-2 w-full">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="w-full sm:w-auto order-2 sm:order-1"
+
+          <div>
+            <Label htmlFor="doctorId" className="font-medium text-xs sm:text-sm">Doctor</Label>
+            <Select 
+              value={formData.doctorId || ''} 
+              onValueChange={(value: any) => handleChange('doctorId', value)} 
+              disabled={isPastAppointment}
             >
-              Cancel
-            </Button>
-            {isPastAppointment && (
-              <Button
-                onClick={handleBookAgain}
-                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white order-1 sm:order-2"
-              >
-                Book Again
-              </Button>
-            )}
-            {!isPastAppointment && (
-              <Button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="w-full sm:w-auto bg-[#8B5C9E] hover:bg-[#7a4f8a] text-white order-1 sm:order-2"
-              >
-                {isSubmitting ? 'Saving...' : isNewAppointment ? 'Create' : 'Save Changes'}
-              </Button>
-            )}
+              <SelectTrigger className="h-9 sm:h-10 mt-1 text-sm">
+                <SelectValue placeholder="Select doctor" />
+              </SelectTrigger>
+              <SelectContent>
+                {doctors && doctors.map((doc) => (
+                  <SelectItem key={doc.id} value={doc.id} className="text-sm">{doc.name} - {doc.speciality}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {formErrors.doctorId && <p className="text-red-500 text-xs mt-1">{formErrors.doctorId}</p>}
           </div>
-        </DialogFooter>
+          
+          <div>
+            <Label htmlFor="status" className="font-medium text-xs sm:text-sm">Status</Label>
+            <Select value={formData.status} onValueChange={(value: any) => handleChange('status', value)} disabled={isPastAppointment && formData.status !== 'CANCELLED' }>
+              <SelectTrigger className="h-9 sm:h-10 mt-1 text-sm">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {statuses.map((stat) => (
+                  <SelectItem key={stat} value={stat} className="text-sm">{stat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter className="pt-6 flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center">
+            <div className="w-full sm:w-auto flex justify-start">
+                {!isNewAppointment && onDelete && (
+                  <Button 
+                    type="button" 
+                    variant="ghost"
+                    onClick={handleAttemptDelete}
+                    disabled={isSubmitting}
+                    className="w-auto text-red-600 hover:text-red-700 p-2"
+                    aria-label="Delete appointment"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </Button>
+                )}
+            </div>
+            <div className="flex flex-col-reverse sm:flex-row sm:space-x-2 w-full sm:w-auto mt-3 sm:mt-0">
+              <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="w-full sm:w-auto mb-2 sm:mb-0">
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting || (formData.status !== 'CANCELLED' && isLoadingSlots)} className="w-full sm:w-auto">
+                {isSubmitting ? 'Saving...' : (isNewAppointment ? 'Create Appointment' : 'Save Changes')}
+              </Button>
+            </div>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

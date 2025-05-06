@@ -9,11 +9,8 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    // Fetch doctors from the database - only active doctors
+    console.log('API /api/doctors: Fetching doctors from DB...');
     const dbDoctors = await prisma.doctor.findMany({
-      where: {
-        isActive: true
-      },
       include: {
         schedules: true
       },
@@ -21,11 +18,17 @@ export async function GET() {
         name: 'asc'
       }
     });
+    console.log(`API /api/doctors: Fetched ${dbDoctors.length} doctors from DB.`);
 
     // Transform data to include availability and other required fields
-    const doctors = dbDoctors.map(doctor => {
-      // Check if doctor has any active schedules to determine availability
-      const hasActiveSchedules = doctor.schedules.some(schedule => schedule.isActive);
+    const doctorsWithAvailability = dbDoctors.map(doctor => {
+      console.log(`API /api/doctors: Processing doctor: ${doctor.name} (ID: ${doctor.id})`);
+      console.log(`API /api/doctors: Schedules for ${doctor.name}:`, doctor.schedules);
+      const hasActiveSchedules = doctor.schedules.some(schedule => {
+        console.log(`API /api/doctors: Schedule for ${doctor.name} - ID: ${schedule.id}, isActive: ${schedule.isActive}`);
+        return schedule.isActive;
+      });
+      console.log(`API /api/doctors: Doctor ${doctor.name} hasActiveSchedules: ${hasActiveSchedules}`);
       
       return {
         id: doctor.id,
@@ -39,8 +42,13 @@ export async function GET() {
         rating: 4.5    // Default rating value
       };
     });
+    console.log(`API /api/doctors: Mapped ${doctorsWithAvailability.length} doctors with availability flags.`);
 
-    return NextResponse.json(doctors);
+    // Filter out doctors who are not available
+    const availableDoctors = doctorsWithAvailability.filter(doctor => doctor.availability);
+    console.log(`API /api/doctors: Filtered down to ${availableDoctors.length} available doctors.`);
+
+    return NextResponse.json(availableDoctors);
   } catch (error) {
     console.error('Error fetching doctors:', error);
     return NextResponse.json(

@@ -98,12 +98,12 @@ export const ProcedureCard = ({
             </div>
           )}
           
-          {inpatient !== undefined && (
+          {/* {inpatient !== undefined && (
             <div className="flex items-center">
               <HeartPulse className="w-4 h-4 mr-1 text-[#8B5C9E]" />
               <span>{inpatient ? 'Inpatient' : 'Outpatient'}</span>
             </div>
-          )}
+          )} */}
         </div>
         
         {/* Call to Action */}

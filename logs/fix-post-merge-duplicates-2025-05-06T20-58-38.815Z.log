@@ -1,0 +1,26 @@
+[2025-05-06T20:58:38.816Z] Starting cleanup of post-merge duplicate appointments...
+[2025-05-06T20:58:38.817Z] Checking for specific duplicates from the screenshot...
+[2025-05-06T20:58:38.817Z] Checking for duplicates of patient "Pompapathi V Gadad" at time 09:05
+[2025-05-06T20:58:39.302Z] Error during fix operation: 
+Invalid `prisma.appointment.findMany()` invocation:
+
+{
+  where: {
+    patientName: "Pompapathi V Gadad",
+    time: "09:05"
+  },
+  include: {
+    Doctor: {
+    ~~~~~~
+      select: {
+        name: true
+      }
+    },
+?   doctor?: true
+  },
+  orderBy: {
+    date: "asc"
+  }
+}
+
+Unknown field `Doctor` for include statement on model `Appointment`. Available options are marked with ?.
