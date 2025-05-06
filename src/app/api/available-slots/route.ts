@@ -20,6 +20,68 @@ import { convertToIST, formatISTDate, isSameDayInIST } from '@/lib/dateUtils';
 
 const DEFAULT_CHECK_RANGE_DAYS = 30;
 
+// Helper to generate potential time slots based on schedule
+interface PotentialSlot {
+  time: string; // HH:mm format
+  isBreak?: boolean; // Optional: if the slot itself is a break
+}
+
+function generateSlots(
+  startTimeStr: string,
+  endTimeStr: string,
+  slotDurationMinutes: number,
+  breakStartTimeStr?: string | null,
+  breakEndTimeStr?: string | null
+): PotentialSlot[] {
+  const slots: PotentialSlot[] = [];
+  const startMinutes = timeToMinutes(startTimeStr);
+  const endMinutes = timeToMinutes(endTimeStr);
+  const breakStartMinutes = breakStartTimeStr ? timeToMinutes(breakStartTimeStr) : null;
+  const breakEndMinutes = breakEndTimeStr ? timeToMinutes(breakEndTimeStr) : null;
+
+  if (startMinutes === null || endMinutes === null || startMinutes >= endMinutes) {
+    return [];
+  }
+
+  let currentSlotStartMinutes = startMinutes;
+  while (currentSlotStartMinutes < endMinutes) {
+    const slotStartHours = Math.floor(currentSlotStartMinutes / 60);
+    const slotStartMins = currentSlotStartMinutes % 60;
+    const slotTime = `${String(slotStartHours).padStart(2, '0')}:${String(slotStartMins).padStart(2, '0')}`;
+
+    const currentSlotEndMinutes = currentSlotStartMinutes + slotDurationMinutes;
+
+    let isDuringBreak = false;
+    if (breakStartMinutes !== null && breakEndMinutes !== null) {
+      // Check if the slot (start to end) overlaps with the break (start to end)
+      // Overlap condition: (SlotStart < BreakEnd) and (SlotEnd > BreakStart)
+      if (currentSlotStartMinutes < breakEndMinutes && currentSlotEndMinutes > breakStartMinutes) {
+        isDuringBreak = true;
+      }
+    }
+
+    if (!isDuringBreak) {
+      slots.push({ time: slotTime });
+    } else {
+      // Optionally, you could mark it as a break slot: slots.push({ time: slotTime, isBreak: true });
+      // For now, we just skip adding it to potential bookable slots
+    }
+    currentSlotStartMinutes += slotDurationMinutes; // Move to the next slot start
+  }
+  return slots;
+}
+
+// Helper to convert HH:MM to minutes from midnight (ensure this is defined or imported)
+function timeToMinutes(timeStr: string | null): number | null {
+  if (!timeStr || !timeStr.includes(':')) return null;
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+    console.warn(`[timeToMinutes] Invalid time format: ${timeStr}`);
+    return null;
+  }
+  return hours * 60 + minutes;
+}
+
 // Helper utility to check IST midnight transitions
 function getISTDateRange(date: Date) {
   // Convert to IST for consistent date handling
@@ -298,134 +360,79 @@ export async function GET(request: Request) {
     // --- Generate Slots ---
     console.log("[Available Slots API] Using schedule object:", schedule);
 
-    // Get ALL existing appointments for this doctor
+    // Fetch existing appointments for the selected doctor on the selected date
     const existingAppointments = await prisma.appointment.findMany({
       where: {
-        doctorId: doctorId,
+        doctorId: doctorId!, // doctorId is validated earlier
+        date: {
+          gte: startUTC,
+          lt: endUTC,
+        },
         status: {
-          notIn: ['CANCELLED', 'NO_SHOW']
+          in: ['SCHEDULED', 'CONFIRMED']
         }
       },
-      select: { 
-        date: true, 
-        time: true 
-      }
+      select: {
+        date: true,
+        time: true
+      },
     });
 
-    // Filter for appointments on the requested date using IST comparison
-    const sameDataAppointments = existingAppointments.filter(apt => {
-      return isSameDayInIST(new Date(apt.date), selectedDate);
-    });
+    console.log(`[Available Slots API] Found ${existingAppointments.length} existing (SCHEDULED/CONFIRMED) appointments on ${formatISTDate(selectedDate)} (IST) for doctor ${doctorId}:`, existingAppointments.map(a => ({date: a.date, time: a.time})));
 
-    // Log for debugging
-    console.log(`[Available Slots API] Found ${sameDataAppointments.length} appointments on ${dateStringForCheck} (IST) after IST-based comparison`);
-
-    // Get set of booked times
-    const bookedTimes = new Set(sameDataAppointments.map(apt => apt.time).filter(Boolean));
-    console.log(`[Available Slots API] Booked times for ${dateStringForCheck} (IST):`, Array.from(bookedTimes));
-
-    const slots: string[] = [];
-    const slotDuration = schedule.slotDuration;
-    const bufferTime = schedule.bufferTime; 
-    const [startH, startM] = schedule.startTime.split(':').map(Number);
-    const [endH, endM] = schedule.endTime.split(':').map(Number);
-    const [breakStartH, breakStartM] = (schedule.breakStart || '').split(':').map(Number);
-    const [breakEndH, breakEndM] = (schedule.breakEnd || '').split(':').map(Number);
-
-    console.log("[Available Slots API] Slot Generation Params:", { 
-      startH, startM, endH, endM, slotDuration, bufferTime 
-    });
-
-    // Create date objects for the selected day
-    let currentTime = new Date(selectedDate);
-    currentTime.setHours(startH, startM, 0, 0);
-    
-    const endTime = new Date(selectedDate);
-    endTime.setHours(endH, endM, 0, 0);
-    
-    console.log("[Available Slots API] Loop Start/End Times:", {
-      initialCurrentTime: currentTime.toISOString(),
-      loopEndTime: endTime.toISOString()
-    });
-    
-    // Handle break times
-    const breakStartTime = schedule.breakStart ? (() => {
-      const t = new Date(selectedDate);
-      t.setHours(breakStartH, breakStartM, 0, 0);
-      return t;
-    })() : null;
-    
-    const breakEndTime = schedule.breakEnd ? (() => {
-      const t = new Date(selectedDate);
-      t.setHours(breakEndH, breakEndM, 0, 0);
-      return t;
-    })() : null;
-
-    // Total minutes for each slot cycle (work + buffer)
-    const totalSlotTime = slotDuration + bufferTime; 
-    const now = new Date(); // Get current time for past check
-
-    // Helper function to check if a time is within a blocked range
-    const isTimeInBlockedRange = (timeStr: string): { blocked: boolean, reason?: string } => {
-      for (const range of blockedTimeRanges) {
-        if (timeStr >= range.start && timeStr < range.end) {
-          return { blocked: true, reason: range.reason };
-        }
-      }
-      return { blocked: false };
-    };
-
-    while (isBefore(currentTime, endTime)) {
-      const hours = currentTime.getHours();
-      const minutes = currentTime.getMinutes();
-      const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-      
-      console.log(`[Available Slots API] Loop Iteration: Checking timeStr = ${timeStr}`);
-      let isAvailable = true;
-      let skipReason = '';
-
-      // Check 1: Is the start time of the slot in the past (if date is today)?
-      if (isToday(selectedDate) && isBefore(currentTime, now)) {
-          isAvailable = false;
-          skipReason = 'Slot is in the past';
-      }
-      // Check 2: Is it during break time? 
-      else if (breakStartTime && breakEndTime && 
-                isAfter(currentTime, breakStartTime) && 
-                isBefore(currentTime, breakEndTime)) {
-          isAvailable = false;
-          skipReason = 'Starts during break';
-      }
-      // Check 3: Is this exact time slot already booked?
-      else if (bookedTimes.has(timeStr)) {
-          isAvailable = false;
-          skipReason = 'Already booked';
-      }
-      // Check 4: Is this time in a blocked range?
-      else {
-          const blockCheck = isTimeInBlockedRange(timeStr);
-          if (blockCheck.blocked) {
-              isAvailable = false;
-              skipReason = `Blocked: ${blockCheck.reason}`;
-          }
-      }
-
-      if (isAvailable) {
-        slots.push(timeStr);
-      } else {
-        console.log(`[Available Slots API] Skipping slot ${timeStr}: ${skipReason}`);
-      }
-
-      // Move to the start of the next potential slot
-      currentTime = addMinutes(currentTime, totalSlotTime); 
+    if (!schedule) { // Should have been checked earlier, but as a safeguard
+        console.error('[Available Slots API] CRITICAL: Schedule object is null or undefined at slot generation point.');
+        return NextResponse.json({ disabledDates, slots: [], error: 'Doctor schedule not found for slot generation.' });
     }
+    
+    // Generate potential slots based on doctor's schedule
+    const potentialSlots: PotentialSlot[] = generateSlots(
+      schedule.startTime,
+      schedule.endTime,
+      schedule.slotDuration,
+      schedule.breakStart,
+      schedule.breakEnd
+    );
+    console.log(`[Available Slots API] Generated ${potentialSlots.length} potential slots for doctor ${doctorId} on ${dateStringForCheck}. Schedule: Start ${schedule.startTime}, End ${schedule.endTime}, Slot ${schedule.slotDuration}min, Break: ${schedule.breakStart}-${schedule.breakEnd}`);
+    
+    // Filter out booked slots
+    const availableSlots = potentialSlots.filter((slot: PotentialSlot) => {
+      if (slot.isBreak) return false; // Explicitly skip if marked as a break slot by generateSlots
 
-    console.log(`[Available Slots API] Generated ${slots.length} slots for ${dateStringForCheck}`);
-    if (slots.length === 0) {
+      const slotTimeStr = slot.time;
+      const slotStartDateTime = parse(slotTimeStr, 'HH:mm', istDate); 
+      const slotEndDateTime = addMinutes(slotStartDateTime, schedule.slotDuration);
+
+      const isBooked = existingAppointments.some((appt) => {
+        if (!appt.time) return false;
+        
+        // Ensure appointment date is correctly used for parsing its time
+        // The appt.date from DB is UTC. Convert it to IST for consistent comparison with slot time.
+        const apptDateInIST = convertToIST(appt.date); 
+        const apptStartDateTime = parse(appt.time, 'HH:mm', apptDateInIST);
+        
+        // Assume appointment duration is also based on the doctor's slotDuration for this check
+        const apptEndDateTime = addMinutes(apptStartDateTime, schedule.slotDuration); 
+
+        const overlap = isBefore(slotStartDateTime, apptEndDateTime) && isAfter(slotEndDateTime, apptStartDateTime);
+        if (overlap) {
+          console.log(`[Available Slots API] Slot ${slotTimeStr} (parsed with istDate ${istDate.toISOString()}) overlaps with existing appointment at ${appt.time} on ${formatISTDate(appt.date)} (parsed with apptDateInIST ${apptDateInIST.toISOString()})`);
+        }
+        return overlap;
+      });
+      return !isBooked;
+    });
+
+    console.log(`[Available Slots API] Generated ${availableSlots.length} available slots for ${dateStringForCheck}`);
+    if (availableSlots.length === 0) {
       console.log(`[Available Slots API] WARNING: No slots generated! Schedule:`, schedule);
     }
     
-    return NextResponse.json({ disabledDates, slots });
+    return NextResponse.json({ 
+        disabledDates, 
+        slots: availableSlots.map(s => s.time), // Return only time strings
+        doctorName: doctor?.name 
+    });
 
   } catch (error) {
     console.error('[Available Slots API] Error:', error);

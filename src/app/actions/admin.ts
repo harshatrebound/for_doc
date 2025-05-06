@@ -584,6 +584,10 @@ export async function updateAppointmentStatus(appointmentId: string, newStatus: 
       }
     });
 
+    // Add revalidation here
+    revalidatePath('/admin/appointments'); // Existing revalidation
+    revalidatePath('/api/available-slots'); // Revalidate available slots
+
     return {
       success: true,
       data: updated,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 export async function PATCH(
   request: NextRequest,
@@ -37,6 +38,8 @@ export async function PATCH(
         },
       },
     });
+
+    revalidatePath('/api/available-slots');
 
     return NextResponse.json(appointment);
   } catch (error) {
