@@ -131,7 +131,7 @@ async function getPublications(): Promise<Publication[]> {
         // Process the image URL - ensure it's valid and absolute
         let imageUrl = row.FeaturedImageURL || '';
         // Basic check for validity - can enhance if needed
-        if (!imageUrl || !imageUrl.startsWith('http')) { 
+        if (!imageUrl || (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://'))) { 
           imageUrl = DEFAULT_IMAGE;
         } else {
           // Standardize the image URL to match gallery format
