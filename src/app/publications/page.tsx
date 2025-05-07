@@ -308,33 +308,7 @@ function PublicationHighlight({ publication }: { publication: Publication }) {
 export default async function PublicationsPage() {
   const publications = await getPublications();
   
-  // Get main page content from the first CSV record with slug 'publication'
-  let mainPageContentBlocks: any[] = [];
-  try {
-    const csvFilePath = path.join(process.cwd(), 'docs', 'publication_cms.csv');
-    const fileContent = await fs.readFile(csvFilePath, 'utf-8');
-    
-    // Use a simple and consistent configuration for Papa Parse
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
-      quoteChar: '"',
-      escapeChar: '"',
-    });
-    
-    const mainPageRow = parsedCsv.data.find((row) => row.Slug === 'publication' && row.PageType === 'publication');
-    if (mainPageRow && mainPageRow.ContentBlocksJSON) {
-      try {
-        mainPageContentBlocks = JSON.parse(mainPageRow.ContentBlocksJSON || '[]');
-        console.log(`Main page content blocks parsed successfully: ${mainPageContentBlocks.length} blocks found`);
-      } catch (e) {
-        console.error(`Error parsing ContentBlocksJSON for main page display: ${e}`);
-        mainPageContentBlocks = [];
-      }
-    }
-  } catch (error) {
-    console.error('Error loading main page content blocks:', error);
-  }
+  // Simplified approach - no need to fetch main page content blocks
   
   // Split the first publication as a highlight if there are any
   const highlightPublication = publications.length > 0 ? publications[0] : null;
@@ -381,108 +355,6 @@ export default async function PublicationsPage() {
 
       {/* Main Content Area */}
       <main id="publications-content" className="container mx-auto px-4 py-12 md:py-16">
-        {/* Featured Articles from ContentBlocks */}
-        {mainPageContentBlocks.length > 0 && (
-          <div className="mb-16">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">
-              Featured Articles
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {mainPageContentBlocks.map((block: any, index: number) => {
-                // Only process image and heading pairs
-                if (block.type === 'image' && 
-                    mainPageContentBlocks[index + 1] && 
-                    mainPageContentBlocks[index + 1].type === 'heading') {
-                  
-                  const heading = mainPageContentBlocks[index + 1];
-                  // Extract slug from heading text if available
-                  let articleSlug = '';
-                  
-                  // Clean up heading text and try to find matching publication
-                  const headingText = heading.text.replace(/<[^>]*>/g, '').trim();
-                  const matchingPub = publications.find(pub => 
-                    pub.title.toLowerCase() === headingText.toLowerCase()
-                  );
-                  
-                  if (matchingPub) {
-                    articleSlug = matchingPub.slug;
-                  }
-                  
-                  // Get image path
-                  const imageUrl = getImagePath(block.src);
-                  
-                  return articleSlug ? (
-                    <Link 
-                      key={index}
-                      href={`/publications/${articleSlug}`}
-                      className="group block bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300"
-                    >
-                      <div className="relative h-48 overflow-hidden">
-                        <div className="absolute inset-0 bg-gray-200">
-                          <ClientImage
-                            src={imageUrl}
-                            alt={block.alt || headingText}
-                            fill
-                            className="object-cover transition-all duration-500 group-hover:scale-105"
-                            unoptimized={true}
-                          />
-                        </div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                      </div>
-                      
-                      <div className="p-5">
-                        <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-[#8B5C9E] transition-colors">
-                          {headingText}
-                        </h3>
-                        
-                        <div className="flex items-center mt-4 text-gray-600">
-                          <BookOpen className="w-4 h-4 mr-1" />
-                          <span className="inline-flex items-center text-sm">
-                            Read Publication
-                            <ChevronRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-0.5" />
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                  ) : (
-                    <div 
-                      key={index}
-                      className="group block bg-white rounded-xl overflow-hidden shadow-md cursor-default"
-                    >
-                      <div className="relative h-48 overflow-hidden">
-                        <div className="absolute inset-0 bg-gray-200">
-                          <ClientImage
-                            src={imageUrl}
-                            alt={block.alt || headingText}
-                            fill
-                            className="object-cover"
-                            unoptimized={true}
-                          />
-                        </div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                      </div>
-                      
-                      <div className="p-5">
-                        <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
-                          {headingText}
-                        </h3>
-                        
-                        <div className="flex items-center mt-4 text-gray-600">
-                          <BookOpen className="w-4 h-4 mr-1" />
-                          <span className="inline-flex items-center text-sm">
-                            Publication Not Available
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-                return null;
-              }).filter(Boolean)}
-            </div>
-          </div>
-        )}
         
         {/* Publications Count */}
         <div className="mb-10">

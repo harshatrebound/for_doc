@@ -10,8 +10,8 @@ import { Metadata, ResolvingMetadata } from 'next';
 import { ChevronLeft, Calendar, Clock, Share2, Facebook, Twitter, Linkedin, Mail } from 'lucide-react';
 import PostContentRenderer from '@/components/blog/PostContentRenderer';
 import { BlogPost, RelatedPostCard, formatDate } from '@/components/blog/PostCard';
-import BookingModal from '@/components/BookingModal';
 import { processImageUrl, extractCategories } from '@/app/utils/image-utils';
+import BookingButton from './components/BookingButton';
 
 // Define props for the dynamic page
 type Props = {
@@ -495,11 +495,7 @@ export default async function PostPage({ params }: Props) {
                 <p className="text-gray-600 mb-4 text-sm">
                   Consult with our specialists about {post.category.toLowerCase()} conditions and get personalized treatment.
                 </p>
-                <button 
-                  className="w-full py-3 px-4 bg-[#8B5C9E] hover:bg-[#7a4f8a] text-white font-medium rounded-lg transition-colors text-center"
-                >
-                  Book an Appointment
-                </button>
+                <BookingButton category={post.category} />
               </div>
               
               {/* Table of Contents */}
@@ -525,11 +521,12 @@ export default async function PostPage({ params }: Props) {
                 <div className="flex items-center space-x-4 mb-3">
                   <div className="w-16 h-16 rounded-full overflow-hidden relative flex-shrink-0">
                     <Image 
-                      src="/images/doctor-profile.jpg" 
+                      src="https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/313414809_424129516595915_5712394841841282653_n.jpg" 
                       alt="Dr. Naveen Kumar L.V"
                       width={64}
                       height={64}
                       className="object-cover"
+                      unoptimized={true}
                     />
                   </div>
                   <div>
