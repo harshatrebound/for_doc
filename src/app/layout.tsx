@@ -5,6 +5,7 @@ import "../styles/globals.css";
 import { Toaster } from 'react-hot-toast';
 import { Suspense } from 'react';
 import Loading from './loading';
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,6 +23,9 @@ export const metadata: Metadata = {
   authors: [{ name: "Sports Orthopedics Institute", url: "https://fordoc-production.up.railway.app" }],
   creator: "Sports Orthopedics Institute",
   publisher: "Sports Orthopedics Institute",
+  verification: {
+    google: "YOUR_GOOGLE_SEARCH_CONSOLE_VERIFICATION_STRING",
+  },
   formatDetection: {
     email: false,
     address: false,
@@ -78,6 +82,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -110,6 +116,7 @@ export default function RootLayout({
             },
           }}
         />
+        {gaMeasurementId && <GoogleAnalytics gaId={gaMeasurementId} />}
       </body>
     </html>
   );
