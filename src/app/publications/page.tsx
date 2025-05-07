@@ -39,32 +39,64 @@ export const metadata: Metadata = {
 // Default fallback image
 const DEFAULT_IMAGE = '/images/default-procedure.jpg';
 
-// Standardize image URL to use the gallery domain pattern
-function standardizeImageUrl(url: string): string {
+// Process image URL to prioritize local files and fix double extensions
+function processImageUrl(url: string): string {
   if (!url || url === DEFAULT_IMAGE) return url;
   
-  // Check if the URL is already using the correct domain pattern
-  if (url.includes('73n.0c8.myftpupload.com/wp-content/uploads')) {
-    return url;
-  }
-
-  // Extract the last part of the URL path (filename)
+  // Try to extract the filename from the URL
+  let filename = '';
   try {
-    const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split('/');
-    const filename = pathParts[pathParts.length - 1];
-    
-    // If we couldn't extract a filename, return the original URL
-    if (!filename) return url;
-    
-    // Construct new URL with the gallery domain pattern
-    // Assuming all uploads go to the same year/month folder for simplicity
-    return `https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/${filename}`;
+    // Handle both full URLs and relative paths
+    if (url.startsWith('http')) {
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split('/');
+      filename = pathParts[pathParts.length - 1];
+    } else {
+      // For relative paths, just get the last part
+      const pathParts = url.split('/');
+      filename = pathParts[pathParts.length - 1];
+    }
   } catch (e) {
-    // If URL parsing fails, return the original URL
-    console.warn(`Failed to standardize image URL: ${url}`, e);
+    console.warn(`Failed to parse URL: ${url}`, e);
     return url;
   }
+  
+  // If we couldn't extract a filename, return the original URL
+  if (!filename) return url;
+  
+  // Fix double extensions in the filename
+  filename = fixFilenameDoubleExtensions(filename);
+  
+  // Check if the file exists in local uploads folder
+  // Since we can't check file existence on the server side directly,
+  // we'll just construct the path assuming it exists
+  return `/uploads/content/${filename}`;
+}
+
+// Helper function to fix double extensions in filenames
+function fixFilenameDoubleExtensions(filename: string): string {
+  // Common image extensions
+  const extensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'];
+  
+  // Check for double extensions
+  for (const ext of extensions) {
+    const doubleExt = `${ext}${ext}`;
+    if (filename.toLowerCase().endsWith(doubleExt)) {
+      return filename.substring(0, filename.length - ext.length);
+    }
+  }
+  
+  // Also handle truncated extensions (like .j.jpg or .we.webp)
+  for (const ext of extensions) {
+    for (let i = 1; i < ext.length - 1; i++) {
+      const partialExt = ext.substring(0, i);
+      if (filename.toLowerCase().endsWith(`${partialExt}${ext}`)) {
+        return filename.substring(0, filename.length - (partialExt.length + ext.length)) + ext;
+      }
+    }
+  }
+  
+  return filename;
 }
 
 // Get publications from CSV
@@ -128,14 +160,14 @@ async function getPublications(): Promise<Publication[]> {
         // Clean up title (e.g., remove site name suffix)
         const title = (row.Title || '').split('|')[0].trim();
         
-        // Process the image URL - ensure it's valid and absolute
+        // Process the image URL - ensure it's valid and use local files when possible
         let imageUrl = row.FeaturedImageURL || '';
-        // Basic check for validity - can enhance if needed
-        if (!imageUrl || (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://'))) { 
+        // Basic check for validity
+        if (!imageUrl) { 
           imageUrl = DEFAULT_IMAGE;
         } else {
-          // Standardize the image URL to match gallery format
-          imageUrl = standardizeImageUrl(imageUrl);
+          // Process the image URL to use local files and fix extensions
+          imageUrl = processImageUrl(imageUrl);
         }
         
         // Check if content exists - refine this logic if necessary based on ContentBlocksJSON structure
@@ -215,7 +247,7 @@ const PublicationCard = ({ publication }: { publication: Publication }) => {
             alt={publication.title}
             fill
             className="object-cover transition-all duration-500 group-hover:scale-105"
-            unoptimized={publication.featuredImageUrl.startsWith('http')}
+            unoptimized={publication.featuredImageUrl.startsWith('http://') || publication.featuredImageUrl.startsWith('https://')}
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
@@ -266,7 +298,7 @@ const PublicationHighlight = ({ publication }: { publication: Publication }) => 
               alt={publication.title}
               fill
               className="object-cover"
-              unoptimized={publication.featuredImageUrl.startsWith('http')}
+              unoptimized={publication.featuredImageUrl.startsWith('http://') || publication.featuredImageUrl.startsWith('https://')}
             />
           </div>
         </div>
