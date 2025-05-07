@@ -403,6 +403,23 @@ export async function GET(request: Request) {
       const slotStartDateTime = parse(slotTimeStr, 'HH:mm', istDate); 
       const slotEndDateTime = addMinutes(slotStartDateTime, schedule.slotDuration);
 
+      // Check if slot overlaps with any time block
+      const isBlockedByTimeBlock = blockedTimeRanges.some(block => {
+        const blockStartDateTime = parse(block.start, 'HH:mm', istDate);
+        const blockEndDateTime = parse(block.end, 'HH:mm', istDate);
+        
+        // Check if there's any overlap between the slot and the block
+        const overlap = isBefore(slotStartDateTime, blockEndDateTime) && 
+                        isBefore(blockStartDateTime, slotEndDateTime);
+        
+        if (overlap) {
+          console.log(`[Available Slots API] Slot ${slotTimeStr} overlaps with time block ${block.start}-${block.end}: ${block.reason}`);
+        }
+        return overlap;
+      });
+      
+      if (isBlockedByTimeBlock) return false;
+
       const isBooked = existingAppointments.some((appt) => {
         if (!appt.time) return false;
         
