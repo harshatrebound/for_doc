@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+// Import React namespace to avoid TypeScript errors
+import * as React from 'react';
+const { useState, useEffect } = React;
 import { Share2, Twitter, Facebook, Linkedin, Mail, LinkIcon, Check } from 'lucide-react';
 
 interface SocialShareProps {
@@ -8,24 +10,38 @@ interface SocialShareProps {
 }
 
 export default function SocialShare({ title }: SocialShareProps) {
+  // Simple state for copied status
   const [copied, setCopied] = useState(false);
   
-  // Use a safer approach for getting the current URL
-  const getCurrentUrl = () => {
-    return typeof window !== 'undefined' ? window.location.href : '';
-  };
+  // Don't set share URLs during server-side rendering
+  // This prevents hydration mismatch
+  const [shareUrls, setShareUrls] = useState({
+    twitter: '#',
+    facebook: '#',
+    linkedin: '#',
+    mail: '#',
+    current: ''
+  });
   
-  const encodedTitle = encodeURIComponent(title);
-  const encodedUrl = encodeURIComponent(getCurrentUrl());
+  // Set URLs only on client-side
+  useEffect(() => {
+    const currentUrl = window.location.href;
+    const encodedTitle = encodeURIComponent(title);
+    const encodedUrl = encodeURIComponent(currentUrl);
+    
+    setShareUrls({
+      twitter: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+      mail: `mailto:?subject=${encodedTitle}&body=${encodedUrl}`,
+      current: currentUrl
+    });
+  }, [title]);
   
-  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`;
-  const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
-  const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
-  const mailUrl = `mailto:?subject=${encodedTitle}&body=${encodedUrl}`;
-  
+  // Copy URL to clipboard
   const copyToClipboard = () => {
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(getCurrentUrl())
+    if (typeof navigator !== 'undefined' && navigator.clipboard && shareUrls.current) {
+      navigator.clipboard.writeText(shareUrls.current)
         .then(() => {
           setCopied(true);
           setTimeout(() => setCopied(false), 2000);
@@ -41,7 +57,7 @@ export default function SocialShare({ title }: SocialShareProps) {
       <span className="text-sm text-gray-600 mr-1">Share:</span>
       
       <a 
-        href={twitterUrl} 
+        href={shareUrls.twitter} 
         target="_blank" 
         rel="noopener noreferrer"
         className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-[#1DA1F2] hover:text-white transition-colors"
@@ -51,7 +67,7 @@ export default function SocialShare({ title }: SocialShareProps) {
       </a>
       
       <a 
-        href={facebookUrl} 
+        href={shareUrls.facebook} 
         target="_blank" 
         rel="noopener noreferrer"
         className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-[#4267B2] hover:text-white transition-colors"
@@ -61,7 +77,7 @@ export default function SocialShare({ title }: SocialShareProps) {
       </a>
       
       <a 
-        href={linkedinUrl} 
+        href={shareUrls.linkedin} 
         target="_blank" 
         rel="noopener noreferrer"
         className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-[#0077B5] hover:text-white transition-colors"
@@ -71,7 +87,7 @@ export default function SocialShare({ title }: SocialShareProps) {
       </a>
       
       <a 
-        href={mailUrl}
+        href={shareUrls.mail}
         className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-800 hover:text-white transition-colors"
         aria-label="Share via Email"
       >

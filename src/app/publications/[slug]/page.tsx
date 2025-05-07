@@ -1,6 +1,5 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
@@ -13,11 +12,23 @@ import ClientImage from '@/app/components/ClientImage';
 
 // Constants
 const CSV_FILE_PATH = path.join(process.cwd(), 'docs', 'publication_cms.csv');
+const CSV_FILE_PATH_FALLBACK = path.join(process.cwd(), 'docs', 'publication_cms.csv.bak');
 const DEFAULT_IMAGE = '/images/default-procedure.jpg'; // Update to existing image
+
+// Debug logging for file paths in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('CSV File Path:', CSV_FILE_PATH);
+}
 
 // Get direct path to image in uploads folder
 function getImagePath(url: string): string {
   if (!url || url === DEFAULT_IMAGE) return DEFAULT_IMAGE;
+  
+  // Special case for the arthritis day publication - use a local fallback image
+  if (url.includes('d31fd1c8-world-arthritis-day.jpg') || url.includes('world-arthritis-day')) {
+    console.log('Using local fallback image for arthritis day publication');
+    return '/images/orthopedics/knee-mobility.webp'; // Use a local image that exists
+  }
   
   try {
     // Extract just the filename from the URL
@@ -40,7 +51,7 @@ function getImagePath(url: string): string {
         'knee-joint-model.webp': '1725afa5-artificial-human-knee-joint-model-medica.webp',
         '4ac9985c-man-having-intense-pain-front-knee.webp': '4ac9985c-man-having-intense-pain-front-knee.webp.webp',
         'cea71f95-foam-texture.webp': 'cea71f95-foam-texture.webp.webp',
-        'd31fd1c8-world-arthritis-day.jpg': 'd31fd1c8-world-arthritis-day.jpg.jpg',
+        'd31fd1c8-world-arthritis-day.jpg': 'd31fd1c8-world-arthritis-day.jpg',
         'a81fc9bb-young-asian-athletes-competing-track-1.jpg': 'a81fc9bb-young-asian-athletes-competing-track-1.j.jpg',
         'a66be8fe-young-asian-athletes-competing-track-1-5.jpg': 'a66be8fe-young-asian-athletes-competing-track-1-5.jpg',
         'shoulder-pain-sports-injury.webp': '71c96aa7-aching-young-handsome-sporty-boy-wearing.webp',
@@ -66,12 +77,21 @@ function getImagePath(url: string): string {
         }
       }
       
-      // If no mapping found, use the original filename
-      // This will at least show the default image if it fails
+      // If no mapping found, use the original URL for external images
+      if (url.startsWith('http')) {
+        console.log(`Using original URL for external image: ${url}`);
+        return url;
+      }
+      
+      // For local files, use the path
       return `/uploads/content/${filename}`;
     }
   } catch (e) {
     console.warn(`Failed to process image URL: ${url}`, e);
+    // Return the original URL if there's an error processing it
+    if (url.startsWith('http')) {
+      return url;
+    }
   }
   
   return DEFAULT_IMAGE;
@@ -118,15 +138,13 @@ type Props = {
 };
 
 // Helper to safely parse JSON
-function safeJsonParse<T>(jsonString: string | undefined | null, fallback: T = [] as unknown as T): T {
+function safeJsonParse<T>(jsonString: string | undefined | null, fallback: T): T {
   if (!jsonString) return fallback;
   try {
-    // Handle empty array case
-    if (jsonString.trim() === '[]') return fallback;
-    
-    return JSON.parse(jsonString) as T;
-  } catch (e) {
-    console.warn("Failed to parse JSON string:", e);
+    const parsed = JSON.parse(jsonString);
+    return parsed as T;
+  } catch (error) {
+    console.error('Error parsing JSON:', error);
     return fallback;
   }
 }
@@ -176,43 +194,53 @@ export async function generateMetadata(
 async function getPublicationData(slug: string): Promise<PublicationData | null> {
   console.log(`Starting getPublicationData for slug: ${slug}`);
   
+  let fileContent: string;
   try {
-    const fileContent = await fs.readFile(CSV_FILE_PATH, 'utf-8');
-    console.log(`Successfully read CSV file for publication slug: ${slug} (file size: ${fileContent.length} bytes)`);
-    
-    // Use more robust parsing options with a cast to handle type issues
-    const parsedCsv = Papa.parse(fileContent, {
-      header: true,
-      skipEmptyLines: true,
-      quoteChar: '"',
-      escapeChar: '"',
-      dynamicTyping: false,
-      transformHeader: (header: string) => header.trim(),
-      relaxColumnCount: true 
-    } as any) as Papa.ParseResult<any>;
-
-    if (parsedCsv.errors.length > 0) {
-      parsedCsv.errors.forEach(err => {
-        if (err.code !== 'TooManyFields' && err.code !== 'TooFewFields') {
-          console.error(`CSV Parsing error for slug ${slug}:`, err);
-        } else {
-          console.warn(`CSV Parsing warning for slug ${slug} (column count mismatch):`, err);
-        }
-      });
+    try {
+      // Try to read the main CSV file first
+      fileContent = await fs.readFile(CSV_FILE_PATH, 'utf-8');
+      console.log(`Successfully read CSV file for publication slug: ${slug} (file size: ${fileContent.length} bytes)`);
+    } catch (fileError) {
+      console.error(`Error reading main CSV file: ${fileError}. Trying fallback file...`);
+      // If main file fails, try the backup file
+      fileContent = await fs.readFile(CSV_FILE_PATH_FALLBACK, 'utf-8');
+      console.log(`Successfully read fallback CSV file for publication slug: ${slug} (file size: ${fileContent.length} bytes)`);
     }
-
-    console.log(`Found ${parsedCsv.data.length} rows in CSV file`);
+    
+    // Use more robust parsing options with proper type handling
+    let parsedData: any[] = [];
+    try {
+      // Use a simple approach to parse CSV and avoid TypeScript errors
+      const parseOptions = { 
+        header: true, 
+        skipEmptyLines: true 
+      };
+      
+      // Parse the CSV and ensure we get the data as an array
+      const result = Papa.parse(fileContent, parseOptions);
+      
+      // Safely access the data property
+      if (result && typeof result === 'object' && 'data' in result && Array.isArray(result.data)) {
+        parsedData = result.data;
+        console.log(`Found ${parsedData.length} rows in CSV file`);
+      } else {
+        console.error('CSV parsing did not return expected data structure');
+      }
+    } catch (parseError) {
+      console.error(`Error parsing CSV for slug ${slug}:`, parseError);
+      return null;
+    }
     
     // Find the publication with matching slug
-    const row = parsedCsv.data.find(r => r.Slug === slug && r.PageType === 'publication');
+    const row = parsedData.find((r: any) => r.Slug === slug && r.PageType === 'publication');
 
     if (!row) {
-      console.error(`No publication found with slug: ${slug} (checked ${parsedCsv.data.length} rows)`);
+      console.error(`No publication found with slug: ${slug} (checked ${parsedData.length} rows)`);
       
       // Debug: List all available slugs to help troubleshoot
-      const availableSlugs = parsedCsv.data
-        .filter(r => r.PageType === 'publication')
-        .map(r => r.Slug);
+      const availableSlugs = parsedData
+        .filter((r: any) => r.PageType === 'publication')
+        .map((r: any) => r.Slug);
       console.log(`Available publication slugs: ${availableSlugs.join(', ')}`);
       
       return null;
@@ -224,14 +252,19 @@ async function getPublicationData(slug: string): Promise<PublicationData | null>
     let contentBlocksExist = !!row.ContentBlocksJSON;
     console.log(`ContentBlocksJSON field exists: ${contentBlocksExist}`);
     
+    // Initialize content JSON string
+    let contentJsonString = '';
+    
     if (contentBlocksExist) {
-      const contentJsonLength = row.ContentBlocksJSON.length;
+      contentJsonString = row.ContentBlocksJSON || '[]';
+      const contentJsonLength = contentJsonString.length;
       console.log(`ContentBlocksJSON value length: ${contentJsonLength} chars`);
       if (contentJsonLength > 0) {
-        console.log(`ContentBlocksJSON sample: ${row.ContentBlocksJSON.substring(0, Math.min(100, contentJsonLength))}...`);
+        console.log(`ContentBlocksJSON sample: ${contentJsonString.substring(0, Math.min(100, contentJsonLength))}...`);
       }
     } else {
       console.log(`ContentBlocksJSON field is null or undefined`);
+      contentJsonString = '[]';
     }
 
     // Clean up title
@@ -282,7 +315,8 @@ async function getPublicationData(slug: string): Promise<PublicationData | null>
     // Get breadcrumbs (or set defaults)
     let breadcrumbs: BreadcrumbItem[] = [];
     try {
-      breadcrumbs = safeJsonParse<BreadcrumbItem[]>(row.BreadcrumbJSON, []);
+      const parsedResult = safeJsonParse<BreadcrumbItem[]>(row.BreadcrumbJSON, []);
+      breadcrumbs = parsedResult || [];
       console.log(`Parsed breadcrumbs, found ${breadcrumbs.length} items`);
     } catch (error) {
       console.error(`Error parsing breadcrumbs for slug ${slug}:`, error);
@@ -358,7 +392,8 @@ const ContentRenderer = ({ contentBlocks }: { contentBlocks: ContentBlock[] }) =
       {contentBlocks.map((block, index) => {
         switch (block.type) {
           case 'heading':
-            const HeadingTag = `h${block.level || 2}` as keyof JSX.IntrinsicElements;
+            const level = block.level || 2;
+            const HeadingTag = `h${level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
             return (
               <HeadingTag 
                 key={index} 
@@ -481,6 +516,7 @@ const RelatedPublicationCard = ({ title, slug, image }: { title: string; slug: s
 };
 
 // Page component
+
 export default async function PublicationDetail({ params }: Props) {
   try {
     console.log(`[PublicationDetail] Starting to render page for slug: ${params.slug}`);
@@ -488,11 +524,26 @@ export default async function PublicationDetail({ params }: Props) {
     // Get the publication data
     const publication = await getPublicationData(params.slug);
     
+    // If publication not found, return a not found page
     if (!publication) {
       console.error(`[PublicationDetail] Publication not found for slug: ${params.slug}`);
-      // Add a delay before calling notFound to ensure logs are flushed
+      // Add a delay to ensure logs are flushed
       await new Promise(resolve => setTimeout(resolve, 100));
-      notFound();
+      
+      // Return a simple not found page instead of using Next.js navigation
+      return (
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+          <SiteHeader />
+          <div className="max-w-lg w-full bg-white rounded-lg shadow-md p-8 my-8 text-center">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Publication Not Found</h1>
+            <p className="text-gray-600 mb-6">The publication you're looking for could not be found.</p>
+            <Link href="/publications" className="inline-flex items-center px-4 py-2 bg-[#8B5C9E] text-white rounded-md hover:bg-[#7A4C8C]">
+              <span className="mr-2">←</span> Back to Publications
+            </Link>
+          </div>
+          <SiteFooter />
+        </div>
+      );
     }
     
     console.log(`[PublicationDetail] Successfully fetched publication data for: ${publication.title}`);
@@ -503,33 +554,40 @@ export default async function PublicationDetail({ params }: Props) {
     try {
       const fileContent = await fs.readFile(CSV_FILE_PATH, 'utf-8');
       
-      // Use more robust parsing
-      const parsedCsv = Papa.parse(fileContent, { 
-        header: true, 
-        skipEmptyLines: true,
-        quoteChar: '"',
-        escapeChar: '"',
-        relaxColumnCount: true
-      } as any) as Papa.ParseResult<any>;
+      // Parse the CSV with a try-catch block to handle any errors
+      let parsedData: any[] = [];
       
-      relatedPublications = parsedCsv.data
-        .filter(row => row.Slug !== params.slug && row.PageType === 'publication' && row.Slug)
-        .slice(0, 3)
-        .map(row => {
-          let imageUrl = row.FeaturedImageURL || '';
-          if (!imageUrl || (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://'))) {
-            imageUrl = DEFAULT_IMAGE;
-          } else {
-            imageUrl = standardizeImageUrl(imageUrl);
-          }
-          
-          return {
-            slug: row.Slug,
-            title: (row.Title || '').split('|')[0].trim(),
-            featuredImageUrl: imageUrl,
-          };
+      try {
+        // Use a safer approach to parse the CSV
+        const result = Papa.parse(fileContent, { 
+          header: true, 
+          skipEmptyLines: true
         });
-      console.log(`[PublicationDetail] Found ${relatedPublications?.length || 0} related publications`);
+        
+        // Only use the data if it exists
+        if (result && Array.isArray(result.data)) {
+          parsedData = result.data;
+        }
+      } catch (error) {
+        console.error('Error parsing CSV for related publications:', error);
+      }
+      
+      relatedPublications = parsedData
+        .filter((r: any) => r.PageType === 'publication' && r.Slug !== params.slug)
+        .slice(0, 3)
+        .map((r: any) => ({
+          slug: r.Slug,
+          title: r.Title ? r.Title.split('|')[0].trim() : '',
+          featuredImageUrl: getImagePath(r.FeaturedImageURL || ''),
+          publicationDate: r.PublicationDate || '',
+          authors: r.Authors || '',
+          journal: r.Journal || '',
+          originalUrl: r.OriginalURL || '',
+          contentBlocks: [],
+          breadcrumbs: [],
+          hasContent: false
+        }));
+      
     } catch (error) {
       console.error(`[PublicationDetail] Error fetching related publications:`, error);
       // Don't fail the whole page if just related publications fail
@@ -538,7 +596,7 @@ export default async function PublicationDetail({ params }: Props) {
     
     // First content block with type 'image' for hero, if any
     let heroImage = '';
-    if (publication.hasContent && publication.contentBlocks.length > 0) {
+    if (publication && publication.hasContent && publication.contentBlocks.length > 0) {
       const firstImageBlock = publication.contentBlocks.find(block => block.type === 'image');
       if (firstImageBlock && firstImageBlock.src) {
         heroImage = firstImageBlock.src;
@@ -546,24 +604,30 @@ export default async function PublicationDetail({ params }: Props) {
     }
     
     // If no hero image from content blocks, use the featured image
-    if (!heroImage) {
+    if (!heroImage && publication) {
       heroImage = publication.featuredImageUrl;
     }
     
-    // Ensure hero image is valid
-    if (!isValidUrl(heroImage)) {
+    // Special case for arthritis day publication
+    if (params.slug === 'disease-on-this-world-arthritis-day-2023' || publication?.slug === 'disease-on-this-world-arthritis-day-2023') {
+      console.log('Using specific local image for arthritis day publication');
+      heroImage = '/images/orthopedics/knee-mobility.webp';
+    }
+    // Ensure hero image is valid for other publications
+    else if (!isValidUrl(heroImage)) {
       heroImage = DEFAULT_IMAGE;
     }
     
     // Flag to track if we're using the first content image as hero
-    const usingFirstContentImageAsHero = 
+    const usingFirstContentImageAsHero = publication ? (
       publication.hasContent && 
       publication.contentBlocks.length > 0 && 
-      publication.contentBlocks.find(block => block.type === 'image')?.src === heroImage;
+      publication.contentBlocks.find(block => block.type === 'image')?.src === heroImage
+    ) : false;
     
     return (
       <div className="min-h-screen bg-gray-50">
-        <SiteHeader theme="light" />
+        <SiteHeader />
         
         {/* Simple Hero Section */}
         <section className="bg-[#F0EBF4] pt-24 pb-8 border-b border-gray-200">
@@ -579,32 +643,32 @@ export default async function PublicationDetail({ params }: Props) {
             </div>
             
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-5 leading-tight">
-              {publication.title}
+              {publication?.title || ''}
             </h1>
             
             <div className="flex flex-wrap gap-4 md:gap-8 text-sm text-gray-600">
-              {publication.authors && (
+              {publication?.authors && (
                 <div className="flex items-center">
                   <User className="w-4 h-4 mr-1.5 text-[#8B5C9E]" />
                   <span>{publication.authors}</span>
                 </div>
               )}
               
-              {publication.publicationDate && (
+              {publication?.publicationDate && (
                 <div className="flex items-center">
                   <Calendar className="w-4 h-4 mr-1.5 text-[#8B5C9E]" />
                   <span>{publication.publicationDate}</span>
                 </div>
               )}
               
-              {publication.journal && (
+              {publication?.journal && (
                 <div className="flex items-center">
                   <BookOpen className="w-4 h-4 mr-1.5 text-[#8B5C9E]" />
                   <span>{publication.journal}</span>
                 </div>
               )}
               
-              {!publication.hasContent && (
+              {publication && !publication.hasContent && (
                 <div className="flex items-center">
                   <ExternalLink className="w-4 h-4 mr-1.5 text-yellow-500" />
                   <span className="text-yellow-600">External Publication</span>
@@ -619,24 +683,26 @@ export default async function PublicationDetail({ params }: Props) {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Main Content */}
             <div className="lg:w-2/3">
-              {/* Featured Image */}
-              <div className="mb-8 rounded-xl overflow-hidden shadow-sm">
-                <ClientImage
-                  src={heroImage}
-                  alt={publication.title}
-                  width={1000}
-                  height={600}
-                  className="w-full h-auto"
-                  unoptimized={!isValidUrl(heroImage) || !heroImage.startsWith('/')}
-                />
-              </div>
+              {/* Featured Image - Only show if we have a valid hero image */}
+              {heroImage && heroImage !== DEFAULT_IMAGE && (
+                <div className="mb-8 rounded-xl overflow-hidden shadow-sm">
+                  <ClientImage
+                    src={heroImage}
+                    alt={publication?.title || 'Publication'}
+                    width={1000}
+                    height={600}
+                    className="w-full h-auto"
+                    unoptimized={!isValidUrl(heroImage) || !heroImage.startsWith('/')}
+                  />
+                </div>
+              )}
               
               {/* Publication Content */}
               <article className="bg-white rounded-xl shadow-sm p-6 md:p-8 mb-6">
-                <ContentRenderer contentBlocks={publication.contentBlocks} />
+                {publication && <ContentRenderer contentBlocks={publication.contentBlocks} />}
                 
                 {/* Show external link button if it's an external publication */}
-                {!publication.hasContent && publication.originalUrl && (
+                {publication && !publication.hasContent && publication.originalUrl && (
                   <ExternalLinkButton url={publication.originalUrl} />
                 )}
               </article>
@@ -649,7 +715,7 @@ export default async function PublicationDetail({ params }: Props) {
                   </span>
                 </div>
                 
-                <SocialShare title={publication.title} />
+                <SocialShare title={publication?.title || ''} />
               </div>
             </div>
             
@@ -662,14 +728,14 @@ export default async function PublicationDetail({ params }: Props) {
                 </h3>
                 
                 <PublicationCitation 
-                  title={publication.title}
-                  authors={publication.authors}
-                  date={publication.publicationDate}
-                  journal={publication.journal}
+                  title={publication?.title || ''}
+                  authors={publication?.authors || ''}
+                  date={publication?.publicationDate || ''}
+                  journal={publication?.journal || ''}
                 />
                 
                 {/* External Link for sidebar */}
-                {!publication.hasContent && publication.originalUrl && (
+                {publication && !publication.hasContent && publication.originalUrl && (
                   <div className="my-5">
                     <a 
                       href={publication.originalUrl} 
@@ -707,8 +773,22 @@ export default async function PublicationDetail({ params }: Props) {
   } catch (error) {
     // Log the error with as much detail as possible
     console.error(`[PublicationDetail] Unexpected error rendering publication for slug ${params.slug}:`, error);
-    // Add a delay before calling notFound to ensure logs are flushed
+    // Add a delay to ensure logs are flushed
     await new Promise(resolve => setTimeout(resolve, 100));
-    notFound();
+    
+    // Return an error page instead of using Next.js navigation
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <SiteHeader />
+        <div className="max-w-lg w-full bg-white rounded-lg shadow-md p-8 my-8 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Something Went Wrong</h1>
+          <p className="text-gray-600 mb-6">We encountered an error while loading this publication.</p>
+          <Link href="/publications" className="inline-flex items-center px-4 py-2 bg-[#8B5C9E] text-white rounded-md hover:bg-[#7A4C8C]">
+            <span className="mr-2">←</span> Back to Publications
+          </Link>
+        </div>
+        <SiteFooter />
+      </div>
+    );
   }
 } 

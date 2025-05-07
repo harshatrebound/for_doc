@@ -140,6 +140,21 @@ const nextConfig = {
         destination: '/:path*',
       }
     ]
+  },
+  
+  async redirects() {
+    return [
+      {
+        source: '/publication/:slug',
+        destination: '/publications/:slug',
+        permanent: true,
+      },
+      {
+        source: '/publication',
+        destination: '/publications',
+        permanent: true,
+      }
+    ];
   }
 };
 
