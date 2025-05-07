@@ -7,6 +7,20 @@ import Image from 'next/image';
 import type { Doctor } from '@/types/booking';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useBookingForm } from '@/contexts/BookingFormContext';
+import { format, isToday, isTomorrow } from 'date-fns';
+
+// Helper function to format availability date
+const formatAvailabilityDate = (availabilityDate: Date | string | undefined): string => {
+  if (!availabilityDate) return "Not available";
+  
+  const date = typeof availabilityDate === 'string' ? new Date(availabilityDate) : availabilityDate;
+  
+  if (isToday(date)) return "Today";
+  if (isTomorrow(date)) return "Tomorrow";
+  
+  // Format as "Jan 15" for other dates
+  return format(date, 'MMM d');
+};
 
 interface DoctorCardProps {
   doctor: Doctor;
@@ -14,97 +28,119 @@ interface DoctorCardProps {
   onSelect: (doctor: Doctor) => void;
 }
 
-const DoctorCard = ({ doctor, isSelected, onSelect }: DoctorCardProps) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -20 }}
-    onClick={() => onSelect(doctor)}
-    className={`
-      relative w-full rounded-2xl overflow-hidden cursor-pointer
-      transition-all duration-200 touch-manipulation
-      ${isSelected
-        ? 'bg-gradient-to-br from-[#8B5C9E] to-[#6B4A7E] text-white shadow-xl'
-        : 'bg-white border border-gray-200 hover:border-[#8B5C9E] hover:shadow-md'
-      }
-    `}
-  >
-    <div className="p-4 sm:p-5">
-      <div className="flex gap-4">
-        {/* Doctor Image with Status */}
-        <div className="relative flex-shrink-0">
-          <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 ring-2 ring-white">
-            <Image
-              src={doctor.image || '/default-doctor.png'}
-              alt={doctor.name}
-              width={80}
-              height={80}
-              className="w-full h-full object-cover"
-            />
+const DoctorCard = ({ doctor, isSelected, onSelect }: DoctorCardProps) => {
+  // Determine next available date text
+  // In a real implementation, doctor would have a nextAvailableDate property
+  // For now, we'll use doctor.availability to determine if the doctor is available
+  
+  // Default to today or tomorrow randomly if the doctor is available
+  let availabilityDate: Date | undefined;
+  if (doctor.availability) {
+    // For demonstration, simulate some doctors available today and some tomorrow
+    // In a real implementation, this would come from the API
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    
+    // Use doctor's id to consistently get the same date for the same doctor
+    const useTomorrow = doctor.id.charCodeAt(0) % 2 === 0;
+    availabilityDate = useTomorrow ? tomorrow : today;
+  }
+  
+  const availabilityText = formatAvailabilityDate(availabilityDate);
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      onClick={() => onSelect(doctor)}
+      className={`
+        relative w-full rounded-2xl overflow-hidden cursor-pointer
+        transition-all duration-200 touch-manipulation
+        ${isSelected
+          ? 'bg-gradient-to-br from-[#8B5C9E] to-[#6B4A7E] text-white shadow-xl'
+          : 'bg-white border border-gray-200 hover:border-[#8B5C9E] hover:shadow-md'
+        }
+      `}
+    >
+      <div className="p-4 sm:p-5">
+        <div className="flex gap-4">
+          {/* Doctor Image with Status */}
+          <div className="relative flex-shrink-0">
+            <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 ring-2 ring-white">
+              <Image
+                src={doctor.image || '/default-doctor.png'}
+                alt={doctor.name}
+                width={80}
+                height={80}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {doctor.availability && (
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full ring-2 ring-white" />
+            )}
           </div>
-          {doctor.availability && (
-            <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full ring-2 ring-white" />
-          )}
-        </div>
 
-        {/* Doctor Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className={`text-lg font-semibold tracking-tight ${isSelected ? 'text-white' : 'text-gray-900'}`}>
-                {doctor.name}
-              </h3>
-              <p className={`text-sm mt-0.5 ${isSelected ? 'text-white/90' : 'text-gray-600'}`}>
-                {doctor.speciality}
-              </p>
-            </div>
-            <div className="text-right">
-              <div className={`text-xl font-bold ${isSelected ? 'text-white' : 'text-[#8B5C9E]'}`}>₹{doctor.fee}</div>
-              <div className={`text-xs mt-0.5 ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>Per Visit</div>
-            </div>
-          </div>
-
-          {/* Status Indicators */}
-          <div className="mt-4 flex flex-wrap gap-4">
-            <div className="flex items-center gap-2">
-              <div className={`
-                p-2 rounded-lg
-                ${isSelected ? 'bg-white/20' : 'bg-[#8B5C9E]/10'}
-              `}>
-                <Clock className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-[#8B5C9E]'}`} />
-              </div>
+          {/* Doctor Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex justify-between items-start">
               <div>
-                <p className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-gray-900'}`}>
-                  Available
+                <h3 className={`text-lg font-semibold tracking-tight ${isSelected ? 'text-white' : 'text-gray-900'}`}>
+                  {doctor.name}
+                </h3>
+                <p className={`text-sm mt-0.5 ${isSelected ? 'text-white/90' : 'text-gray-600'}`}>
+                  {doctor.speciality}
                 </p>
-                <p className={`text-xs font-medium ${isSelected ? 'text-white/90' : 'text-gray-700'}`}>
-                  Today
-                </p>
+              </div>
+              <div className="text-right">
+                <div className={`text-xl font-bold ${isSelected ? 'text-white' : 'text-[#8B5C9E]'}`}>₹{doctor.fee}</div>
+                <div className={`text-xs mt-0.5 ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>Per Visit</div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <div className={`
-                p-2 rounded-lg
-                ${isSelected ? 'bg-white/20' : 'bg-[#8B5C9E]/10'}
-              `}>
-                <MapPin className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-[#8B5C9E]'}`} />
+            {/* Status Indicators */}
+            <div className="mt-4 flex flex-wrap gap-4">
+              <div className="flex items-center gap-2">
+                <div className={`
+                  p-2 rounded-lg
+                  ${isSelected ? 'bg-white/20' : 'bg-[#8B5C9E]/10'}
+                `}>
+                  <Clock className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-[#8B5C9E]'}`} />
+                </div>
+                <div>
+                  <p className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-gray-900'}`}>
+                    Available
+                  </p>
+                  <p className={`text-xs font-medium ${isSelected ? 'text-white/90' : 'text-gray-700'}`}>
+                    {availabilityText}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-gray-900'}`}>
-                  HSR Layout
-                </p>
-                <p className={`text-xs font-medium ${isSelected ? 'text-white/90' : 'text-gray-700'}`}>
-                  Location
-                </p>
+
+              <div className="flex items-center gap-2">
+                <div className={`
+                  p-2 rounded-lg
+                  ${isSelected ? 'bg-white/20' : 'bg-[#8B5C9E]/10'}
+                `}>
+                  <MapPin className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-[#8B5C9E]'}`} />
+                </div>
+                <div>
+                  <p className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-gray-900'}`}>
+                    HSR Layout
+                  </p>
+                  <p className={`text-xs font-medium ${isSelected ? 'text-white/90' : 'text-gray-700'}`}>
+                    Location
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 interface DoctorSelectionProps {
   onNext?: () => void;

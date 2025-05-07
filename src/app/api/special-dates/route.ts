@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(request: Request) {
   try {
@@ -15,16 +15,18 @@ export async function GET(request: Request) {
       );
     }
 
-    // Query special dates from the database
-    const result = await db.query(`
-      SELECT *
-      FROM "SpecialDate"
-      WHERE "doctorId" = $1
-      AND date >= $2
-      AND date <= $3
-    `, [doctorId, start, end]);
+    // Use Prisma client to query special dates
+    const specialDates = await prisma.specialDate.findMany({
+      where: {
+        doctorId: doctorId,
+        date: {
+          gte: new Date(start),
+          lte: new Date(end)
+        }
+      }
+    });
 
-    return NextResponse.json(result.rows);
+    return NextResponse.json(specialDates);
   } catch (error) {
     console.error('Failed to fetch special dates:', error);
     return NextResponse.json(

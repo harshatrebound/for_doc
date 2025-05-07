@@ -48,9 +48,6 @@ export default async function ProcedurePage({ params }: ProcedurePageProps) {
                   <span className="px-3 py-1 bg-[#8B5C9E]/10 text-[#8B5C9E] rounded-full text-sm font-medium mr-2">
                     {procedure.category}
                   </span>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${procedure.inpatient ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
-                    {procedure.inpatient ? 'Inpatient' : 'Outpatient'}
-                  </span>
                 </div>
               </div>
               
@@ -97,11 +94,6 @@ export default async function ProcedurePage({ params }: ProcedurePageProps) {
                       <p className="text-base text-gray-900">{procedure.recoveryPeriod}</p>
                     </div>
                   )}
-                  
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Type</h3>
-                    <p className="text-base text-gray-900">{procedure.inpatient ? 'Inpatient' : 'Outpatient'}</p>
-                  </div>
                 </div>
               </div>
               
