@@ -95,8 +95,9 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-medium text-gray-900 mb-1">Working Hours</h3>
                       <p className="text-gray-600 text-sm">
-                        Monday - Saturday: 9:00 AM - 7:00 PM<br />
-                        Sunday: By appointment only
+                        Monday - Saturday: 9:00 AM - 6:00 PM<br />
+                        Sunday: By appointment only<br />
+                        (Emergencies through Manipal ER)
                       </p>
                     </div>
                   </div>
