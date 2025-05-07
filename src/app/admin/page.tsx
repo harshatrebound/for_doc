@@ -243,7 +243,7 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-gray-900">{activity.patientName}</p>
-                    <p className="text-sm text-gray-500">with Dr. {activity.doctorName}</p>
+                    <p className="text-sm text-gray-500">with {activity.doctorName}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium text-gray-900">
