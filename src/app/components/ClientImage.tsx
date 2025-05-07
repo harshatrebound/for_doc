@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
 
 // Default fallback image
@@ -17,6 +16,7 @@ interface ClientImageProps {
   unoptimized?: boolean;
 }
 
+// Simplified version that doesn't use React state
 export default function ClientImage({
   src,
   alt,
@@ -27,26 +27,20 @@ export default function ClientImage({
   priority = false,
   unoptimized = false,
 }: ClientImageProps) {
-  const [imgSrc, setImgSrc] = useState(src || DEFAULT_IMAGE);
-  
-  // Handle image load error
-  const handleError = () => {
-    if (imgSrc !== DEFAULT_IMAGE) {
-      setImgSrc(DEFAULT_IMAGE);
-    }
-  };
+  // Use the provided src or fallback to default image
+  const imageSrc = src || DEFAULT_IMAGE;
   
   return (
     <Image
-      src={imgSrc}
+      src={imageSrc}
       alt={alt}
       width={width}
       height={height}
       fill={fill}
       className={className}
       priority={priority}
-      unoptimized={unoptimized || imgSrc.startsWith('http://') || imgSrc.startsWith('https://')}
-      onError={handleError}
+      unoptimized={true} // Set all images to unoptimized to avoid Next.js image optimization issues
+      onError={() => console.error(`Failed to load image: ${imageSrc}`)} // Simple error logging
     />
   );
 } 

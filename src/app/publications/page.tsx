@@ -39,64 +39,65 @@ export const metadata: Metadata = {
 // Default fallback image
 const DEFAULT_IMAGE = '/images/default-procedure.jpg';
 
-// Process image URL to prioritize local files and fix double extensions
-function processImageUrl(url: string): string {
-  if (!url || url === DEFAULT_IMAGE) return url;
+// Get direct path to image in uploads folder
+function getImagePath(url: string): string {
+  if (!url || url === DEFAULT_IMAGE) return DEFAULT_IMAGE;
   
-  // Try to extract the filename from the URL
-  let filename = '';
   try {
-    // Handle both full URLs and relative paths
+    // Extract just the filename from the URL
+    let filename = '';
     if (url.startsWith('http')) {
       const urlObj = new URL(url);
       const pathParts = urlObj.pathname.split('/');
       filename = pathParts[pathParts.length - 1];
     } else {
-      // For relative paths, just get the last part
       const pathParts = url.split('/');
       filename = pathParts[pathParts.length - 1];
     }
-  } catch (e) {
-    console.warn(`Failed to parse URL: ${url}`, e);
-    return url;
-  }
-  
-  // If we couldn't extract a filename, return the original URL
-  if (!filename) return url;
-  
-  // Fix double extensions in the filename
-  filename = fixFilenameDoubleExtensions(filename);
-  
-  // Check if the file exists in local uploads folder
-  // Since we can't check file existence on the server side directly,
-  // we'll just construct the path assuming it exists
-  return `/uploads/content/${filename}`;
-}
-
-// Helper function to fix double extensions in filenames
-function fixFilenameDoubleExtensions(filename: string): string {
-  // Common image extensions
-  const extensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'];
-  
-  // Check for double extensions
-  for (const ext of extensions) {
-    const doubleExt = `${ext}${ext}`;
-    if (filename.toLowerCase().endsWith(doubleExt)) {
-      return filename.substring(0, filename.length - ext.length);
-    }
-  }
-  
-  // Also handle truncated extensions (like .j.jpg or .we.webp)
-  for (const ext of extensions) {
-    for (let i = 1; i < ext.length - 1; i++) {
-      const partialExt = ext.substring(0, i);
-      if (filename.toLowerCase().endsWith(`${partialExt}${ext}`)) {
-        return filename.substring(0, filename.length - (partialExt.length + ext.length)) + ext;
+    
+    if (filename) {
+      // Extract the base filename without extension
+      const baseFilename = filename.split('.')[0];
+      
+      // Map of known problematic filenames to their correct versions
+      const filenameMap: {[key: string]: string} = {
+        'knee-joint-model.webp': '1725afa5-artificial-human-knee-joint-model-medica.webp',
+        '4ac9985c-man-having-intense-pain-front-knee.webp': '4ac9985c-man-having-intense-pain-front-knee.webp.webp',
+        'cea71f95-foam-texture.webp': 'cea71f95-foam-texture.webp.webp',
+        'd31fd1c8-world-arthritis-day.jpg': 'd31fd1c8-world-arthritis-day.jpg.jpg',
+        'a81fc9bb-young-asian-athletes-competing-track-1.jpg': 'a81fc9bb-young-asian-athletes-competing-track-1.j.jpg',
+        'a66be8fe-young-asian-athletes-competing-track-1-5.jpg': 'a66be8fe-young-asian-athletes-competing-track-1-5.jpg',
+        'shoulder-pain-sports-injury.webp': '71c96aa7-aching-young-handsome-sporty-boy-wearing.webp',
+        'e73bcde7-side-view-young-man-getting-his-leg-exam.webp': 'e73bcde7-side-view-young-man-getting-his-leg-exam.webp',
+        'fdd30975-telemarketer-caucasian-man-working-with-.webp': 'fdd30975-telemarketer-caucasian-man-working-with-.webp',
+        '1c0718c6-closeup-athletic-woman-injured-her-foot-.webp': '1c0718c6-closeup-athletic-woman-injured-her-foot-.webp',
+        '5b1a06ba-young-fitness-man-holding-his-sports-leg.webp': '5b1a06ba-young-fitness-man-holding-his-sports-leg.webp',
+        '40ed85cd-young-woman-with-bandage-knee-with-effor.webp': '40ed85cd-young-woman-with-bandage-knee-with-effor.webp',
+        '8abe425e-side-view-young-man-getting-his-leg-exam.webp': '8abe425e-side-view-young-man-getting-his-leg-exam.webp',
+        'a273c131-telemarketer-caucasian-man-working-with-.webp': 'a273c131-telemarketer-caucasian-man-working-with-.webp'
+      };
+      
+      // Check if we have a direct mapping for this filename
+      if (filenameMap[filename]) {
+        return `/uploads/content/${filenameMap[filename]}`;
       }
+      
+      // Check if we have a mapping for the base filename
+      for (const [key, value] of Object.entries(filenameMap)) {
+        if (key.startsWith(baseFilename) || value.startsWith(baseFilename)) {
+          return `/uploads/content/${value}`;
+        }
+      }
+      
+      // If no mapping found, use the original filename
+      // This will at least show the default image if it fails
+      return `/uploads/content/${filename}`;
     }
+  } catch (e) {
+    console.warn(`Failed to process image URL: ${url}`, e);
   }
   
-  return filename;
+  return DEFAULT_IMAGE;
 }
 
 // Get publications from CSV
@@ -117,188 +118,155 @@ async function getPublications(): Promise<Publication[]> {
       quoteChar: '"',
       escapeChar: '"',
       dynamicTyping: false,
-      transformHeader: (header: string) => header.trim(),
+      transformHeader: (header) => {
+        return header.trim();
+      }
     });
-
-    if (parsedCsv.errors.length > 0) {
-      // Log warnings for column count issues
-      parsedCsv.errors.forEach((err) => {
-        if (err.code !== 'TooManyFields' && err.code !== 'TooFewFields') {
-          console.error("CSV Parsing error (publications list):", err);
-        } else {
-          console.warn("CSV Parsing warning (publications list - column count mismatch):", err);
-        }
-      });
-    }
-
-    // First pass - find the main publication page record
+    
+    // Process each row in the CSV
     for (const row of parsedCsv.data) {
+      // Skip rows without a slug or page type
+      if (!row.Slug || !row.PageType) continue;
+      
+      // Skip the main publications page for now (we'll process it separately)
       if (row.Slug === 'publication' && row.PageType === 'publication') {
-        // Save the main page content blocks for later use
-        let contentBlocks = [];
+        mainPublicationPage = row;
+        continue;
+      }
+      
+      // Only include publication page types
+      if (row.PageType !== 'publication') continue;
+      
+      // Create a new publication object
+      const publication: Publication = {
+        slug: row.Slug,
+        title: row.Title || '',
+        featuredImageUrl: row.FeaturedImageURL || DEFAULT_IMAGE,
+        originalUrl: row.OriginalURL || '',
+        authors: row.Authors || '',
+        journal: row.Journal || '',
+        publicationDate: row.PublicationDate || '',
+        hasContent: false, // Default to false, we'll check for content below
+      };
+      
+      // Check if this publication has content blocks
+      if (row.ContentBlocksJSON) {
         try {
-           if (row.ContentBlocksJSON && row.ContentBlocksJSON.trim() !== '[]') {
-             contentBlocks = JSON.parse(row.ContentBlocksJSON);
-           }
+          const contentBlocks = JSON.parse(row.ContentBlocksJSON);
+          publication.hasContent = contentBlocks.length > 0;
         } catch (e) {
-           console.error(`Error parsing ContentBlocksJSON for main publication page: ${e}`);
+          console.error(`Error parsing ContentBlocksJSON for ${row.Slug}: ${e}`);
         }
-        mainPublicationPage = {
-          contentBlocks: contentBlocks,
-          title: row.Title || 'Publications'
-        };
-        break;
       }
-    }
-    
-    // Convert rows to Publication objects
-    for (const row of parsedCsv.data) {
-      // Skip the main publications page in this pass
-      if (row.Slug === 'publication') continue;
       
-      if (row.Slug && row.Title && row.PageType === 'publication') {
-        // Clean up title (e.g., remove site name suffix)
-        const title = (row.Title || '').split('|')[0].trim();
-        
-        // Process the image URL - ensure it's valid and use local files when possible
-        let imageUrl = row.FeaturedImageURL || '';
-        // Basic check for validity
-        if (!imageUrl) { 
-          imageUrl = DEFAULT_IMAGE;
-        } else {
-          // Process the image URL to use local files and fix extensions
-          imageUrl = processImageUrl(imageUrl);
-        }
-        
-        // Check if content exists - refine this logic if necessary based on ContentBlocksJSON structure
-        const contentJsonString = row.ContentBlocksJSON ? row.ContentBlocksJSON.trim() : '';
-        let hasContent = false;
-        if (contentJsonString && contentJsonString !== '[]') {
-          try {
-            const parsedContent = JSON.parse(contentJsonString);
-            // Check if the parsed content is an array with items
-            hasContent = Array.isArray(parsedContent) && parsedContent.length > 0;
-          } catch (e) {
-            console.warn(`Could not parse ContentBlocksJSON for slug ${row.Slug}, assuming no content.`);
-            
-            // Alternative hasContent check - if the string contains image or paragraph markers
-            hasContent = contentJsonString.includes('"type":"image"') || 
-                         contentJsonString.includes('"type":"paragraph"') || 
-                         contentJsonString.includes('"type":"heading"');
-            
-            if (hasContent) {
-              console.info(`Found content markers in unparseable JSON for ${row.Slug}`);
-            }
-          }
-        }
-        
-        publications.push({
-          slug: row.Slug,
-          title,
-          featuredImageUrl: imageUrl, // Use the processed URL
-          originalUrl: row.OriginalURL || '',
-          authors: row.Authors || 'Dr. Naveen Kumar LV',
-          journal: row.Journal || '',
-          publicationDate: row.PublicationDate || '',
-          hasContent: hasContent
-        });
-      }
+      // Add to our publications array
+      publications.push(publication);
     }
     
-    // Sort publications to ensure ones with content appear first
+    // Sort publications by publication date (newest first)
     publications.sort((a, b) => {
-      // First sort by content availability
-      if (a.hasContent && !b.hasContent) return -1;
-      if (!a.hasContent && b.hasContent) return 1;
-      
-      // Then alphabetically by title 
-      return a.title.localeCompare(b.title);
+      if (!a.publicationDate) return 1;
+      if (!b.publicationDate) return -1;
+      return new Date(b.publicationDate).getTime() - new Date(a.publicationDate).getTime();
     });
     
-    // Log information about the main page content blocks found
-    if (mainPublicationPage) {
-      console.log('Main publication page content blocks length:', 
-                 mainPublicationPage.contentBlocks.length);
-    }
-    
-    console.log(`Total publications found: ${publications.length}`);
-    console.log(`Publications with content: ${publications.filter(p => p.hasContent).length}`);
-    
+    return publications;
   } catch (error) {
-    console.error("Error reading or parsing publication_cms.csv:", error);
-    return []; // Return empty array on error
+    console.error('Error loading publications:', error);
+    return [];
   }
-
-  return publications;
 }
 
 // Publication Card Component
-const PublicationCard = ({ publication }: { publication: Publication }) => {
+function PublicationCard({ publication }: { publication: Publication }) {
+  const { title, featuredImageUrl, originalUrl, authors, journal, publicationDate, slug, hasContent } = publication;
+  
+  // Get image path
+  const imageUrl = getImagePath(featuredImageUrl);
+  
+  // Format the title for display
+  const displayTitle = title.replace(' | Sports Orthopedics', '').trim();
+  
   return (
     <Link 
-      href={`/publications/${publication.slug}`}
-      className="group block bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300"
+      href={hasContent ? `/publications/${slug}` : originalUrl}
+      target={hasContent ? '_self' : '_blank'}
+      rel={hasContent ? '' : 'noopener noreferrer'}
+      className="group block bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow"
     >
       <div className="relative h-48 overflow-hidden">
-        {/* Use ClientImage component with proper error handling */}
         <div className="absolute inset-0 bg-gray-200">
           <ClientImage
-            src={publication.featuredImageUrl || DEFAULT_IMAGE}
-            alt={publication.title}
+            src={imageUrl}
+            alt={displayTitle}
             fill
-            className="object-cover transition-all duration-500 group-hover:scale-105"
-            unoptimized={publication.featuredImageUrl.startsWith('http://') || publication.featuredImageUrl.startsWith('https://')}
+            className="object-cover transition-transform group-hover:scale-105"
+            unoptimized={true} // Set to true for all images
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-        
-        {/* Author tag */}
-        <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-xs px-2 py-1 rounded-full">
-          <User className="w-3.5 h-3.5 text-[#8B5C9E]" />
-          <span className="text-gray-800 font-medium truncate max-w-[150px]">
-            {publication.authors}
-          </span>
-        </div>
-        
-        {/* Content indicator */}
-        {!publication.hasContent && (
-          <div className="absolute top-3 right-3 bg-yellow-500/90 text-white text-xs px-2 py-1 rounded-full">
-            External Link
-          </div>
-        )}
       </div>
       
       <div className="p-5">
         <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-[#8B5C9E] transition-colors">
-          {publication.title}
+          {displayTitle}
         </h3>
         
-        <div className="flex items-center mt-4 text-gray-600">
-          <BookOpen className="w-4 h-4 mr-1" />
-          <span className="inline-flex items-center text-sm">
-            {publication.hasContent ? 'Read Publication' : 'View Publication'}
-            <ChevronRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-0.5" />
+        <div className="flex flex-col space-y-2 text-sm text-gray-600 mb-4">
+          {authors && (
+            <div className="flex items-center">
+              <User className="w-4 h-4 mr-1" />
+              <span className="line-clamp-1">{authors}</span>
+            </div>
+          )}
+          
+          {journal && (
+            <div className="flex items-center">
+              <BookOpen className="w-4 h-4 mr-1" />
+              <span className="line-clamp-1">{journal}</span>
+            </div>
+          )}
+          
+          {publicationDate && (
+            <div className="flex items-center">
+              <Calendar className="w-4 h-4 mr-1" />
+              <span>{publicationDate}</span>
+            </div>
+          )}
+        </div>
+        
+        <div className="flex items-center mt-auto text-[#8B5C9E]">
+          <span className="inline-flex items-center text-sm font-medium">
+            {hasContent ? 'Read More' : 'View Publication'}
+            <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-0.5" />
           </span>
         </div>
       </div>
     </Link>
   );
-};
+}
 
 // Publication Highlight Component (for the first publication)
-const PublicationHighlight = ({ publication }: { publication: Publication }) => {
+function PublicationHighlight({ publication }: { publication: Publication }) {
+  const { title, featuredImageUrl, originalUrl, authors, journal, publicationDate, slug, hasContent } = publication;
+  
+  // Get image path
+  const imageUrl = getImagePath(featuredImageUrl);
+  
+  // Format the title for display
+  const displayTitle = title.replace(' | Sports Orthopedics', '').trim();
+  
   return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-md mb-8 md:mb-12">
-      <div className="flex flex-col md:flex-row">
-        <div className="md:w-2/5 relative h-[300px] md:h-auto">
-          {/* Use ClientImage component with proper error handling */}
+    <div className="mb-10">
+      <div className="bg-white rounded-xl overflow-hidden shadow-lg flex flex-col md:flex-row">
+        <div className="md:w-2/5 relative h-64 md:h-auto">
           <div className="absolute inset-0 bg-gray-200">
             <ClientImage
-              src={publication.featuredImageUrl || DEFAULT_IMAGE}
-              alt={publication.title}
+              src={imageUrl}
+              alt={displayTitle}
               fill
               className="object-cover"
-              unoptimized={publication.featuredImageUrl.startsWith('http://') || publication.featuredImageUrl.startsWith('https://')}
+              unoptimized={true} // Set to true for all images
             />
           </div>
         </div>
@@ -312,34 +280,36 @@ const PublicationHighlight = ({ publication }: { publication: Publication }) => 
             </div>
             
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-              {publication.title}
+              {displayTitle}
             </h2>
             
             <div className="flex items-center mb-4 text-gray-600">
               <User className="w-4 h-4 mr-1.5" />
-              <span>{publication.authors}</span>
+              <span>{authors}</span>
             </div>
           </div>
           
           <Link 
-            href={`/publications/${publication.slug}`}
+            href={hasContent ? `/publications/${slug}` : originalUrl}
+            target={hasContent ? '_self' : '_blank'}
+            rel={hasContent ? '' : 'noopener noreferrer'}
             className="inline-flex items-center text-[#8B5C9E] font-medium hover:underline"
           >
-            {publication.hasContent ? 'Read full publication' : 'View publication'}
+            {hasContent ? 'Read full publication' : 'View publication'}
             <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-0.5" />
           </Link>
         </div>
       </div>
     </div>
   );
-};
+}
 
 // Main Publications Page Component
 export default async function PublicationsPage() {
   const publications = await getPublications();
   
   // Get main page content from the first CSV record with slug 'publication'
-  let mainPageContentBlocks = [];
+  let mainPageContentBlocks: any[] = [];
   try {
     const csvFilePath = path.join(process.cwd(), 'docs', 'publication_cms.csv');
     const fileContent = await fs.readFile(csvFilePath, 'utf-8');
@@ -439,6 +409,9 @@ export default async function PublicationsPage() {
                     articleSlug = matchingPub.slug;
                   }
                   
+                  // Get image path
+                  const imageUrl = getImagePath(block.src);
+                  
                   return articleSlug ? (
                     <Link 
                       key={index}
@@ -448,11 +421,11 @@ export default async function PublicationsPage() {
                       <div className="relative h-48 overflow-hidden">
                         <div className="absolute inset-0 bg-gray-200">
                           <ClientImage
-                            src={block.src || DEFAULT_IMAGE}
+                            src={imageUrl}
                             alt={block.alt || headingText}
                             fill
                             className="object-cover transition-all duration-500 group-hover:scale-105"
-                            unoptimized={block.src && block.src.startsWith('http')}
+                            unoptimized={true}
                           />
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
@@ -480,11 +453,11 @@ export default async function PublicationsPage() {
                       <div className="relative h-48 overflow-hidden">
                         <div className="absolute inset-0 bg-gray-200">
                           <ClientImage
-                            src={block.src || DEFAULT_IMAGE}
+                            src={imageUrl}
                             alt={block.alt || headingText}
                             fill
                             className="object-cover"
-                            unoptimized={block.src && block.src.startsWith('http')}
+                            unoptimized={true}
                           />
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
@@ -549,4 +522,4 @@ export default async function PublicationsPage() {
       <SiteFooter />
     </div>
   );
-} 
+}

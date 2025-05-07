@@ -9,7 +9,6 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "publications:update-images": "node scripts/update-publication-image-urls.js",
     "db:seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts",
     "db:migrate-appointments": "node --loader ts-node/esm scripts/migrate-appointments.ts",
     "content:migrate": "node scripts/migrate-content.js",

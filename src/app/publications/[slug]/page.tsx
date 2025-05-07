@@ -15,32 +15,66 @@ import ClientImage from '@/app/components/ClientImage';
 const CSV_FILE_PATH = path.join(process.cwd(), 'docs', 'publication_cms.csv');
 const DEFAULT_IMAGE = '/images/default-procedure.jpg'; // Update to existing image
 
-// Standardize image URL to use the gallery domain pattern
-function standardizeImageUrl(url: string): string {
-  if (!url || url === DEFAULT_IMAGE) return url;
+// Get direct path to image in uploads folder
+function getImagePath(url: string): string {
+  if (!url || url === DEFAULT_IMAGE) return DEFAULT_IMAGE;
   
-  // Check if the URL is already using the correct domain pattern
-  if (url.includes('73n.0c8.myftpupload.com/wp-content/uploads')) {
-    return url;
-  }
-
-  // Extract the last part of the URL path (filename)
   try {
-    const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split('/');
-    const filename = pathParts[pathParts.length - 1];
+    // Extract just the filename from the URL
+    let filename = '';
+    if (url.startsWith('http')) {
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split('/');
+      filename = pathParts[pathParts.length - 1];
+    } else {
+      const pathParts = url.split('/');
+      filename = pathParts[pathParts.length - 1];
+    }
     
-    // If we couldn't extract a filename, return the original URL
-    if (!filename) return url;
-    
-    // Construct new URL with the gallery domain pattern
-    // Assuming all uploads go to the same year/month folder for simplicity
-    return `https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/${filename}`;
+    if (filename) {
+      // Extract the base filename without extension
+      const baseFilename = filename.split('.')[0];
+      
+      // Map of known problematic filenames to their correct versions
+      const filenameMap: {[key: string]: string} = {
+        'knee-joint-model.webp': '1725afa5-artificial-human-knee-joint-model-medica.webp',
+        '4ac9985c-man-having-intense-pain-front-knee.webp': '4ac9985c-man-having-intense-pain-front-knee.webp.webp',
+        'cea71f95-foam-texture.webp': 'cea71f95-foam-texture.webp.webp',
+        'd31fd1c8-world-arthritis-day.jpg': 'd31fd1c8-world-arthritis-day.jpg.jpg',
+        'a81fc9bb-young-asian-athletes-competing-track-1.jpg': 'a81fc9bb-young-asian-athletes-competing-track-1.j.jpg',
+        'a66be8fe-young-asian-athletes-competing-track-1-5.jpg': 'a66be8fe-young-asian-athletes-competing-track-1-5.jpg',
+        'shoulder-pain-sports-injury.webp': '71c96aa7-aching-young-handsome-sporty-boy-wearing.webp',
+        'e73bcde7-side-view-young-man-getting-his-leg-exam.webp': 'e73bcde7-side-view-young-man-getting-his-leg-exam.webp',
+        'fdd30975-telemarketer-caucasian-man-working-with-.webp': 'fdd30975-telemarketer-caucasian-man-working-with-.webp',
+        '1c0718c6-closeup-athletic-woman-injured-her-foot-.webp': '1c0718c6-closeup-athletic-woman-injured-her-foot-.webp',
+        '5b1a06ba-young-fitness-man-holding-his-sports-leg.webp': '5b1a06ba-young-fitness-man-holding-his-sports-leg.webp',
+        '40ed85cd-young-woman-with-bandage-knee-with-effor.webp': '40ed85cd-young-woman-with-bandage-knee-with-effor.webp',
+        '8abe425e-side-view-young-man-getting-his-leg-exam.webp': '8abe425e-side-view-young-man-getting-his-leg-exam.webp',
+        'a273c131-telemarketer-caucasian-man-working-with-.webp': 'a273c131-telemarketer-caucasian-man-working-with-.webp',
+        '04fb473f-young-woman-with-bandage-knee-with-effor.webp': '04fb473f-young-woman-with-bandage-knee-with-effor.webp'
+      };
+      
+      // Check if we have a direct mapping for this filename
+      if (filenameMap[filename]) {
+        return `/uploads/content/${filenameMap[filename]}`;
+      }
+      
+      // Check if we have a mapping for the base filename
+      for (const [key, value] of Object.entries(filenameMap)) {
+        if (key.startsWith(baseFilename) || value.startsWith(baseFilename)) {
+          return `/uploads/content/${value}`;
+        }
+      }
+      
+      // If no mapping found, use the original filename
+      // This will at least show the default image if it fails
+      return `/uploads/content/${filename}`;
+    }
   } catch (e) {
-    // If URL parsing fails, return the original URL
-    console.warn(`Failed to standardize image URL: ${url}`, e);
-    return url;
+    console.warn(`Failed to process image URL: ${url}`, e);
   }
+  
+  return DEFAULT_IMAGE;
 }
 
 // Types
@@ -153,7 +187,7 @@ async function getPublicationData(slug: string): Promise<PublicationData | null>
       quoteChar: '"',
       escapeChar: '"',
       dynamicTyping: false,
-      transformHeader: header => header.trim(),
+      transformHeader: (header: string) => header.trim(),
       relaxColumnCount: true 
     } as any) as Papa.ParseResult<any>;
 
@@ -205,17 +239,6 @@ async function getPublicationData(slug: string): Promise<PublicationData | null>
     
     // Process image URL
     let featuredImageUrl = row.FeaturedImageURL || '';
-    // Check if it's a valid URL
-    if (!featuredImageUrl || (!featuredImageUrl.startsWith('http://') && !featuredImageUrl.startsWith('https://'))) {
-      featuredImageUrl = DEFAULT_IMAGE;
-    } else {
-      // Standardize the image URL to match gallery format
-      featuredImageUrl = standardizeImageUrl(featuredImageUrl);
-    }
-    
-    // Parse JSON data
-    let contentJsonString = row.ContentBlocksJSON ? row.ContentBlocksJSON.trim() : '';
-    console.log(`Raw ContentJsonString length: ${contentJsonString.length}`);
     console.log(`ContentJsonString is empty array: ${contentJsonString === '[]'}`);
     
     let contentBlocks: ContentBlock[] = [];
@@ -242,7 +265,7 @@ async function getPublicationData(slug: string): Promise<PublicationData | null>
           if (block.type === 'image' && block.src) {
             return {
               ...block,
-              src: standardizeImageUrl(block.src)
+              src: getImagePath(block.src)
             };
           }
           return block;
