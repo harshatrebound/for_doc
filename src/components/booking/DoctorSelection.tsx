@@ -29,25 +29,41 @@ interface DoctorCardProps {
 }
 
 const DoctorCard = ({ doctor, isSelected, onSelect }: DoctorCardProps) => {
-  // Determine next available date text
-  // In a real implementation, doctor would have a nextAvailableDate property
-  // For now, we'll use doctor.availability to determine if the doctor is available
+  // Get the next available date from the API instead of simulation
+  const [availabilityDate, setAvailabilityDate] = useState<Date | undefined>();
+  const [isLoadingAvailability, setIsLoadingAvailability] = useState<boolean>(false);
   
-  // Default to today or tomorrow randomly if the doctor is available
-  let availabilityDate: Date | undefined;
-  if (doctor.availability) {
-    // For demonstration, simulate some doctors available today and some tomorrow
-    // In a real implementation, this would come from the API
-    const today = new Date();
-    const tomorrow = new Date();
-    tomorrow.setDate(today.getDate() + 1);
+  useEffect(() => {
+    const fetchNextAvailableDate = async () => {
+      // Only fetch if the doctor is available in general
+      if (!doctor.availability) return;
+      
+      try {
+        setIsLoadingAvailability(true);
+        const response = await fetch(`/api/doctors/${doctor.id}/next-available`);
+        
+        if (!response.ok) {
+          console.error(`Error fetching next available date for doctor ${doctor.id}: ${response.status}`);
+          return;
+        }
+        
+        const data = await response.json();
+        if (data.nextAvailableDate) {
+          setAvailabilityDate(new Date(data.nextAvailableDate));
+        }
+      } catch (error) {
+        console.error(`Failed to fetch next available date for doctor ${doctor.id}:`, error);
+      } finally {
+        setIsLoadingAvailability(false);
+      }
+    };
     
-    // Use doctor's id to consistently get the same date for the same doctor
-    const useTomorrow = doctor.id.charCodeAt(0) % 2 === 0;
-    availabilityDate = useTomorrow ? tomorrow : today;
-  }
+    fetchNextAvailableDate();
+  }, [doctor.id, doctor.availability]);
   
-  const availabilityText = formatAvailabilityDate(availabilityDate);
+  const availabilityText = isLoadingAvailability 
+    ? "Checking..." 
+    : formatAvailabilityDate(availabilityDate);
   
   return (
     <motion.div

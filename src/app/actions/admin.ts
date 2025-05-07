@@ -294,6 +294,46 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
   }
 }
 
+/**
+ * Finds the next available date for a doctor
+ * @param doctorId The doctor's ID
+ * @returns The next available date or null if none found within search range
+ */
+export async function getNextAvailableDate(doctorId: string): Promise<ApiResponse<Date | null>> {
+  try {
+    if (!doctorId) {
+      return { success: false, error: 'Doctor ID is required' };
+    }
+    
+    // Start from today
+    const startDate = new Date();
+    // Check up to 30 days in the future
+    const MAX_DAYS_TO_CHECK = 30;
+    
+    // Loop through days to find the first available slot
+    for (let i = 0; i < MAX_DAYS_TO_CHECK; i++) {
+      const checkDate = new Date(startDate);
+      checkDate.setDate(startDate.getDate() + i);
+      
+      // Use existing function to check for available slots
+      const slotsResponse = await fetchAvailableSlots(doctorId, checkDate);
+      
+      if (slotsResponse.success && slotsResponse.data && slotsResponse.data.length > 0) {
+        // Found available slots on this date
+        console.log(`[getNextAvailableDate] Found next available date for doctor ${doctorId}: ${checkDate.toISOString()}`);
+        return { success: true, data: checkDate };
+      }
+    }
+    
+    // No available dates found in the search range
+    console.log(`[getNextAvailableDate] No available dates found for doctor ${doctorId} within ${MAX_DAYS_TO_CHECK} days`);
+    return { success: true, data: null };
+  } catch (error) {
+    console.error("Error finding next available date:", error);
+    return { success: false, error: 'Failed to find next available date' };
+  }
+}
+
 export async function fetchDoctors() {
   try {
     const doctors = await prisma.doctor.findMany({
