@@ -103,7 +103,8 @@ function isValidUrl(url: string): boolean {
   try {
     // Try to create a URL object - this will throw if invalid
     new URL(url);
-    return true;
+    // Additionally, ensure it has an http/https protocol
+    return url.startsWith('http://') || url.startsWith('https://');
   } catch (e) {
     return false;
   }
@@ -202,14 +203,14 @@ async function getPublicationData(slug: string): Promise<PublicationData | null>
     // Clean up title
     const title = (row.Title || '').split('|')[0].trim();
     
-    // Process the image URL - ensure it's valid
-    let imageUrl = row.FeaturedImageURL || '';
-    if (!imageUrl || !isValidUrl(imageUrl)) {
-      console.log(`Using default image because featured image URL is invalid: ${imageUrl}`);
-      imageUrl = DEFAULT_IMAGE;
+    // Process image URL
+    let featuredImageUrl = row.FeaturedImageURL || '';
+    // Check if it's a valid URL
+    if (!featuredImageUrl || (!featuredImageUrl.startsWith('http://') && !featuredImageUrl.startsWith('https://'))) {
+      featuredImageUrl = DEFAULT_IMAGE;
     } else {
       // Standardize the image URL to match gallery format
-      imageUrl = standardizeImageUrl(imageUrl);
+      featuredImageUrl = standardizeImageUrl(featuredImageUrl);
     }
     
     // Parse JSON data
@@ -276,7 +277,7 @@ async function getPublicationData(slug: string): Promise<PublicationData | null>
     return {
       slug,
       title,
-      featuredImageUrl: imageUrl,
+      featuredImageUrl: featuredImageUrl,
       publicationDate: row.PublicationDate || '',
       authors: row.Authors || 'Dr. Naveen Kumar LV',
       journal: row.Journal || '',
@@ -364,7 +365,7 @@ const ContentRenderer = ({ contentBlocks }: { contentBlocks: ContentBlock[] }) =
               return null;
             }
             
-            const isExternal = imgSrc !== DEFAULT_IMAGE && !imgSrc.startsWith('/');
+            const isExternal = imgSrc !== DEFAULT_IMAGE && (imgSrc.startsWith('http://') || imgSrc.startsWith('https://'));
             
             return (
               <figure key={index} className="my-8">
@@ -430,7 +431,7 @@ const ExternalLinkButton = ({ url }: { url: string }) => {
 // Related Publications Component
 const RelatedPublicationCard = ({ title, slug, image }: { title: string; slug: string; image: string }) => {
   const imgSrc = image || DEFAULT_IMAGE;
-  const isExternal = imgSrc !== DEFAULT_IMAGE && !imgSrc.startsWith('/');
+  const isExternal = imgSrc !== DEFAULT_IMAGE && (imgSrc.startsWith('http://') || imgSrc.startsWith('https://'));
   
   return (
     <Link href={`/publications/${slug}`} className="flex items-start space-x-3 group">
@@ -493,14 +494,16 @@ export default async function PublicationDetail({ params }: Props) {
         .slice(0, 3)
         .map(row => {
           let imageUrl = row.FeaturedImageURL || '';
-          if (!imageUrl || !isValidUrl(imageUrl)) {
+          if (!imageUrl || (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://'))) {
             imageUrl = DEFAULT_IMAGE;
+          } else {
+            imageUrl = standardizeImageUrl(imageUrl);
           }
           
           return {
             slug: row.Slug,
             title: (row.Title || '').split('|')[0].trim(),
-            featuredImageUrl: imageUrl
+            featuredImageUrl: imageUrl,
           };
         });
       console.log(`[PublicationDetail] Found ${relatedPublications?.length || 0} related publications`);
