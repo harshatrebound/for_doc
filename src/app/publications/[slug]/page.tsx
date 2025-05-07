@@ -15,6 +15,34 @@ import ClientImage from '@/app/components/ClientImage';
 const CSV_FILE_PATH = path.join(process.cwd(), 'docs', 'publication_cms.csv');
 const DEFAULT_IMAGE = '/images/default-procedure.jpg'; // Update to existing image
 
+// Standardize image URL to use the gallery domain pattern
+function standardizeImageUrl(url: string): string {
+  if (!url || url === DEFAULT_IMAGE) return url;
+  
+  // Check if the URL is already using the correct domain pattern
+  if (url.includes('73n.0c8.myftpupload.com/wp-content/uploads')) {
+    return url;
+  }
+
+  // Extract the last part of the URL path (filename)
+  try {
+    const urlObj = new URL(url);
+    const pathParts = urlObj.pathname.split('/');
+    const filename = pathParts[pathParts.length - 1];
+    
+    // If we couldn't extract a filename, return the original URL
+    if (!filename) return url;
+    
+    // Construct new URL with the gallery domain pattern
+    // Assuming all uploads go to the same year/month folder for simplicity
+    return `https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/${filename}`;
+  } catch (e) {
+    // If URL parsing fails, return the original URL
+    console.warn(`Failed to standardize image URL: ${url}`, e);
+    return url;
+  }
+}
+
 // Types
 interface PublicationData {
   slug: string;
@@ -179,6 +207,9 @@ async function getPublicationData(slug: string): Promise<PublicationData | null>
     if (!imageUrl || !isValidUrl(imageUrl)) {
       console.log(`Using default image because featured image URL is invalid: ${imageUrl}`);
       imageUrl = DEFAULT_IMAGE;
+    } else {
+      // Standardize the image URL to match gallery format
+      imageUrl = standardizeImageUrl(imageUrl);
     }
     
     // Parse JSON data
@@ -202,8 +233,19 @@ async function getPublicationData(slug: string): Promise<PublicationData | null>
           contentJsonString = contentJsonString + ']';
         }
         
-        contentBlocks = safeJsonParse<ContentBlock[]>(contentJsonString, []);
-        console.log(`Parsed contentBlocks successfully, found ${contentBlocks.length} blocks`);
+        // Parse and standardize image URLs in content blocks
+        contentBlocks = JSON.parse(contentJsonString);
+        
+        // Process image URLs in content blocks
+        contentBlocks = contentBlocks.map(block => {
+          if (block.type === 'image' && block.src) {
+            return {
+              ...block,
+              src: standardizeImageUrl(block.src)
+            };
+          }
+          return block;
+        });
         
         hasContent = contentBlocks.length > 0;
       } else {
@@ -417,15 +459,23 @@ const RelatedPublicationCard = ({ title, slug, image }: { title: string; slug: s
 // Page component
 export default async function PublicationDetail({ params }: Props) {
   try {
+    console.log(`[PublicationDetail] Starting to render page for slug: ${params.slug}`);
+    
+    // Get the publication data
     const publication = await getPublicationData(params.slug);
     
     if (!publication) {
-      console.error(`Publication not found for slug: ${params.slug}`);
+      console.error(`[PublicationDetail] Publication not found for slug: ${params.slug}`);
+      // Add a delay before calling notFound to ensure logs are flushed
+      await new Promise(resolve => setTimeout(resolve, 100));
       notFound();
     }
     
+    console.log(`[PublicationDetail] Successfully fetched publication data for: ${publication.title}`);
+    
     // Get related publications
-    let relatedPublications: { slug: string; title: string; featuredImageUrl: string }[] = [];
+    // Use a try/catch block to isolate errors in fetching related publications
+    let relatedPublications: PublicationData[] = [];
     try {
       const fileContent = await fs.readFile(CSV_FILE_PATH, 'utf-8');
       
@@ -453,8 +503,11 @@ export default async function PublicationDetail({ params }: Props) {
             featuredImageUrl: imageUrl
           };
         });
+      console.log(`[PublicationDetail] Found ${relatedPublications?.length || 0} related publications`);
     } catch (error) {
-      console.error("Error getting related publications:", error);
+      console.error(`[PublicationDetail] Error fetching related publications:`, error);
+      // Don't fail the whole page if just related publications fail
+      relatedPublications = [];
     }
     
     // First content block with type 'image' for hero, if any
@@ -626,9 +679,10 @@ export default async function PublicationDetail({ params }: Props) {
       </div>
     );
   } catch (error) {
-    // Log the error for debugging
-    console.error(`Error rendering publication detail for slug ${params.slug}:`, error);
-    // Still show the 404 page instead of silently redirecting
+    // Log the error with as much detail as possible
+    console.error(`[PublicationDetail] Unexpected error rendering publication for slug ${params.slug}:`, error);
+    // Add a delay before calling notFound to ensure logs are flushed
+    await new Promise(resolve => setTimeout(resolve, 100));
     notFound();
   }
 } 

@@ -39,6 +39,34 @@ export const metadata: Metadata = {
 // Default fallback image
 const DEFAULT_IMAGE = '/images/default-procedure.jpg';
 
+// Standardize image URL to use the gallery domain pattern
+function standardizeImageUrl(url: string): string {
+  if (!url || url === DEFAULT_IMAGE) return url;
+  
+  // Check if the URL is already using the correct domain pattern
+  if (url.includes('73n.0c8.myftpupload.com/wp-content/uploads')) {
+    return url;
+  }
+
+  // Extract the last part of the URL path (filename)
+  try {
+    const urlObj = new URL(url);
+    const pathParts = urlObj.pathname.split('/');
+    const filename = pathParts[pathParts.length - 1];
+    
+    // If we couldn't extract a filename, return the original URL
+    if (!filename) return url;
+    
+    // Construct new URL with the gallery domain pattern
+    // Assuming all uploads go to the same year/month folder for simplicity
+    return `https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/${filename}`;
+  } catch (e) {
+    // If URL parsing fails, return the original URL
+    console.warn(`Failed to standardize image URL: ${url}`, e);
+    return url;
+  }
+}
+
 // Get publications from CSV
 async function getPublications(): Promise<Publication[]> {
   const csvFilePath = path.join(process.cwd(), 'docs', 'publication_cms.csv');
@@ -105,6 +133,9 @@ async function getPublications(): Promise<Publication[]> {
         // Basic check for validity - can enhance if needed
         if (!imageUrl || !imageUrl.startsWith('http')) { 
           imageUrl = DEFAULT_IMAGE;
+        } else {
+          // Standardize the image URL to match gallery format
+          imageUrl = standardizeImageUrl(imageUrl);
         }
         
         // Check if content exists - refine this logic if necessary based on ContentBlocksJSON structure
@@ -376,10 +407,10 @@ export default async function PublicationsPage() {
                     articleSlug = matchingPub.slug;
                   }
                   
-                  return (
+                  return articleSlug ? (
                     <Link 
                       key={index}
-                      href={articleSlug ? `/publications/${articleSlug}` : '#'}
+                      href={`/publications/${articleSlug}`}
                       className="group block bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300"
                     >
                       <div className="relative h-48 overflow-hidden">
@@ -403,12 +434,43 @@ export default async function PublicationsPage() {
                         <div className="flex items-center mt-4 text-gray-600">
                           <BookOpen className="w-4 h-4 mr-1" />
                           <span className="inline-flex items-center text-sm">
-                            {articleSlug ? 'Read Publication' : 'View Publication'}
+                            Read Publication
                             <ChevronRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-0.5" />
                           </span>
                         </div>
                       </div>
                     </Link>
+                  ) : (
+                    <div 
+                      key={index}
+                      className="group block bg-white rounded-xl overflow-hidden shadow-md cursor-default"
+                    >
+                      <div className="relative h-48 overflow-hidden">
+                        <div className="absolute inset-0 bg-gray-200">
+                          <ClientImage
+                            src={block.src || DEFAULT_IMAGE}
+                            alt={block.alt || headingText}
+                            fill
+                            className="object-cover"
+                            unoptimized={block.src && block.src.startsWith('http')}
+                          />
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                      </div>
+                      
+                      <div className="p-5">
+                        <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+                          {headingText}
+                        </h3>
+                        
+                        <div className="flex items-center mt-4 text-gray-600">
+                          <BookOpen className="w-4 h-4 mr-1" />
+                          <span className="inline-flex items-center text-sm">
+                            Publication Not Available
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   );
                 }
                 return null;
