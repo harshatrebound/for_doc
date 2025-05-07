@@ -128,7 +128,7 @@ export default function ContactPage() {
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">Find Us</h2>
                 <div className="relative w-full h-[400px] rounded-lg overflow-hidden">
                   <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.8251587825503!2d77.6356!3d12.9144!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1469e54de3a1%3A0x7bfeabf34d1c90f4!2sSports%20Orthopedics!5e0!3m2!1sen!2sin!4v1652345678901!5m2!1sen!2sin" 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.9339623430733!2d77.6387069!3d12.9119659!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae154f9c34faf7%3A0x20d81f3cad291c58!2sSports%20Orthopedics%20Institute%20%7C%20Dr%20Naveen%20Kumar%20LV%20%7C%20Knee%20Shoulder%20Hip%20Ankle%20Elbow%20Wrist%20Surgeon%20%26%20Sports%20Injury%20Specialist!5e0!3m2!1sen!2sin!4v1746568791014!5m2!1sen!2sin" 
                     className="absolute inset-0 w-full h-full"
                     style={{ border: 0 }} 
                     allowFullScreen 
