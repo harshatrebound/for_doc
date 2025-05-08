@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { format, addMinutes, isBefore } from 'date-fns';
-import { convertToIST, isSameDayInIST, formatISTDate } from '@/lib/dateUtils';
+import { convertToIST, isSameDayInIST, formatISTDate, getDayOfWeekInIST } from '@/lib/dateUtils';
 
 // Helper function for debugging date comparisons
 function debugDateComparison(name: string, date1: Date | string, date2: Date | string) {
@@ -141,8 +141,43 @@ function generateTimeSlots(startTimeStr: string, endTimeStr: string, slotDuratio
 // New server action to fetch available slots for a doctor on a specific date
 export async function fetchAvailableSlots(doctorId: string, date: Date): Promise<ApiResponse<string[]>> {
   try {
-    console.log(`Fetching available slots for doctor ${doctorId} on date ${date} (IST: ${convertToIST(date)})`);
+    console.log(`[fetchAvailableSlots] For doctor ${doctorId} on date ${date.toISOString()} (IST: ${convertToIST(date).toISOString()})`);
     
+    // IMPROVEMENT 1: Check if this date is blocked (BLOCKED or UNAVAILABLE) before proceeding
+    const specialDatesResult = await fetchSpecialDates(doctorId);
+    const globalDatesResult = await fetchSpecialDates();
+    
+    // Format date for consistent comparison
+    const dateStr = formatISTDate(date);
+    console.log(`[fetchAvailableSlots] Formatted date in IST: ${dateStr}`);
+    
+    // Check if this date is globally blocked
+    if (globalDatesResult.success && globalDatesResult.data) {
+      const isGloballyBlocked = globalDatesResult.data.some(d => {
+        if (d.type !== 'BLOCKED' && d.type !== 'UNAVAILABLE') return false;
+        return isSameDayInIST(new Date(d.date), date);
+      });
+      
+      if (isGloballyBlocked) {
+        console.log(`[fetchAvailableSlots] Date ${dateStr} is globally blocked`);
+        return { success: true, data: [] }; // No slots on blocked dates
+      }
+    }
+    
+    // Check if this date is specifically blocked for this doctor
+    if (specialDatesResult.success && specialDatesResult.data) {
+      const isDoctorBlocked = specialDatesResult.data.some(d => {
+        if (d.type !== 'BLOCKED' && d.type !== 'UNAVAILABLE') return false;
+        return isSameDayInIST(new Date(d.date), date);
+      });
+      
+      if (isDoctorBlocked) {
+        console.log(`[fetchAvailableSlots] Date ${dateStr} is blocked for doctor ${doctorId}`);
+        return { success: true, data: [] }; // No slots on blocked dates
+      }
+    }
+    
+    // IMPROVEMENT 2: Use proper IST conversion for day of week
     const scheduleResult = await fetchDoctorSchedule(doctorId);
     if (!scheduleResult.success || !scheduleResult.data) {
       return { success: false, error: 'Could not fetch doctor schedule.' };
@@ -150,14 +185,24 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
 
     const schedules = scheduleResult.data;
     if (schedules.length === 0) {
+      console.log(`[fetchAvailableSlots] No schedule defined for doctor ${doctorId}`);
       return { success: true, data: [] }; // No schedule defined, so no slots
     }
 
-    const appointmentDayOfWeek = date.getDay(); // 0 (Sun) to 6 (Sat)
+    // IMPROVEMENT: Use getDayOfWeekInIST instead of date.getDay()
+    const appointmentDayOfWeek = getDayOfWeekInIST(date); // 0 (Sun) to 6 (Sat)
+    console.log(`[fetchAvailableSlots] Day of week in IST: ${appointmentDayOfWeek}`);
+    
     const relevantSchedule = schedules.find(s => s.dayOfWeek === appointmentDayOfWeek);
 
-    if (!relevantSchedule || !relevantSchedule.isActive) {
-      return { success: true, data: [] }; // Not working or not active on this day
+    if (!relevantSchedule) {
+      console.log(`[fetchAvailableSlots] No schedule for day ${appointmentDayOfWeek} for doctor ${doctorId}`);
+      return { success: true, data: [] }; // Not scheduled on this day
+    }
+    
+    if (!relevantSchedule.isActive) {
+      console.log(`[fetchAvailableSlots] Schedule inactive for day ${appointmentDayOfWeek} for doctor ${doctorId}`);
+      return { success: true, data: [] }; // Not active on this day
     }
 
     // Generate slots based on schedule times, duration, and buffer
@@ -185,10 +230,6 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
       slots.push(timeStr);
       currentTime = addMinutes(currentTime, totalSlotTime); // Increment by TOTAL slot time
     }
-    
-    // Format date for database queries using IST
-    const dateStr = formatISTDate(date);
-    console.log(`Formatted date in IST: ${dateStr}`);
     
     // 1. Get all existing appointments for this doctor
     const existingAppointments = await prisma.appointment.findMany({
@@ -287,6 +328,7 @@ export async function fetchAvailableSlots(doctorId: string, date: Date): Promise
       return true;
     });
     
+    console.log(`[fetchAvailableSlots] Found ${availableSlots.length} available slots for doctor ${doctorId} on ${dateStr}`);
     return { success: true, data: availableSlots };
   } catch (error) {
     console.error("Error fetching available slots:", error);
