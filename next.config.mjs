@@ -153,6 +153,26 @@ const nextConfig = {
         source: '/publication',
         destination: '/publications',
         permanent: true,
+      },
+      {
+        source: '/my-bookings',
+        destination: '/appointment-booking-info',
+        permanent: true,
+      },
+      {
+        source: '/appointment-cancellation-confirmation',
+        destination: '/appointment-booking-info',
+        permanent: true,
+      },
+      {
+        source: '/appointment-reschedule',
+        destination: '/appointment-booking-info',
+        permanent: true,
+      },
+      {
+        source: '/bookingpress-complete-payment',
+        destination: '/appointment-booking-info',
+        permanent: true,
       }
     ];
   }

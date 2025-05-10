@@ -549,3 +549,51 @@ button.h-8.w-8 svg {
   width: 100%; /* Ensure it fills container */
   height: auto; /* Let container height dictate */
 }
+
+/* Hide broken images instead of showing the broken image icon */
+img {
+  position: relative;
+}
+
+img::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+}
+
+img::after {
+  content: attr(alt);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  font-size: 0;
+  background-color: transparent;
+}
+
+img:not([src]), 
+img[src=""], 
+img[src*="undefined"], 
+img[src*="null"],
+img[src$="svg+xml;base64,"],
+img[src^="data:image/"] {
+  visibility: hidden;
+}
+
+figure:has(img:not([src]), 
+       img[src=""], 
+       img[src*="undefined"], 
+       img[src*="null"],
+       img[src$="svg+xml;base64,"],
+       img[src^="data:image/"]) {
+  display: none;
+}

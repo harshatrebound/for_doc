@@ -27,18 +27,17 @@ export default function ClientImage({
   className = '',
   priority = false,
   unoptimized = false,
-  hideOnError = false, // Default to showing the image even if it errors
+  hideOnError = false,
 }: ClientImageProps) {
-  // Add state to track if the image has loaded or errored
-  const [imageError, setImageError] = React.useState(false);
+  const [hasError, setHasError] = React.useState(false);
   
-  // Use the provided src or fallback to default image
-  const imageSrc = src || DEFAULT_IMAGE;
-  
-  // If hideOnError is true and we have an error, don't render anything
-  if (hideOnError && imageError) {
+  // If hideOnError is enabled and an error occurred, don't render anything
+  if (hideOnError && hasError) {
     return null;
   }
+  
+  // Use provided source or fallback
+  const imageSrc = src || DEFAULT_IMAGE;
   
   return (
     <Image
@@ -49,10 +48,10 @@ export default function ClientImage({
       fill={fill}
       className={className}
       priority={priority}
-      unoptimized={true} // Set all images to unoptimized to avoid Next.js image optimization issues
+      unoptimized={unoptimized}
       onError={() => {
         console.error(`Failed to load image: ${imageSrc}`);
-        setImageError(true);
+        setHasError(true);
       }}
     />
   );
