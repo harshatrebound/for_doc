@@ -272,16 +272,18 @@ export default function SurgeonsStaffPage() {
                               <div className="absolute inset-0 bg-gradient-to-br from-[#8B5C9E]/5 via-white to-white group-hover:from-[#8B5C9E]/10 transition-all duration-500"></div>
                               <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] group-hover:opacity-[0.04] transition-opacity duration-500"></div>
                               <div className="relative p-8 flex-grow flex flex-col md:flex-row items-center gap-6">
-                                  <div className="flex-shrink-0 w-36 h-36 md:w-40 md:h-40 relative">
+                                  <div className="flex-shrink-0 w-36 h-36 md:w-40 md:h-40 relative" style={{position: 'relative'}}>
                                       <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-[#8B5C9E]/20 to-transparent animate-pulse-slow opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
-                                      <Image
-                                          src={staff.imageUrl}
-                                          alt={staff.name}
-                                          fill
-                                          className="rounded-full object-cover object-center shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-500"
-                                          sizes="(max-width: 768px) 144px, 160px"
-                                          priority
-                                      />
+                                      <div style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0}}>
+                                          <Image
+                                              src={staff.imageUrl}
+                                              alt={staff.name}
+                                              fill
+                                              className="rounded-full object-cover object-center shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-500"
+                                              sizes="(max-width: 768px) 144px, 160px"
+                                              priority
+                                          />
+                                      </div>
                                   </div>
                                   <div className="flex-grow text-center md:text-left">
                                       <div className="mb-3">
@@ -333,15 +335,17 @@ export default function SurgeonsStaffPage() {
                               <div className="absolute inset-0 bg-gradient-to-br from-[#8B5C9E]/5 via-white to-white group-hover:from-[#8B5C9E]/10 transition-all duration-500"></div>
                               <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] group-hover:opacity-[0.04] transition-opacity duration-500"></div>
                               <div className="relative p-8 flex-grow flex flex-col md:flex-row items-center gap-6">
-                                  <div className="flex-shrink-0 w-36 h-36 md:w-40 md:h-40 relative">
+                                  <div className="flex-shrink-0 w-36 h-36 md:w-40 md:h-40 relative" style={{position: 'relative'}}>
                                        <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-[#8B5C9E]/15 to-transparent animate-pulse-slow opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
-                                      <Image
-                                          src={staff.imageUrl}
-                                          alt={staff.name}
-                                          fill
-                                          className="rounded-full object-cover object-center shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-500"
-                                          sizes="(max-width: 768px) 144px, 160px"
-                                      />
+                                      <div style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0}}>
+                                          <Image
+                                              src={staff.imageUrl}
+                                              alt={staff.name}
+                                              fill
+                                              className="rounded-full object-cover object-center shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-500"
+                                              sizes="(max-width: 768px) 144px, 160px"
+                                          />
+                                      </div>
                                   </div>
                                   <div className="flex-grow text-center md:text-left">
                                       <div className="mb-3">
@@ -393,15 +397,17 @@ export default function SurgeonsStaffPage() {
                               <div className="absolute inset-0 bg-gradient-to-br from-[#8B5C9E]/5 via-white to-white group-hover:from-[#8B5C9E]/10 transition-all duration-500"></div>
                               <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] group-hover:opacity-[0.04] transition-opacity duration-500"></div>
                               <div className="relative p-8 flex-grow flex flex-col md:flex-row items-center gap-6">
-                                  <div className="flex-shrink-0 w-36 h-36 md:w-40 md:h-40 relative">
+                                  <div className="flex-shrink-0 w-36 h-36 md:w-40 md:h-40 relative" style={{position: 'relative'}}>
                                        <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-[#8B5C9E]/15 to-transparent animate-pulse-slow opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
-                                      <Image
+                                      <div style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0}}>
+                                        <Image
                                           src={staff.imageUrl}
                                           alt={staff.name}
                                           fill
                                           className="rounded-full object-cover object-center shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-500"
                                           sizes="(max-width: 768px) 144px, 160px"
-                                      />
+                                        />
+                                      </div>
                                   </div>
                                   <div className="flex-grow text-center md:text-left">
                                       <div className="mb-3">
@@ -496,18 +502,20 @@ export default function SurgeonsStaffPage() {
                           key={staff.slug} 
                           className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden text-center transform hover:-translate-y-1 flex flex-col"
                         >
-                            <div className="relative aspect-square w-full overflow-hidden flex-shrink-0">
+                            <div className="relative aspect-square w-full overflow-hidden flex-shrink-0" style={{position: 'relative', minHeight: '250px'}}>
                                 <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold z-10 ${roleBadgeStyle}`}>
                                   {staff.role.replace('ManipalStaff','Manipal Staff')} 
                                 </div>
-                                <Image
-                                    src={staff.imageUrl}
-                                    alt={staff.name}
-                                    fill
-                                    className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
-                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                                    loading="lazy"
-                                />
+                                <div style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0}}>
+                                    <Image
+                                        src={staff.imageUrl}
+                                        alt={staff.name}
+                                        fill
+                                        className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                                        loading="lazy"
+                                    />
+                                </div>
                             </div>
                             <div className="p-3 flex-grow flex flex-col justify-between">
                                 <div> {/* Wrapper for text content */} 

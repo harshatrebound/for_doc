@@ -27,7 +27,8 @@
     "images:update-csv": "node scripts/update-csv-references.js",
     "urls:update-links": "node scripts/update-link-urls.js",
     "urls:find-unsplash": "node scripts/search-unsplash-urls.js",
-    "urls:find-unsplash-csv": "node scripts/search-csv-unsplash.js"
+    "urls:find-unsplash-csv": "node scripts/search-csv-unsplash.js",
+    "postbuild": "next-sitemap --config next-sitemap.config.cjs"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
@@ -73,7 +74,7 @@
     "date-fns": "^3.6.0",
     "dotenv": "^16.5.0",
     "framer-motion": "^11.18.2",
-    "glob": "^11.0.2",
+    "glob": "^10.3.10",
     "gray-matter": "^4.0.3",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.344.0",
@@ -101,16 +102,17 @@
   "devDependencies": {
     "@types/cheerio": "^0.22.35",
     "@types/node": "20.17.25",
-    "@types/react": "^18",
+    "@types/react": "^18.3.21",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.21",
     "eslint": "^8",
     "eslint-config-next": "14.1.2",
+    "next-sitemap": "^4.2.3",
     "postcss": "^8.5.3",
     "prisma": "^5.10.2",
     "tailwindcss": "^3.4.17",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^5.8.3"
   },
   "description": "This project is the codebase for the Sports Orthopedics clinic website. It's built using Next.js and provides information about the clinic's services, allows users to learn about orthopedic conditions, and enables them to book appointments.",
   "main": "build.js",

@@ -1,220 +1,214 @@
 import { MetadataRoute } from 'next';
 import path from 'path';
 import { promises as fs } from 'fs';
-import Papa from 'papaparse';
+import { glob } from 'glob';
 
-// Get all bone-joint-school topics from CSV
-async function getBoneJointTopics(): Promise<string[]> {
-  try {
-    const csvFilePath = path.join(process.cwd(), 'docs', 'bone_joint_school_cms.csv');
-    const fileContent = await fs.readFile(csvFilePath, 'utf-8');
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
-    });
-
-    return parsedCsv.data
-      .filter(row => row.Slug && row.PageType === 'bone-joint-school')
-      .map(row => row.Slug);
-  } catch (error) {
-    console.error("Error reading bone_joint_school_cms.csv:", error);
-    return [];
-  }
+/**
+ * Scan the app directory to find all page routes
+ * @returns {Promise<string[]>} Array of routes
+ */
+async function getAppRoutes(): Promise<string[]> {
+  const appDir = path.join(process.cwd(), 'src', 'app');
+  
+  // Find all page.tsx files in the app directory (excluding api routes)
+  const pageFiles = await glob('**/page.{ts,tsx,js,jsx}', {
+    cwd: appDir,
+    ignore: ['**/api/**', '**/_*/**', '**/components/**', '**/node_modules/**']
+  });
+  
+  // Convert file paths to routes
+  return pageFiles.map(file => {
+    // Remove page.{ts,tsx,js,jsx} from the path
+    const routePath = file.replace(/page\.(ts|tsx|js|jsx)$/, '');
+    // Replace backslashes with forward slashes (for Windows)
+    const normalizedPath = routePath.replace(/\\/g, '/');
+    // Remove trailing slash if it exists
+    return normalizedPath.endsWith('/')
+      ? '/' + normalizedPath.slice(0, -1)
+      : '/' + normalizedPath;
+  });
 }
 
-// Get all procedures from CSV
-async function getProcedures(): Promise<string[]> {
-  try {
-    const csvFilePath = path.join(process.cwd(), 'docs', 'procedure_cms.csv');
-    const fileContent = await fs.readFile(csvFilePath, 'utf-8');
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
-    });
-
-    return parsedCsv.data
-      .filter(row => row.Slug && row.PageType === 'procedure')
-      .map(row => row.Slug);
-  } catch (error) {
-    console.error("Error reading procedure_cms.csv:", error);
-    return [];
+/**
+ * Scan specific directories to find all dynamic routes
+ * @returns {Promise<Record<string, string[]>>} Object with route categories
+ */
+async function getDynamicRoutes(): Promise<Record<string, string[]>> {
+  const baseDir = path.join(process.cwd(), 'src', 'app');
+  const dynamicRoutes: Record<string, string[]> = {
+    'surgeons-staff': [],
+    'bone-joint-school': [],
+    'procedure-surgery': [],
+    'publications': [],
+    'blogs': []
+  };
+  
+  // Process each section
+  for (const section of Object.keys(dynamicRoutes)) {
+    const sectionDir = path.join(baseDir, section);
+    try {
+      const entries = await fs.readdir(sectionDir, { withFileTypes: true });
+      
+      // Find all directories that aren't dynamic routes ([slug])
+      for (const entry of entries) {
+        if (entry.isDirectory() && !entry.name.startsWith('[') && entry.name !== 'components') {
+          dynamicRoutes[section].push(entry.name);
+        }
+      }
+    } catch (error: any) {
+      console.warn(`Could not read directory for ${section}: ${error.message}`);
+    }
   }
-}
-
-// Get all publications from CSV
-async function getPublications(): Promise<string[]> {
-  try {
-    const csvFilePath = path.join(process.cwd(), 'docs', 'publication_cms.csv');
-    const fileContent = await fs.readFile(csvFilePath, 'utf-8');
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
-    });
-
-    return parsedCsv.data
-      .filter(row => row.Slug && row.PageType === 'publication' && row.Slug !== 'publication')
-      .map(row => row.Slug);
-  } catch (error) {
-    console.error("Error reading publication_cms.csv:", error);
-    return [];
-  }
-}
-
-// Get all staff/surgeon profiles from CSV
-async function getStaffProfiles(): Promise<string[]> {
-  try {
-    const csvFilePath = path.join(process.cwd(), 'docs', 'surgeons_staff_cms.csv');
-    const fileContent = await fs.readFile(csvFilePath, 'utf-8');
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
-    });
-
-    return parsedCsv.data
-      .filter(row => row.Slug && row.PageType === 'surgeon-staff')
-      .map(row => row.Slug);
-  } catch (error) {
-    console.error("Error reading surgeons_staff_cms.csv:", error);
-    return [];
-  }
-}
-
-// Get all blog posts from CSV
-async function getBlogPosts(): Promise<string[]> {
-  try {
-    const csvFilePath = path.join(process.cwd(), 'docs', 'blog_cms.csv');
-    const fileContent = await fs.readFile(csvFilePath, 'utf-8');
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
-    });
-
-    return parsedCsv.data
-      .filter(row => row.Slug && row.PageType === 'blog')
-      .map(row => row.Slug);
-  } catch (error) {
-    console.error("Error reading blog_cms.csv:", error);
-    return [];
-  }
+  
+  return dynamicRoutes;
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Read and validate Base URL from environment variable inside the function
-  const siteUrl = process.env.SITE_URL;
-  if (!siteUrl) {
-    throw new Error('Missing SITE_URL environment variable for sitemap generation.');
-  }
-
+  // Read and validate Base URL from environment variable
+  const siteUrl = process.env.SITE_URL || 'https://sportsorthopedics.in';
+  
   // Static routes
   const staticRoutes = [
     {
-      url: siteUrl, // Use validated siteUrl
+      url: siteUrl,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 1,
     },
     {
-      url: `${siteUrl}/procedure-surgery`, // Use validated siteUrl
+      url: `${siteUrl}/procedure-surgery`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.9,
     },
     {
-      url: `${siteUrl}/bone-joint-school`, // Use validated siteUrl
+      url: `${siteUrl}/bone-joint-school`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.9,
     },
     {
-      url: `${siteUrl}/surgeons-staff`, // Use validated siteUrl
+      url: `${siteUrl}/surgeons-staff`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.9,
     },
     {
-      url: `${siteUrl}/publications`, // Use validated siteUrl
+      url: `${siteUrl}/publications`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     },
     {
-      url: `${siteUrl}/clinical-videos`, // Use validated siteUrl
+      url: `${siteUrl}/clinical-videos`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     },
     {
-      url: `${siteUrl}/blogs`, // Use validated siteUrl
+      url: `${siteUrl}/blogs`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     },
     {
-      url: `${siteUrl}/gallery`, // Use validated siteUrl
+      url: `${siteUrl}/gallery`,
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     },
     {
-      url: `${siteUrl}/contact`, // Use validated siteUrl
+      url: `${siteUrl}/contact`,
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     },
   ];
 
-  // Fetch dynamic routes
-  const [procedures, boneJointTopics, publications, staffProfiles, blogPosts] = await Promise.all([
-    getProcedures(),
-    getBoneJointTopics(),
-    getPublications(),
-    getStaffProfiles(),
-    getBlogPosts(),
+  // Get all app routes and dynamic routes
+  const [appRoutes, dynamicRoutes] = await Promise.all([
+    getAppRoutes(),
+    getDynamicRoutes()
   ]);
-
-  // Dynamic routes with their priorities
-  const procedureRoutes = procedures.map(slug => ({
-    url: `${siteUrl}/procedure-surgery/${slug}`, // Use validated siteUrl
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.8,
-  }));
-
-  const boneJointRoutes = boneJointTopics.map(slug => ({
-    url: `${siteUrl}/bone-joint-school/${slug}`, // Use validated siteUrl
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.8,
-  }));
-
-  const publicationRoutes = publications.map(slug => ({
-    url: `${siteUrl}/publications/${slug}`, // Use validated siteUrl
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
-  }));
-
-  const staffRoutes = staffProfiles.map(slug => ({
-    url: `${siteUrl}/surgeons-staff/${slug}`, // Use validated siteUrl
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.8,
-  }));
-
-  const blogRoutes = blogPosts.map(slug => ({
-    url: `${siteUrl}/blogs/${slug}`, // Use validated siteUrl
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
-  }));
+  
+  // Process dynamic routes by section
+  const dynamicRoutesMapped = [];
+  
+  // Add surgeons-staff routes
+  dynamicRoutesMapped.push(
+    ...dynamicRoutes['surgeons-staff'].map(slug => ({
+      url: `${siteUrl}/surgeons-staff/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    }))
+  );
+  
+  // Add bone-joint-school routes
+  dynamicRoutesMapped.push(
+    ...dynamicRoutes['bone-joint-school'].map(slug => ({
+      url: `${siteUrl}/bone-joint-school/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    }))
+  );
+  
+  // Add procedure-surgery routes
+  dynamicRoutesMapped.push(
+    ...dynamicRoutes['procedure-surgery'].map(slug => ({
+      url: `${siteUrl}/procedure-surgery/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    }))
+  );
+  
+  // Add publications routes
+  dynamicRoutesMapped.push(
+    ...dynamicRoutes['publications'].map(slug => ({
+      url: `${siteUrl}/publications/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    }))
+  );
+  
+  // Add blogs routes
+  dynamicRoutesMapped.push(
+    ...dynamicRoutes['blogs'].map(slug => ({
+      url: `${siteUrl}/blogs/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    }))
+  );
+  
+  // Process the rest of app routes that aren't already in static or dynamic routes
+  const processedUrls = new Set([
+    ...staticRoutes.map(route => route.url),
+    ...dynamicRoutesMapped.map(route => route.url)
+  ]);
+  
+  const additionalRoutes = appRoutes
+    .filter(route => {
+      const fullUrl = `${siteUrl}${route}`;
+      return !processedUrls.has(fullUrl) && 
+             // Filter out dynamic route patterns and api routes
+             !route.includes('[') && 
+             !route.includes('api/');
+    })
+    .map(route => ({
+      url: `${siteUrl}${route}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    }));
 
   // Combine all routes
   return [
     ...staticRoutes,
-    ...procedureRoutes,
-    ...boneJointRoutes,
-    ...publicationRoutes,
-    ...staffRoutes,
-    ...blogRoutes,
+    ...dynamicRoutesMapped,
+    ...additionalRoutes
   ];
 } 

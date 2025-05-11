@@ -104,22 +104,33 @@ const LazyImage = ({ src, alt, fill, ...props }: any) => {
   const [isLoaded, setIsLoaded] = useState(false);
   
   return (
-    <div className="relative overflow-hidden" style={fill ? {position: 'relative', height: '100%', width: '100%'} : {}}>
+    <div 
+      className="relative overflow-hidden" 
+      style={fill ? {
+        position: 'relative', 
+        minHeight: '250px',
+        height: '100%',
+        width: '100%'
+      } : {}}
+    >
       {!isLoaded && (
         <div className="absolute inset-0 bg-gray-100 animate-pulse" />
       )}
-      <Image 
-        src={src} 
-        alt={alt}
-        fill={fill}
-        onLoad={() => setIsLoaded(true)}
-        sizes={fill ? "(max-width: 768px) 100vw, 50vw" : props.sizes || "100vw"}
-        className={cn(
-          "transition-opacity duration-500",
-          isLoaded ? "opacity-100" : "opacity-0"
-        )}
-        {...props}
-      />
+      <div style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0}}>
+        <Image 
+          src={src} 
+          alt={alt}
+          fill={fill}
+          onLoad={() => setIsLoaded(true)}
+          sizes={fill ? "(max-width: 768px) 100vw, 50vw" : props.sizes || "100vw"}
+          className={cn(
+            "transition-opacity duration-500",
+            isLoaded ? "opacity-100" : "opacity-0",
+            props.className || ""
+          )}
+          {...props}
+        />
+      </div>
     </div>
   );
 };
@@ -559,14 +570,16 @@ export default function HomePage() {
             >
               <div className="lg:col-span-1 relative">
                 <div className="absolute -inset-4 bg-[#8B5C9E]/10 rounded-full blur-2xl animate-pulse" />
-                <div className="relative aspect-square rounded-full overflow-hidden shadow-xl mx-auto lg:mx-0 w-64 h-64 lg:w-full lg:h-auto" style={{minHeight: '16rem'}}>
-                  <LazyImage
-                    src="/images/orthopedics/dr-naveen.jpg"
-                    alt="Dr. Naveen Kumar L.V"
-                    fill
-                    className="object-cover object-top"
-                    sizes="(max-width: 1024px) 256px, 100vw"
-                  />
+                <div className="relative aspect-square rounded-full overflow-hidden shadow-xl mx-auto lg:mx-0 w-64 h-64 lg:w-full lg:h-auto" style={{minHeight: '16rem', position: 'relative'}}>
+                  <div style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0}}>
+                    <Image
+                      src="/images/orthopedics/dr-naveen.jpg"
+                      alt="Dr. Naveen Kumar L.V"
+                      fill
+                      className="object-cover object-top"
+                      sizes="(max-width: 1024px) 256px, 100vw"
+                    />
+                  </div>
                 </div>
               </div>
               <div className="lg:col-span-2 text-center lg:text-left relative isolate">
@@ -634,22 +647,24 @@ export default function HomePage() {
             >
               {/* Using local image paths for logos */}
                <div className="flex justify-center items-center bg-gray-50 p-8 rounded-lg shadow-sm">
-                 <LazyImage
-                    src="/images/orthopedics/alma-mater-logos.webp"
-                    alt="Alma Mater Logos"
-                    width={852}
-                    height={174}
-                    className="object-contain max-w-full h-auto"
-                 />
+                 <div style={{position: 'relative', width: '852px', height: '174px', maxWidth: '100%'}}>
+                   <Image
+                      src="/images/orthopedics/alma-mater-logos.webp"
+                      alt="Alma Mater Logos"
+                      fill
+                      className="object-contain"
+                   />
+                 </div>
                </div>
                 <div className="flex justify-center items-center bg-gray-50 p-8 rounded-lg shadow-sm">
-                   <LazyImage
-                    src="/images/orthopedics/affiliation-logos.webp"
-                    alt="Affiliation Logos"
-                    width={833}
-                    height={166}
-                    className="object-contain max-w-full h-auto"
-                   />
+                  <div style={{position: 'relative', width: '833px', height: '166px', maxWidth: '100%'}}>
+                    <Image
+                      src="/images/orthopedics/affiliation-logos.webp"
+                      alt="Affiliation Logos"
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
                 </div>
              </motion.div>
         </div>
