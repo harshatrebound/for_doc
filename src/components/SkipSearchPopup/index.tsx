@@ -36,8 +36,8 @@ const SkipSearchPopup = ({ onClose, isVisible }: SkipSearchPopupProps) => {
             </button>
 
             <div className="flex flex-col md:flex-row">
-              {/* Image Section */}
-              <div className="md:w-[35%] h-[200px] md:h-auto">
+              {/* Image Section - Hidden on mobile */}
+              <div className="hidden md:block md:w-[35%] md:h-auto">
                 <img
                   src="https://cdn.prod.website-files.com/655e49f111202615f47a3d82/6631fb65afcee8415edaa6a8_Vaish.jpg"
                   alt="Team Building Expert"
