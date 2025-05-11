@@ -24,6 +24,7 @@ export interface Activity {
   created_at: string;
   updated_at: string;
   activity_main_tag?: string;
+  location?: string;
 }
 
 export interface Destination {
@@ -176,6 +177,26 @@ export interface TeamOutingAd {
   final_cta_heading?: string;
   final_cta_subtext?: string;
   priority?: number;
+}
+
+export interface PartnerRegistration {
+  id: number;
+  company_name: string;
+  website?: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  country: string;
+  city: string;
+  company_type: string;
+  employee_count?: string;
+  years_in_business?: string;
+  services_offered: string[];
+  message?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  updated_at: string;
 }
 
 // Add more type definitions as needed for other tables 

@@ -211,3 +211,11 @@
 .shadow-apple-hover {
   box-shadow: 0 12px 24px -6px rgb(0 0 0 / 0.15), 0 6px 12px -6px rgb(0 0 0 / 0.15);
 }
+
+.custom-seo-prose p,
+.custom-seo-prose ul,
+.custom-seo-prose ol,
+.custom-seo-prose li,
+.custom-seo-prose blockquote {
+  font-size: 18.5px !important;
+}

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Link } from 'react-router-dom';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
+import { FiUsers, FiClock, FiTarget, FiStar } from 'react-icons/fi';
 
 // Reusable button component
 const ViewDetailsButton = () => (
@@ -16,20 +17,35 @@ const ViewDetailsButton = () => (
   </div>
 );
 
-// Reusable badge components
-const StatBadge = ({ icon, label }: { icon: React.ReactNode; label: string }) => (
-  <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full">
-    {icon}
-    <span className="text-sm font-medium text-[#636363]">{label}</span>
+const GradientIcon = ({ children }: { children: React.ReactNode }) => (
+  <div className="relative">
+    <div className="[&>svg]:w-4 [&>svg]:h-4 [&>svg]:stroke-[#FF4C39] [&>svg]:stroke-[1.5]">
+      {children}
+    </div>
   </div>
 );
 
-const RatingBadge = ({ rating }: { rating: number }) => (
-  <div className="flex items-center gap-1 px-3 py-1 bg-white rounded-full">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path d="M7.24167 10.535L10.2783 12.4467C10.7267 12.7217 11.27 12.32 11.165 11.8133L10.3233 8.39833L13.0433 6.02167C13.44 5.67833 13.2333 5.03333 12.7167 4.99833L9.21667 4.71667L7.845 1.47667C7.63167 0.991667 6.85167 0.991667 6.63833 1.47667L5.26667 4.71667L1.76667 4.99833C1.25 5.03333 1.04333 5.67833 1.44 6.02167L4.16 8.39833L3.31833 11.8133C3.21333 12.32 3.75667 12.7217 4.205 12.4467L7.24167 10.535Z" fill="url(#rating-gradient)"/>
-    </svg>
-    <span className="text-sm font-medium text-[#636363]">{rating}</span>
+const StatIcon = ({ type }: { type: 'participants' | 'activity' | 'duration' }) => {
+  const icons = {
+    participants: <FiUsers className="stroke-2" />,
+    activity: <FiTarget className="stroke-2" />,
+    duration: <FiClock className="stroke-2" />
+  };
+
+  return <GradientIcon>{icons[type]}</GradientIcon>;
+};
+
+const StatBadge = ({ type, children }: { type: 'participants' | 'activity' | 'duration', children: React.ReactNode }) => (
+  <div className="h-[32px] bg-white/90 backdrop-blur-sm rounded-[16px] flex items-center justify-center px-3 gap-2 shadow-sm hover:shadow-md transition-shadow duration-300">
+    <StatIcon type={type} />
+    <span className="text-[#313131] text-xs font-medium font-['Outfit'] whitespace-nowrap">{children}</span>
+  </div>
+);
+
+const RatingBadge = () => (
+  <div className="min-w-[60px] h-[32px] bg-white/90 backdrop-blur-sm rounded-[16px] flex items-center justify-center gap-1.5 shadow-sm px-3">
+    <FiStar className="w-4 h-4 text-[#FF4C39] fill-[#FF4C39] stroke-[#FF4C39]" />
+    <span className="text-[#313131] text-sm font-medium font-['Outfit']">4.8</span>
   </div>
 );
 
@@ -56,7 +72,7 @@ export const TeamBuildingActivitiesSection = () => {
       rating: (activity as any).rating || 4.8,
       participants: activity.group_size || '15-100',
       duration: activity.duration || '2-3 Hours',
-      type: 'Virtual Team Building'
+      type: 'Virtual'
     })) || [];
 
   if (activitiesError) {
@@ -131,7 +147,7 @@ export const TeamBuildingActivitiesSection = () => {
                       }}
                     />
                     <div className="absolute top-3 left-3">
-                      <RatingBadge rating={activity.rating} />
+                      <RatingBadge />
                     </div>
                   </div>
                   
@@ -144,35 +160,10 @@ export const TeamBuildingActivitiesSection = () => {
                     </p>
                   </div>
                   
-                  <div className="flex flex-wrap gap-2 justify-between mt-4">
-                    <StatBadge
-                      icon={
-                        <svg width="10" height="14" viewBox="0 0 10 14" fill="none">
-                          <path d="M5 6.66667C6.61083 6.66667 7.91667 5.36083 7.91667 3.75C7.91667 2.13917 6.61083 0.833333 5 0.833333C3.38917 0.833333 2.08333 2.13917 2.08333 3.75C2.08333 5.36083 3.38917 6.66667 5 6.66667Z" stroke="url(#icon-gradient)" strokeWidth="1.5"/>
-                          <path d="M9.16667 12.5C9.16667 9.27833 7.32167 6.66667 5 6.66667C2.67833 6.66667 0.833333 9.27833 0.833333 12.5" stroke="url(#icon-gradient)" strokeWidth="1.5"/>
-                        </svg>
-                      }
-                      label={activity.participants}
-                    />
-                    <StatBadge
-                      icon={
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                          <path d="M7 13.1667C10.4058 13.1667 13.1667 10.4058 13.1667 7C13.1667 3.59421 10.4058 0.833333 7 0.833333C3.59421 0.833333 0.833333 3.59421 0.833333 7C0.833333 10.4058 3.59421 13.1667 7 13.1667Z" stroke="url(#icon-gradient)" strokeWidth="1.5"/>
-                          <path d="M7 3.33333V7L9.16667 9.16667" stroke="url(#icon-gradient)" strokeWidth="1.5"/>
-                        </svg>
-                      }
-                      label={activity.duration}
-                    />
-                    <StatBadge
-                      icon={
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                          <path d="M6.25 12.75H2.5C1.53333 12.75 0.75 11.9667 0.75 11V2.5C0.75 1.53333 1.53333 0.75 2.5 0.75H11C11.9667 0.75 12.75 1.53333 12.75 2.5V6.25" stroke="url(#icon-gradient)" strokeWidth="1.5"/>
-                          <path d="M4.16667 5.41667H8.75" stroke="url(#icon-gradient)" strokeWidth="1.5"/>
-                          <path d="M4.16667 8.33333H6.25" stroke="url(#icon-gradient)" strokeWidth="1.5"/>
-                        </svg>
-                      }
-                      label={activity.type}
-                    />
+                  <div className="flex items-center flex-nowrap gap-2 mt-4 overflow-x-auto pb-2">
+                    <StatBadge type="participants">{activity.participants}</StatBadge>
+                    <StatBadge type="activity">{activity.type}</StatBadge>
+                    <StatBadge type="duration">{activity.duration}</StatBadge>
                   </div>
 
                   <div className="mt-4">

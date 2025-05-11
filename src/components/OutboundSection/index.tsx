@@ -2,8 +2,34 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
+import { FiUsers, FiClock, FiStar, FiTarget } from 'react-icons/fi';
+import type { Activity } from '../../lib/supabaseClient';
 
-const ViewDetailsButton = () => (
+interface ViewDetailsButtonProps {
+  onClick?: () => void;
+}
+
+interface StatIconProps {
+  type: 'participants' | 'activity' | 'duration' | 'difficulty';
+}
+
+interface StatBadgeProps extends StatIconProps {
+  children: React.ReactNode;
+}
+
+interface Experience {
+  image: string;
+  title: string;
+  description: string;
+  slug: string;
+  stats: {
+    participants: string;
+    duration: string;
+    difficulty: string;
+  };
+}
+
+const ViewDetailsButton: React.FC<ViewDetailsButtonProps> = () => (
   <div className="relative w-full h-[45px] group">
     {/* Gradient background that shows on hover */}
     <div className="absolute inset-0 bg-gradient-to-b from-[#ff4c39] to-[#ffb573] opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[8px]" />
@@ -17,7 +43,7 @@ const ViewDetailsButton = () => (
   </div>
 );
 
-const ViewMoreButton = () => (
+const ViewMoreButton: React.FC = () => (
   <div className="relative h-[45px] group">
     {/* Gradient background that shows on hover */}
     <div className="absolute inset-0 bg-gradient-to-b from-[#ff4c39] to-[#ffb573] opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[8px]" />
@@ -31,58 +57,36 @@ const ViewMoreButton = () => (
   </div>
 );
 
-const GradientIcon = ({ children }: { children: React.ReactNode }) => (
+const GradientIcon: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="relative">
-    <svg width="0" height="0">
-      <defs>
-        <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#FF4C39" />
-          <stop offset="100%" stopColor="#FFB573" />
-        </linearGradient>
-      </defs>
-    </svg>
-    <div className="[&>svg]:stroke-[url(#icon-gradient)]">
+    <div className="[&>svg]:w-4 [&>svg]:h-4 [&>svg]:stroke-[#FF4C39] [&>svg]:stroke-[1.5]">
       {children}
     </div>
   </div>
 );
 
-const StatIcon = ({ type }: { type: 'participants' | 'outbound' | 'time' }) => {
+const StatIcon: React.FC<StatIconProps> = ({ type }) => {
   const icons = {
-    participants: (
-      <svg width="10" height="14" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M5 6.66667C6.61083 6.66667 7.91667 5.36083 7.91667 3.75C7.91667 2.13917 6.61083 0.833333 5 0.833333C3.38917 0.833333 2.08333 2.13917 2.08333 3.75C2.08333 5.36083 3.38917 6.66667 5 6.66667Z" strokeWidth="1.5"/>
-        <path d="M9.16667 12.5C9.16667 9.27833 7.32167 6.66667 5 6.66667C2.67833 6.66667 0.833333 9.27833 0.833333 12.5" strokeWidth="1.5"/>
-      </svg>
-    ),
-    outbound: (
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M7 13.1667C10.4058 13.1667 13.1667 10.4058 13.1667 7C13.1667 3.59421 10.4058 0.833333 7 0.833333C3.59421 0.833333 0.833333 3.59421 0.833333 7C0.833333 10.4058 3.59421 13.1667 7 13.1667Z" strokeWidth="1.5"/>
-        <path d="M7 3.33333V7L9.16667 9.16667" strokeWidth="1.5"/>
-      </svg>
-    ),
-    time: (
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M6.25 12.75H2.5C1.53333 12.75 0.75 11.9667 0.75 11V2.5C0.75 1.53333 1.53333 0.75 2.5 0.75H11C11.9667 0.75 12.75 1.53333 12.75 2.5V6.25" strokeWidth="1.5"/>
-        <path d="M4.16667 5.41667H8.75" strokeWidth="1.5"/>
-        <path d="M4.16667 8.33333H6.25" strokeWidth="1.5"/>
-      </svg>
-    )
+    participants: <FiUsers className="stroke-2" />,
+    activity: <FiTarget className="stroke-2" />,
+    duration: <FiClock className="stroke-2" />,
+    difficulty: <FiClock className="stroke-2" />
   };
 
   return <GradientIcon>{icons[type]}</GradientIcon>;
 };
 
-const RatingBadge = () => (
-  <div className="min-w-[60px] h-[24px] bg-white rounded-[16px] flex items-center justify-center shadow-sm px-3">
-    <span className="text-[#313131] text-sm font-medium font-['Outfit']">4.6</span>
+const RatingBadge: React.FC = () => (
+  <div className="min-w-[60px] h-[32px] bg-white/90 backdrop-blur-sm rounded-[16px] flex items-center justify-center gap-1.5 shadow-sm px-3">
+    <FiStar className="w-4 h-4 text-[#FF4C39] fill-[#FF4C39] stroke-[#FF4C39]" />
+    <span className="text-[#313131] text-sm font-medium font-['Outfit']">4.8</span>
   </div>
 );
 
-const StatBadge = ({ type, children }: { type: 'participants' | 'outbound' | 'time', children: React.ReactNode }) => (
-  <div className="h-[24px] bg-white rounded-[16px] flex items-center justify-center px-3 gap-1.5 shadow-sm hover:shadow-md transition-shadow duration-300">
+const StatBadge: React.FC<StatBadgeProps> = ({ type, children }) => (
+  <div className="h-[32px] bg-white/90 backdrop-blur-sm rounded-[16px] flex items-center justify-center px-3 gap-2 shadow-sm hover:shadow-md transition-shadow duration-300 whitespace-nowrap">
     <StatIcon type={type} />
-    <span className="text-[#313131] text-sm font-medium font-['Outfit'] whitespace-nowrap">{children}</span>
+    <span className="text-[#313131] text-xs font-medium font-['Outfit']">{children}</span>
   </div>
 );
 
@@ -95,21 +99,28 @@ const OutboundSection: React.FC = () => {
   const { activities, loading: activitiesLoading, error: activitiesError } = useActivities();
 
   // Filter outbound activities and take 3 random ones
-  const outboundExperiences = activities
-    ?.filter(activity => activity.activity_type === 'Outbound')
-    ?.sort(() => Math.random() - 0.5)
-    ?.slice(0, 3)
-    ?.map(activity => ({
-      image: activity.main_image,
-      title: activity.name,
-      description: activity.tagline,
-      slug: activity.slug,
-      stats: {
-        participants: activity.group_size || '20-1000',
-        duration: activity.activity_type || 'Outbound',
-        difficulty: activity.duration || '6H Min'
-      }
-    })) || [];
+  const outboundExperiences: Experience[] = React.useMemo(() => {
+    return (activities || [])
+      .filter((activity): activity is Activity => 
+        activity !== null &&
+        typeof activity === 'object' &&
+        'activity_type' in activity &&
+        activity.activity_type === 'Outbound'
+      )
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3)
+      .map(activity => ({
+        image: activity.main_image || '',
+        title: activity.name,
+        description: activity.tagline || '',
+        slug: activity.slug,
+        stats: {
+          participants: activity.group_size || '20-1000',
+          duration: activity.activity_type || 'Outbound',
+          difficulty: activity.duration || '6H Min'
+        }
+      }));
+  }, [activities]);
 
   if (activitiesError) {
     return (
@@ -196,10 +207,10 @@ const OutboundSection: React.FC = () => {
                     </p>
                   </div>
                   
-                  <div className="flex flex-wrap gap-2 justify-between mt-4">
+                  <div className="flex flex-wrap gap-4 justify-start mt-4">
                     <StatBadge type="participants">{experience.stats.participants}</StatBadge>
-                    <StatBadge type="outbound">{experience.stats.duration}</StatBadge>
-                    <StatBadge type="time">{experience.stats.difficulty}</StatBadge>
+                    <StatBadge type="activity">{experience.stats.duration}</StatBadge>
+                    <StatBadge type="duration">{experience.stats.difficulty}</StatBadge>
                   </div>
 
                   <div className="mt-4">
@@ -250,9 +261,9 @@ export const VirtualActivitiesSection = () => {
       description: activity.tagline,
       slug: activity.slug,
       stats: {
-        participants: activity.group_size || '15-150',
-        duration: activity.activity_type || 'Virtual',
-        difficulty: activity.duration || '30 mins'
+        participants: activity.group_size || '20-1000',
+        activity: activity.activity_type || 'Virtual',
+        duration: activity.duration || '1H Min'
       }
     })) || [];
 
@@ -276,7 +287,7 @@ export const VirtualActivitiesSection = () => {
               transition={{ duration: 0.5 }}
               className="inline-block text-lg font-medium font-['DM Sans'] text-[#636363] mb-2"
             >
-              Top Virtual Activities
+              Virtual Team Building Activities
             </motion.span>
             <motion.h2
               initial={{ opacity: 0, y: 10 }}
@@ -284,7 +295,7 @@ export const VirtualActivitiesSection = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-[40px] font-semibold font-['Inter'] leading-tight bg-gradient-to-b from-[#FF4C39] to-[#FFB573] bg-clip-text text-transparent"
             >
-              Connect Teams Virtually.
+              Connect Teams Virtually
             </motion.h2>
           </div>
           <motion.p
@@ -293,7 +304,7 @@ export const VirtualActivitiesSection = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="lg:max-w-md text-left lg:text-right text-base font-normal font-['DM Sans'] text-[#757575] lg:pt-6"
           >
-            Engage your remote teams with interactive virtual experiences designed to build stronger connections.
+            Build stronger connections and foster collaboration among your remote team members through our interactive virtual experiences.
           </motion.p>
         </div>
 
@@ -341,10 +352,10 @@ export const VirtualActivitiesSection = () => {
                     </p>
                   </div>
                   
-                  <div className="flex flex-wrap gap-2 justify-between mt-4">
+                  <div className="flex items-center gap-2 mt-4 min-h-[32px]">
                     <StatBadge type="participants">{experience.stats.participants}</StatBadge>
-                    <StatBadge type="outbound">{experience.stats.duration}</StatBadge>
-                    <StatBadge type="time">{experience.stats.difficulty}</StatBadge>
+                    <StatBadge type="activity">{experience.stats.activity}</StatBadge>
+                    <StatBadge type="duration">{experience.stats.duration}</StatBadge>
                   </div>
 
                   <div className="mt-4">
@@ -358,7 +369,7 @@ export const VirtualActivitiesSection = () => {
           </div>
         )}
 
-        {/* View More Button */}
+        {/* View More Activities Button */}
         <div className="flex justify-center">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -486,10 +497,10 @@ const OutboundActivitiesSection: React.FC = () => {
                     </p>
                   </div>
                   
-                  <div className="flex flex-wrap gap-2 mt-4">
+                  <div className="flex flex-wrap gap-4 mt-4">
                     <StatBadge type="participants">{activity.stats.participants}</StatBadge>
-                    <StatBadge type="outbound">{activity.stats.duration}</StatBadge>
-                    <StatBadge type="time">{activity.stats.difficulty}</StatBadge>
+                    <StatBadge type="duration">{activity.stats.duration}</StatBadge>
+                    <StatBadge type="difficulty">{activity.stats.difficulty}</StatBadge>
                   </div>
 
                   <div className="mt-4">

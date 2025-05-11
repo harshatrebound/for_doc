@@ -1,12 +1,12 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '../../components/Navbar';
-import TestimonialsSection from '../../components/TestimonialsSection';
-import PartnersSection from '../../components/PartnersSection';
-import ContactSection from '../../components/ContactSection';
 import Footer from '../../components/Footer';
+import ContactSection from '../../components/ContactSection';
+import TestimonialsSection from '../../components/TestimonialsSection';
+// Import icons
+import { BsHeart, BsEmojiSmile, BsTag, BsGraphUp } from 'react-icons/bs';
 
 // Add custom styles
 const styles = {
@@ -15,28 +15,13 @@ const styles = {
   }
 };
 
-const CorporateGiftingPage: React.FC = () => {
-  const [solutionsRef, solutionsInView] = useInView({
+const CorporateGiftingPage = () => {
+  const [heroRef] = useInView({
     threshold: 0.1,
     triggerOnce: true,
   });
 
-  const [benefitsRef, benefitsInView] = useInView({
-    threshold: 0.1,
-    triggerOnce: true,
-  });
-
-  const [productsRef, productsInView] = useInView({
-    threshold: 0.1,
-    triggerOnce: true,
-  });
-
-  const [ctaRef, ctaInView] = useInView({
-    threshold: 0.1,
-    triggerOnce: true,
-  });
-
-  const [processRef, processInView] = useInView({
+  const [giftingRef, giftingInView] = useInView({
     threshold: 0.1,
     triggerOnce: true,
   });
@@ -44,15 +29,14 @@ const CorporateGiftingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
-        <title>Customized Corporate Gifting Solutions | Trebound</title>
-        <meta name="description" content="Premium corporate gifting solutions tailored to your brand and budget" />
+        <title>Corporate Gifting Solutions | Trebound</title>
+        <meta name="description" content="Discover our premium corporate gifting solutions. From customized gift boxes to branded merchandise, we help you create memorable gifting experiences." />
       </Helmet>
 
-      {/* Navbar */}
       <Navbar />
 
-      {/* Hero Section - Similar to Homepage */}
-      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
+      {/* Hero Section */}
+      <section ref={heroRef} className="relative h-[90vh] flex items-center justify-center overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0">
           <div 
@@ -97,12 +81,12 @@ const CorporateGiftingPage: React.FC = () => {
       </section>
 
       {/* Corporate Gifting Solutions Section */}
-      <section ref={solutionsRef} className="py-24 bg-white">
+      <section ref={giftingRef} className="py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
-              animate={solutionsInView ? { opacity: 1, y: 0 } : {}}
+              animate={giftingInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6 }}
               className="text-5xl md:text-6xl font-bold text-[#002B4F] mb-6"
             >
@@ -110,7 +94,7 @@ const CorporateGiftingPage: React.FC = () => {
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
-              animate={solutionsInView ? { opacity: 1, y: 0 } : {}}
+              animate={giftingInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-gray-600 text-lg max-w-3xl mx-auto"
             >
@@ -118,17 +102,18 @@ const CorporateGiftingPage: React.FC = () => {
             </motion.p>
           </div>
 
+          {/* --- UPDATED Gifting Solutions Grid (Based on User Image) --- */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            {/* Solution Card 1 */}
+            {/* Solution Card 1: Employee Recognition */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={solutionsInView ? { opacity: 1, y: 0 } : {}}
+              animate={giftingInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.3 }}
               className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer transform transition-transform duration-300 hover:-translate-y-2"
             >
               <div className="h-64 relative overflow-hidden">
                 <img
-                  src="/images/corporate-gift-1.jpg"
+                  src="/images/corporate-gift-1.jpg" // Reverted to original placeholder paths
                   alt="Employee Recognition"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
@@ -139,10 +124,10 @@ const CorporateGiftingPage: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Solution Card 2 */}
+            {/* Solution Card 2: Client Appreciation */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={solutionsInView ? { opacity: 1, y: 0 } : {}}
+              animate={giftingInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.4 }}
               className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer transform transition-transform duration-300 hover:-translate-y-2"
             >
@@ -159,10 +144,10 @@ const CorporateGiftingPage: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Solution Card 3 */}
+            {/* Solution Card 3: Event Merchandise */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={solutionsInView ? { opacity: 1, y: 0 } : {}}
+              animate={giftingInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.5 }}
               className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer transform transition-transform duration-300 hover:-translate-y-2"
             >
@@ -179,10 +164,10 @@ const CorporateGiftingPage: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Solution Card 4 */}
+            {/* Solution Card 4: Wellness Packages */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={solutionsInView ? { opacity: 1, y: 0 } : {}}
+              animate={giftingInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.6 }}
               className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer transform transition-transform duration-300 hover:-translate-y-2"
             >
@@ -199,10 +184,10 @@ const CorporateGiftingPage: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Solution Card 5 */}
+            {/* Solution Card 5: Festival Celebrations */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={solutionsInView ? { opacity: 1, y: 0 } : {}}
+              animate={giftingInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.7 }}
               className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer transform transition-transform duration-300 hover:-translate-y-2"
             >
@@ -219,10 +204,10 @@ const CorporateGiftingPage: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Solution Card 6 */}
+            {/* Solution Card 6: Welcome Kits */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={solutionsInView ? { opacity: 1, y: 0 } : {}}
+              animate={giftingInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.8 }}
               className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer transform transition-transform duration-300 hover:-translate-y-2"
             >
@@ -239,10 +224,10 @@ const CorporateGiftingPage: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Solution Card 7 */}
+             {/* Solution Card 7: Anniversary Gifts */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={solutionsInView ? { opacity: 1, y: 0 } : {}}
+              animate={giftingInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.9 }}
               className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer transform transition-transform duration-300 hover:-translate-y-2"
             >
@@ -259,10 +244,10 @@ const CorporateGiftingPage: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Solution Card 8 */}
+             {/* Solution Card 8: Retirement Gifts */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={solutionsInView ? { opacity: 1, y: 0 } : {}}
+              animate={giftingInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 1.0 }}
               className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer transform transition-transform duration-300 hover:-translate-y-2"
             >
@@ -279,10 +264,10 @@ const CorporateGiftingPage: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Solution Card 9 */}
+             {/* Solution Card 9: Custom Awards */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={solutionsInView ? { opacity: 1, y: 0 } : {}}
+              animate={giftingInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 1.1 }}
               className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer transform transition-transform duration-300 hover:-translate-y-2"
             >
@@ -298,17 +283,20 @@ const CorporateGiftingPage: React.FC = () => {
                 <p className="text-gray-600">Recognize excellence with personalized awards and trophies</p>
               </div>
             </motion.div>
+
           </div>
+          {/* --- END UPDATED Grid --- */}
         </div>
       </section>
 
-      {/* Benefits of Corporate Gifts Section */}
-      <section ref={benefitsRef} className="py-24 bg-[#F8F9FA]">
+      {/* UPDATED: Benefits of Corporate Gifts Section (Matching User Image) */}
+      <section className="py-24 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
-              animate={benefitsInView ? { opacity: 1, y: 0 } : {}}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.6 }}
               className="text-5xl md:text-6xl font-bold text-[#002B4F] mb-6"
             >
@@ -316,414 +304,168 @@ const CorporateGiftingPage: React.FC = () => {
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
-              animate={benefitsInView ? { opacity: 1, y: 0 } : {}}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-gray-600 text-lg max-w-3xl mx-auto"
             >
               Discover how corporate gifting can transform your business relationships
             </motion.p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-7xl mx-auto">
-            {/* Benefit Card 1 */}
+          {/* Changed to 4-column grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 max-w-7xl mx-auto">
+            {[ // Array of 4 benefits data from image with icons
+              { title: "Strengthen Relationships", description: "Build lasting connections with clients and employees", Icon: BsHeart },
+              { title: "Boost Employee Morale", description: "Motivate and appreciate your team members", Icon: BsEmojiSmile },
+              { title: "Brand Recognition", description: "Enhance your brand visibility and recall", Icon: BsTag },
+              { title: "Business Growth", description: "Drive customer loyalty and retention", Icon: BsGraphUp },
+            ].map((benefit, index) => (
             <motion.div
+                key={index}
               initial={{ opacity: 0, y: 20 }}
-              animate={benefitsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="bg-white rounded-3xl p-8 shadow-lg text-center"
-            >
-              <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-r from-[#FF4C39] to-[#FFB573] flex items-center justify-center">
-                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2L1 21h22L12 2zm0 3.83L19.17 19H4.83L12 5.83zM11 16h2v2h-2v-2zm0-6h2v4h-2v-4z"/>
-                </svg>
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="bg-white rounded-3xl p-8 shadow-lg text-center flex flex-col items-center"
+              >
+                {/* Added Icon Div */}
+                <div className="w-16 h-16 mb-6 rounded-full bg-gradient-to-r from-[#FF4C39] to-[#FFB573] flex items-center justify-center text-white text-2xl">
+                  <benefit.Icon /> {/* Render the icon component */}
               </div>
-              <h3 className="text-xl font-bold text-[#002B4F] mb-4">Strengthen Relationships</h3>
-              <p className="text-gray-600">Build lasting connections with clients and employees</p>
+                <h3 className="text-xl font-bold text-[#002B4F] mb-4">{benefit.title}</h3>
+                <p className="text-gray-600 text-sm">{benefit.description}</p>
             </motion.div>
-
-            {/* Benefit Card 2 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={benefitsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="bg-white rounded-3xl p-8 shadow-lg text-center"
-            >
-              <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-r from-[#FF4C39] to-[#FFB573] flex items-center justify-center">
-                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V18h14v-1.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05.02.01.03.03.04.04 1.14.83 1.93 1.94 1.93 3.41V18h6v-1.5c0-2.33-4.67-3.5-7-3.5z"/>
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-[#002B4F] mb-4">Boost Employee Morale</h3>
-              <p className="text-gray-600">Motivate and appreciate your team members</p>
-            </motion.div>
-
-            {/* Benefit Card 3 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={benefitsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="bg-white rounded-3xl p-8 shadow-lg text-center"
-            >
-              <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-r from-[#FF4C39] to-[#FFB573] flex items-center justify-center">
-                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/>
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-[#002B4F] mb-4">Brand Recognition</h3>
-              <p className="text-gray-600">Enhance your brand visibility and recall</p>
-            </motion.div>
-
-            {/* Benefit Card 4 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={benefitsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="bg-white rounded-3xl p-8 shadow-lg text-center"
-            >
-              <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-r from-[#FF4C39] to-[#FFB573] flex items-center justify-center">
-                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z"/>
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-[#002B4F] mb-4">Business Growth</h3>
-              <p className="text-gray-600">Drive customer loyalty and retention</p>
-            </motion.div>
+            ))}
           </div>
         </div>
       </section>
+      {/* END UPDATED: Benefits Section */}
 
-      {/* Ready to Impress Section */}
-      <section ref={ctaRef} className="py-24 bg-[#002B4F] relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#002B4F] to-[#001F3F] opacity-90" />
-        </div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
+      {/* ADDED: "Ready to Impress?" CTA Section */}
+      <section className="py-20 bg-[#002B4F] text-white">
+        <div className="container mx-auto px-4 text-center">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
-              animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.6 }}
-              className="text-5xl md:text-6xl font-bold text-white mb-6"
+            className="text-4xl md:text-5xl font-bold mb-4"
             >
               Ready to Impress?
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
-              animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-2xl text-white/90 mb-12"
+            className="text-lg text-gray-300 mb-10"
             >
               Send Personalized Gifts to Your Team Today!
             </motion.p>
-            <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              animate={ctaInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white text-lg font-bold py-4 px-8 rounded-full hover:shadow-lg transform transition-all duration-300 hover:-translate-y-1"
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+             <a 
+              href="#contact-section" // Link to contact section below
+              className="inline-block px-10 py-4 bg-gradient-to-r from-[#ff4c39] to-[#ffb573] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity duration-300 text-lg"
+              onClick={(e) => {
+                 e.preventDefault();
+                 document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' });
+               }}
             >
               Get Started Now
-            </motion.button>
-          </div>
+            </a>
+          </motion.div>
         </div>
       </section>
+      {/* END ADDED: CTA Section */}
 
-      {/* Our Products Section */}
-      <section ref={productsRef} className="py-24 bg-white">
+      {/* ADDED: "Our Products" Section */}
+      <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
+            {/* Reference page has uppercase subheading, but image doesn't show one directly above. Add if needed */}
+            {/* <motion.p ... >CORPORATE GIFT PRODUCTS</motion.p> */}
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
-              animate={productsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
               className="text-5xl md:text-6xl font-bold text-[#002B4F] mb-6"
             >
               Our Products
             </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={productsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-gray-600 text-lg max-w-3xl mx-auto"
-            >
-              Explore our curated collection of premium corporate gifts
-            </motion.p>
+             {/* <motion.p ... >Subheading if needed</motion.p> */}
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-7xl mx-auto">
-            {/* Product Card 1 */}
+          {/* Grid to display product cards */} 
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 max-w-7xl mx-auto">
+            {/* Product Data from Image */}
+            {[ // Match data from the image provided
+              { title: "Employee Recognition", description: "Celebrate milestones and achievements with thoughtfully curated gift packages", price: "₹2999", image: "/images/product-1.jpg" },
+              { title: "Client Appreciation", description: "Strengthen business relationships with premium corporate gifts", price: "₹4999", image: "/images/product-2.jpg" },
+              { title: "Event Merchandise", description: "Custom branded merchandise for corporate events and conferences", price: "₹999", image: "/images/product-3.jpg" },
+              { title: "Wellness Packages", description: "Promote employee well-being with curated wellness gift sets", price: "₹4999", image: "/images/product-4.jpg" },
+              { title: "Festival Celebrations", description: "Special gift collections for festive occasions and celebrations", price: "₹3499", image: "/images/product-5.jpg" },
+              { title: "Welcome Kits", description: "Make a great first impression with customized welcome packages", price: "₹1499", image: "/images/product-6.jpg" },
+              { title: "Anniversary Gifts", description: "Celebrate work anniversaries with meaningful gifts", price: "₹2499", image: "/images/product-7.jpg" },
+              { title: "Retirement Gifts", description: "Honor retiring employees with memorable gift selections", price: "₹5999", image: "/images/product-8.jpg" },
+              { title: "Custom Awards", description: "Recognize excellence with personalized awards and trophies", price: "₹1999", image: "/images/product-9.jpg" },
+              // Assuming the last 3 cards are similar to reference page, matching image if possible
+              { title: "Event Merchandise", description: "Custom branded merchandise for corporate events and conferences", price: "₹1499", image: "/images/product-10.jpg" }, // Repeated from image
+              { title: "Client Appreciation", description: "Strengthen business relationships with premium corporate gifts", price: "₹3999", image: "/images/product-11.jpg" }, // Repeated from image
+              // Add 12th card if needed based on full reference
+            ].map((product, index) => (
             <motion.div
+                key={index}
               initial={{ opacity: 0, y: 20 }}
-              animate={productsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer"
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: index * 0.05 }}
+                // Updated card styling based on image
+                className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer flex flex-col"
             >
               <div className="h-48 relative overflow-hidden">
-                <img
-                  src="/images/product-1.jpg"
-                  alt="Employee Recognition"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
+                    <img src={product.image} alt={product.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
               </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-[#002B4F] mb-2">Employee Recognition</h3>
-                <p className="text-gray-600 text-sm mb-4">Celebrate milestones and achievements with thoughtfully curated gift packages</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#FF5A3C] font-bold">Starting from ₹2999</span>
-                  <button className="text-[#002B4F] font-bold hover:text-[#FF5A3C]">View Details →</button>
+                 <div className="p-6 flex flex-col flex-grow">
+                   <h3 className="text-xl font-bold text-[#002B4F] mb-2">{product.title}</h3>
+                   <p className="text-gray-600 text-sm mb-4 flex-grow">{product.description}</p>
+                   {/* Price and View Details row */}
+                   <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
+                     <div>
+                       <span className="block text-xs text-[#FF5A3C]">Starting from</span>
+                       <span className="text-[#FF5A3C] font-bold">{product.price}</span>
+                </div>
+                     <a 
+                       href="#contact-section" 
+                       className="text-[#002B4F] font-bold hover:text-[#FF5A3C] text-sm flex items-center gap-1"
+                       onClick={(e) => {
+                          e.preventDefault();
+                          document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' });
+                       }}
+                     >
+                       View Details →
+                     </a>
                 </div>
               </div>
             </motion.div>
-
-            {/* Product Card 2 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={productsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer"
-            >
-              <div className="h-48 relative overflow-hidden">
-                <img
-                  src="/images/product-2.jpg"
-                  alt="Client Appreciation"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-[#002B4F] mb-2">Client Appreciation</h3>
-                <p className="text-gray-600 text-sm mb-4">Strengthen business relationships with premium corporate gifts</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#FF5A3C] font-bold">Starting from ₹4999</span>
-                  <button className="text-[#002B4F] font-bold hover:text-[#FF5A3C]">View Details →</button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Product Card 3 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={productsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer"
-            >
-              <div className="h-48 relative overflow-hidden">
-                <img
-                  src="/images/product-3.jpg"
-                  alt="Event Merchandise"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-[#002B4F] mb-2">Event Merchandise</h3>
-                <p className="text-gray-600 text-sm mb-4">Custom branded merchandise for corporate events and conferences</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#FF5A3C] font-bold">Starting from ₹999</span>
-                  <button className="text-[#002B4F] font-bold hover:text-[#FF5A3C]">View Details →</button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Product Card 4 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={productsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer"
-            >
-              <div className="h-48 relative overflow-hidden">
-                <img
-                  src="/images/product-4.jpg"
-                  alt="Wellness Packages"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-[#002B4F] mb-2">Wellness Packages</h3>
-                <p className="text-gray-600 text-sm mb-4">Promote employee well-being with curated wellness gift sets</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#FF5A3C] font-bold">Starting from ₹4999</span>
-                  <button className="text-[#002B4F] font-bold hover:text-[#FF5A3C]">View Details →</button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Product Card 5 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={productsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.7 }}
-              className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer"
-            >
-              <div className="h-48 relative overflow-hidden">
-                <img
-                  src="/images/product-5.jpg"
-                  alt="Festival Celebrations"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-[#002B4F] mb-2">Festival Celebrations</h3>
-                <p className="text-gray-600 text-sm mb-4">Special gift collections for festive occasions and celebrations</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#FF5A3C] font-bold">Starting from ₹3499</span>
-                  <button className="text-[#002B4F] font-bold hover:text-[#FF5A3C]">View Details →</button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Product Card 6 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={productsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.8 }}
-              className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer"
-            >
-              <div className="h-48 relative overflow-hidden">
-                <img
-                  src="/images/product-6.jpg"
-                  alt="Welcome Kits"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-[#002B4F] mb-2">Welcome Kits</h3>
-                <p className="text-gray-600 text-sm mb-4">Make a great first impression with customized welcome packages</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#FF5A3C] font-bold">Starting from ₹1499</span>
-                  <button className="text-[#002B4F] font-bold hover:text-[#FF5A3C]">View Details →</button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Product Card 7 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={productsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.9 }}
-              className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer"
-            >
-              <div className="h-48 relative overflow-hidden">
-                <img
-                  src="/images/product-7.jpg"
-                  alt="Anniversary Gifts"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-[#002B4F] mb-2">Anniversary Gifts</h3>
-                <p className="text-gray-600 text-sm mb-4">Celebrate work anniversaries with meaningful gifts</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#FF5A3C] font-bold">Starting from ₹2499</span>
-                  <button className="text-[#002B4F] font-bold hover:text-[#FF5A3C]">View Details →</button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Product Card 8 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={productsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 1.0 }}
-              className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer"
-            >
-              <div className="h-48 relative overflow-hidden">
-                <img
-                  src="/images/product-8.jpg"
-                  alt="Retirement Gifts"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-[#002B4F] mb-2">Retirement Gifts</h3>
-                <p className="text-gray-600 text-sm mb-4">Honor retiring employees with memorable gift selections</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#FF5A3C] font-bold">Starting from ₹5999</span>
-                  <button className="text-[#002B4F] font-bold hover:text-[#FF5A3C]">View Details →</button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Product Card 9 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={productsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 1.1 }}
-              className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer"
-            >
-              <div className="h-48 relative overflow-hidden">
-                <img
-                  src="/images/product-9.jpg"
-                  alt="Custom Awards"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-[#002B4F] mb-2">Custom Awards</h3>
-                <p className="text-gray-600 text-sm mb-4">Recognize excellence with personalized awards and trophies</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#FF5A3C] font-bold">Starting from ₹1999</span>
-                  <button className="text-[#002B4F] font-bold hover:text-[#FF5A3C]">View Details →</button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Product Card 10 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={productsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 1.2 }}
-              className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer"
-            >
-              <div className="h-48 relative overflow-hidden">
-                <img
-                  src="/images/product-10.jpg"
-                  alt="Event Merchandise"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-[#002B4F] mb-2">Event Merchandise</h3>
-                <p className="text-gray-600 text-sm mb-4">Custom branded merchandise for corporate events and conferences</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#FF5A3C] font-bold">Starting from ₹1499</span>
-                  <button className="text-[#002B4F] font-bold hover:text-[#FF5A3C]">View Details →</button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Product Card 11 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={productsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 1.3 }}
-              className="bg-white rounded-3xl shadow-lg overflow-hidden group cursor-pointer"
-            >
-              <div className="h-48 relative overflow-hidden">
-                <img
-                  src="/images/product-11.jpg"
-                  alt="Client Appreciation"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-[#002B4F] mb-2">Client Appreciation</h3>
-                <p className="text-gray-600 text-sm mb-4">Strengthen business relationships with premium corporate gifts</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#FF5A3C] font-bold">Starting from ₹3999</span>
-                  <button className="text-[#002B4F] font-bold hover:text-[#FF5A3C]">View Details →</button>
-                </div>
-              </div>
-            </motion.div>
+            ))}
           </div>
         </div>
       </section>
+      {/* END ADDED: "Our Products" Section */}
 
-      {/* Our Process Section */}
-      <section ref={processRef} className="py-24 bg-[#002B4F]">
+      {/* ADDED: "Our Gifting Process" Section */}
+      <section className="py-24 bg-[#002B4F]">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <motion.p
               initial={{ opacity: 0, y: 20 }}
-              animate={processInView ? { opacity: 1, y: 0 } : {}}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.6 }}
               className="text-white text-lg mb-4"
             >
@@ -731,7 +473,8 @@ const CorporateGiftingPage: React.FC = () => {
             </motion.p>
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
-              animate={processInView ? { opacity: 1, y: 0 } : {}}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-[#FF4C39] to-[#FFB573] bg-clip-text text-transparent mb-16"
             >
@@ -739,137 +482,41 @@ const CorporateGiftingPage: React.FC = () => {
             </motion.h2>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-7xl mx-auto text-white">
-              {/* Step 1 */}
+              {[ // Steps data from image
+                { number: 1, title: "Consultation", description: "Understanding your requirements and budget" },
+                { number: 2, title: "Curation", description: "Selecting perfect gifts that align with your brand" },
+                { number: 3, title: "Customization", description: "Adding your brand elements and personal touches" },
+                { number: 4, title: "Delivery", description: "Timely delivery to your specified locations" }
+              ].map((step, index) => (
               <motion.div
+                  key={index}
                 initial={{ opacity: 0, y: 20 }}
-                animate={processInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.3 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
                 className="text-center"
               >
                 <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-[#FF4C39] to-[#FFB573] flex items-center justify-center text-3xl font-bold">
-                  1
+                    {step.number}
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Consultation</h3>
-                <p className="text-gray-300">Understanding your requirements and budget</p>
+                  <h3 className="text-2xl font-bold mb-4">{step.title}</h3>
+                  <p className="text-gray-300">{step.description}</p>
               </motion.div>
-
-              {/* Step 2 */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={processInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                className="text-center"
-              >
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-[#FF4C39] to-[#FFB573] flex items-center justify-center text-3xl font-bold">
-                  2
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Curation</h3>
-                <p className="text-gray-300">Selecting perfect gifts that align with your brand</p>
-              </motion.div>
-
-              {/* Step 3 */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={processInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                className="text-center"
-              >
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-[#FF4C39] to-[#FFB573] flex items-center justify-center text-3xl font-bold">
-                  3
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Customization</h3>
-                <p className="text-gray-300">Adding your brand elements and personal touches</p>
-              </motion.div>
-
-              {/* Step 4 */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={processInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                className="text-center"
-              >
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-[#FF4C39] to-[#FFB573] flex items-center justify-center text-3xl font-bold">
-                  4
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Delivery</h3>
-                <p className="text-gray-300">Timely delivery to your specified locations</p>
-              </motion.div>
+              ))}
             </div>
           </div>
         </div>
       </section>
+      {/* END ADDED: "Our Gifting Process" Section */}
 
       {/* Testimonials Section */}
       <TestimonialsSection />
 
-      {/* Partners Section */}
-      <PartnersSection />
-
-      {/* CTA Section */}
+      {/* Contact Section */}
+      <div id="contact-section">
       <ContactSection />
-
-      {/* FAQ Section */}
-      <section className="py-24 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-5xl md:text-6xl font-bold text-[#002B4F] mb-6"
-            >
-              Frequently asked questions
-            </motion.h2>
           </div>
 
-          <div className="max-w-4xl mx-auto">
-            {[
-              {
-                question: "What types of corporate gifts do you offer?",
-                answer: "At Trebound, we offer a wide range of corporate gifts including personalized gifts, employee gifts, client gifts, new employee welcome kits, customized t-shirts, curated gift boxes, backpacks, swags, luxury gift sets, tech gadgets, and more."
-              },
-              {
-                question: "Can I customize the corporate gifts with our company logo?",
-                answer: "Yes, absolutely! We offer customization options including adding your company logo to the corporate gifts to align with your branding."
-              },
-              {
-                question: "Do you provide bulk order discounts?",
-                answer: "Yes, we offer bulk order discounts for corporate gifts. Get in touch with us to discuss your requirements and avail of special pricing for large orders."
-              },
-              {
-                question: "Can I request a sample of the corporate gift before placing a bulk order?",
-                answer: "Yes, we understand the importance of ensuring the quality and suitability of the corporate gifts. Contact us to request a sample before placing your bulk order."
-              },
-              {
-                question: "How long does it take to receive our corporate gifts?",
-                answer: "The delivery time depends on the customization and quantity of your order. We strive to deliver your gifts within the specified timeframe and will provide you with an estimated delivery date upon order confirmation."
-              }
-            ].map((faq, index) => (
-              <div key={index} className="mb-6">
-                <details className="group">
-                  <summary className="flex justify-between items-center cursor-pointer list-none bg-white rounded-2xl shadow-md p-6">
-                    <span className="text-xl font-bold text-[#002B4F]">{faq.question}</span>
-                    <span className="text-[#FF5A3C] font-bold text-2xl transition-transform duration-300 group-open:rotate-180">
-                      -
-                    </span>
-                  </summary>
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="px-6 py-4 text-gray-600"
-                  >
-                    {faq.answer}
-                  </motion.div>
-                </details>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
       <Footer />
     </div>
   );

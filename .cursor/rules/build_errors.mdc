@@ -3,8 +3,8 @@ description: Solve lint and build errors
 globs: 
 alwaysApply: false
 ---
-use [typeerrors.md](mdc:typeerrors.md), understand them thorughy and fix those errors. My website works ifne in dev mode, FYI.
+I have my website running seamlessly in local dev, yet I got some typer errors while running npm run build and have saved them to [errors.md](mdc:.cursor/errors.md) . I'd like you to deal one page at a time with data available in [errors.md](mdc:.cursor/errors.md) . SOlve those errors without destroying my codebase and ensure you do not disturb existing flow. 
 
-Act like an expert developer who understands ins and outs of developing a website in Vite and deploying to git. 
+Run npm run build and ensure that errors are reducing as you solve. 
 
-Run "npm run build" and keep checking untill we have a production build ready without any errors. 
+Strictly do not destroy my codebase.

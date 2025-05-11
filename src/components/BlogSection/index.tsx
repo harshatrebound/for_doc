@@ -35,7 +35,6 @@ interface BlogPost {
   small_description: string;
   thumbnail_image: string;
   published_on: string;
-  author: string;
 }
 
 const ViewMoreButton = () => (
@@ -67,7 +66,7 @@ const BlogSection = () => {
 
         // Build the URL with query parameters
         const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/blog_posts`;
-        const postsUrl = `${url}?select=id,name,slug,small_description,thumbnail_image,published_on,author&order=published_on.desc&limit=3`;
+        const postsUrl = `${url}?select=id,name,slug,small_description,thumbnail_image,published_on&order=published_on.desc&limit=3`;
 
         // Fetch posts
         const postsResponse = await fetch(postsUrl, {
@@ -106,7 +105,6 @@ const BlogSection = () => {
       small_description: "Explore lesser-known European destinations that offer charm, culture, and unforgettable experiences.",
       thumbnail_image: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?q=80&w=2066&auto=format&fit=crop",
       published_on: "2023-06-24",
-      author: "Sarah Johnson"
     },
     {
       id: 2,
@@ -115,7 +113,6 @@ const BlogSection = () => {
       small_description: "Engage your team with these powerful presentation ideas designed to strengthen bonds and improve collaboration.",
       thumbnail_image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop",
       published_on: "2023-04-22",
-      author: "Michael Chen"
     },
     {
       id: 3,
@@ -124,7 +121,6 @@ const BlogSection = () => {
       small_description: "A comprehensive guide to organizing a memorable and effective corporate retreat that delivers real business value.",
       thumbnail_image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop",
       published_on: "2023-03-10",
-      author: "Emily Rodriguez"
     }
   ];
 

@@ -1,149 +1,119 @@
-import { useEffect, useState } from 'react';
-import { useActivities, useStays, useCustomizedTrainings } from '../../lib/hooks/useSupabaseData';
-import { FiMapPin, FiClock, FiUsers } from 'react-icons/fi';
-import {
-  SectionContainer,
-  SectionHeader,
-  Title,
-  Subtitle,
-  CardsContainer,
-  Card,
-  CardImage,
-  CardContent,
-  CardCategory,
-  CardTitle,
-  CardDescription,
-  CardFooter,
-  CardLocation,
-  CardPrice,
-} from './styles';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useActivities } from '../../lib/hooks/useSupabaseData';
 
-interface ExperienceCard {
-  id: number | string;
-  type: "activity" | "stay" | "training";
-  title: string;
-  description: string;
-  imageUrl: string;
-  category: string;
-  location?: string;
-  price: string;
-  duration?: string;
-  maxParticipants?: number;
-}
+const ActivityCard = ({ activity }: { activity: any }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+    className="bg-white rounded-lg overflow-hidden group shadow-sm hover:shadow-md transition-shadow duration-300"
+  >
+    <div className="relative aspect-[386/304]">
+      <img 
+        src={activity.main_image} 
+        alt={`${activity.name} Team Building Activity`} 
+        className="w-full h-full object-cover"
+      />
+      <div className="absolute top-3 left-3 bg-white rounded-full px-2 py-1 flex items-center shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FF4C39" className="w-4 h-4 mr-1">
+          <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd"></path>
+        </svg>
+        <span className="text-sm font-medium">{activity.rating}</span>
+      </div>
+      {activity.activity_type && (
+        <div className="absolute top-3 right-3 bg-white/90 rounded-full px-3 py-1">
+          <span className="text-sm font-medium text-[#636363]">{activity.activity_type}</span>
+        </div>
+      )}
+    </div>
+    <div className="p-6">
+      <h3 className="text-xl font-semibold text-[#313131] mb-2">{activity.name}</h3>
+      <p className="text-[#636363] mb-4 line-clamp-2">{activity.tagline}</p>
+      <div className="flex items-center gap-4 text-sm text-[#636363] mb-4">
+        <div className="flex items-center">
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          {activity.duration}
+        </div>
+        <div className="flex items-center">
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+          </svg>
+          {activity.group_size}
+        </div>
+      </div>
+      <a
+        href={`/team-building-activity/${activity.slug}`}
+        className="inline-block w-full text-center py-3 border border-[#b1b1b1] rounded-lg text-[#b1b1b1] font-semibold hover:bg-gradient-to-r hover:from-[#ff4c39] hover:to-[#ffb573] hover:text-white hover:border-transparent transition-all duration-300"
+      >
+        View Details
+      </a>
+    </div>
+  </motion.div>
+);
 
 const ActivitiesSection = () => {
-  const { activities, loading: activitiesLoading } = useActivities();
-  const { stays, loading: staysLoading } = useStays();
-  const { trainings, loading: trainingsLoading } = useCustomizedTrainings();
-  const [selectedCards, setSelectedCards] = useState<ExperienceCard[]>([]);
+  const { activities, loading: activitiesLoading, error: activitiesError } = useActivities();
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 9;
 
-  useEffect(() => {
-    if (!activitiesLoading && !staysLoading && !trainingsLoading) {
-      const allCards: ExperienceCard[] = [
-        ...activities.map((activity): ExperienceCard => ({
-          id: activity.id,
-          type: "activity",
-          title: activity.name,
-          description: activity.description,
-          imageUrl: activity.main_image,
-          category: activity.activity_type || "Activity",
-          location: "Multiple Locations",
-          price: "Contact for price"
-        })),
-        ...stays.map((stay): ExperienceCard => ({
-          id: stay.id,
-          type: "stay",
-          title: stay.title || 'Default Title',
-          description: stay.description || "",
-          imageUrl: stay.image_url || "",
-          category: "Stay",
-          location: stay.location,
-          price: `$${stay.price_per_night}/night`
-        })),
-        ...trainings.map((training): ExperienceCard => ({
-          id: training.id,
-          type: "training",
-          title: training.title,
-          description: training.description || "",
-          imageUrl: training.image_url || "",
-          category: training.category || "Training",
-          location: "Multiple Locations",
-          price: "Custom Quote",
-          duration: training.duration,
-          maxParticipants: training.max_participants
-        }))
-      ];
+  // Filter activities for outdoor activities
+  const outdoorActivities = (activities || [])
+    .filter(activity => activity.activity_type === 'Outdoor' || activity.activity_type === 'Outbound')
+    .map(activity => ({ ...activity, rating: '4.9' }));
 
-      // Randomly select 3 cards
-      const shuffled = allCards.sort(() => 0.5 - Math.random());
-      setSelectedCards(shuffled.slice(0, 3));
-    }
-  }, [activities, stays, trainings, activitiesLoading, staysLoading, trainingsLoading]);
+  const TOTAL_PAGES = Math.max(1, Math.ceil(outdoorActivities.length / ITEMS_PER_PAGE));
+  const paginatedActivities = outdoorActivities.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
-  if (activitiesLoading || staysLoading || trainingsLoading) {
-    return <div>Loading...</div>;
-  }
-
-  const getCardFooter = (card: ExperienceCard) => {
-    switch (card.type) {
-      case 'activity':
-        return (
-          <>
-            <CardLocation><FiMapPin /> {card.location}</CardLocation>
-            <CardPrice>{card.price}</CardPrice>
-          </>
-        );
-      case 'stay':
-        return (
-          <>
-            <CardLocation><FiMapPin /> {card.location}</CardLocation>
-            <CardPrice>{card.price}</CardPrice>
-          </>
-        );
-      case 'training':
-        return (
-          <>
-            <CardLocation><FiClock /> {card.duration}</CardLocation>
-            <CardPrice><FiUsers /> Up to {card.maxParticipants} participants</CardPrice>
-          </>
-        );
-    }
-  };
-
-  return (
-    <SectionContainer>
-      <SectionHeader>
-        <Title>Embark on Extraordinary Experiences</Title>
-        <Subtitle>
-          From thrilling activities to serene stays and transformative training programs,
-          discover experiences that will elevate your team's spirit and create lasting memories.
-        </Subtitle>
-      </SectionHeader>
-
-      <CardsContainer
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+  const Pagination = () => (
+    <div className="flex justify-center items-center space-x-2 mt-8 pb-12">
+      <button
+        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+        disabled={currentPage === 1}
+        className="px-4 py-2 bg-white border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
       >
-        {selectedCards.map((card) => (
-          <Card
-            key={`${card.type}-${card.id}`}
-            whileHover={{ scale: 1.02 }}
-            transition={{ duration: 0.2 }}
-          >
-            <CardImage imageUrl={card.imageUrl} />
-            <CardContent>
-              <CardCategory>{card.category}</CardCategory>
-              <CardTitle>{card.title}</CardTitle>
-              <CardDescription>{card.description}</CardDescription>
-              <CardFooter>
-                {getCardFooter(card)}
-              </CardFooter>
-            </CardContent>
-          </Card>
+        Previous
+      </button>
+      <span className="px-4 py-2 bg-white border rounded-md">
+        Page {currentPage} of {TOTAL_PAGES}
+      </span>
+      <button
+        onClick={() => setCurrentPage(prev => Math.min(TOTAL_PAGES, prev + 1))}
+        disabled={currentPage === TOTAL_PAGES}
+        className="px-4 py-2 bg-white border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+      >
+        Next
+      </button>
+    </div>
+  );
+
+  if (activitiesLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF4C39]"></div>
+      </div>
+    );
+  }
+  if (activitiesError) {
+    return <div className="text-center text-red-600 py-8">{activitiesError}</div>;
+  }
+  if (outdoorActivities.length === 0) {
+    return <div className="text-center text-gray-600 py-8">No activities found.</div>;
+  }
+  return (
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {paginatedActivities.map((activity) => (
+          <ActivityCard key={activity.id} activity={activity} />
         ))}
-      </CardsContainer>
-    </SectionContainer>
+      </div>
+      {TOTAL_PAGES > 1 && <Pagination />}
+    </>
   );
 };
 

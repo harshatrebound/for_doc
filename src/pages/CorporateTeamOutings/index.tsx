@@ -1,14 +1,14 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Helmet } from 'react-helmet-async';
-import Navbar from '../../components/Navbar';
-import { TeamBuildingActivitiesSection } from '../../components/TeamBuildingSection';
-import TestimonialsSection from '../../components/TestimonialsSection';
-import PartnersSection from '../../components/PartnersSection';
-import ContactSection from '../../components/ContactSection';
-import Footer from '../../components/Footer';
 import { Link } from 'react-router-dom';
+import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
+import ContactSection from '../../components/ContactSection';
+import TestimonialsSection from '../../components/TestimonialsSection';
 import TeamSection from '../../components/TeamSection';
+import { TeamBuildingActivitiesSection } from '../../components/TeamBuildingSection';
+import PartnersSection from '../../components/PartnersSection';
 
 const styles = {
   textShadow: {
@@ -16,10 +16,10 @@ const styles = {
   }
 };
 
-const CorporateTeamOutings = () => {
-  const [ref] = useInView({
-    triggerOnce: true,
+const CorporateTeamOutingsPage = () => {
+  const [heroRef] = useInView({
     threshold: 0.1,
+    triggerOnce: true,
   });
 
   return (
@@ -35,7 +35,7 @@ const CorporateTeamOutings = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section ref={ref} className="relative h-[90vh] flex items-center justify-center overflow-hidden">
+      <section ref={heroRef} className="relative h-[90vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <div 
             className="w-full h-full object-cover"
@@ -256,4 +256,4 @@ const CorporateTeamOutings = () => {
   );
 };
 
-export default CorporateTeamOutings; 
+export default CorporateTeamOutingsPage; 

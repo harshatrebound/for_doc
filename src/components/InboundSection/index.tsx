@@ -192,7 +192,7 @@ const InboundSection = () => {
                     </p>
                   </div>
                   
-                  <div className="flex flex-wrap gap-2 justify-between mt-4">
+                  <div className="flex items-center gap-3 mt-4">
                     <StatBadge type="participants">{experience.stats.participants}</StatBadge>
                     <StatBadge type="outbound">{experience.stats.duration}</StatBadge>
                     <StatBadge type="time">{experience.stats.difficulty}</StatBadge>

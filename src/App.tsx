@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { useEffect, useState } from 'react';
 import useSkipSearchPopup from './hooks/useSkipSearchPopup';
 import SkipSearchPopup from './components/SkipSearchPopup';
 import Navbar from './components/Navbar';
@@ -16,6 +17,11 @@ import Footer from './components/Footer';
 
 function App() {
   const { isVisible, closePopup } = useSkipSearchPopup();
+  const [currentUrl, setCurrentUrl] = useState('');
+
+  useEffect(() => {
+    setCurrentUrl(window.location.href);
+  }, []);
 
   return (
     <>
@@ -34,7 +40,7 @@ function App() {
         <meta property="og:site_name" content="Trebound" />
         <meta property="og:title" content="Trebound | Premium Team Building & Corporate Events Solutions" />
         <meta property="og:description" content="Trebound is your trusted partner for exceptional team building experiences and corporate events. We create transformative experiences that strengthen teams and drive success." />
-        <meta property="og:url" content={window.location.href} />
+        <meta property="og:url" content={currentUrl} />
         <meta property="og:image" content="/trebound_logos_icons/favicons/Trebound_Favicon_blue-32px.jpg" />
         
         {/* Twitter */}
@@ -44,7 +50,7 @@ function App() {
         <meta name="twitter:image" content="/trebound_logos_icons/favicons/Trebound_Favicon_blue-32px.jpg" />
         
         {/* Additional SEO */}
-        <link rel="canonical" href={window.location.href} />
+        <link rel="canonical" href={currentUrl} />
       </Helmet>
 
       <div className="relative min-h-screen overflow-x-hidden bg-white">

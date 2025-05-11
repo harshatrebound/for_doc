@@ -1,54 +1,17 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { FiUsers, FiClock, FiMapPin } from 'react-icons/fi';
+// import { FiUsers, FiClock, FiMapPin } from 'react-icons/fi'; // Removed unused imports
+import { BsPeople, BsGeoAlt, BsClock } from 'react-icons/bs';
 
 interface ResortCardProps {
   image: string;
   title: string;
   description: string;
-  rating?: string;
   slug: string;
   duration?: string;
   capacity?: string;
   location?: string;
 }
-
-// Gradient Icon component
-const GradientIcon = ({ children }: { children: React.ReactNode }) => (
-  <div className="w-[14px] h-[14px] relative">
-    <div className="absolute inset-0 flex items-center justify-center">
-      <div className="w-full h-full text-[#FF4C39]">
-        {children}
-      </div>
-    </div>
-  </div>
-);
-
-// Stat Icon component
-const StatIcon = ({ type }: { type: 'guests' | 'location' | 'stay' }) => {
-  const icons = {
-    guests: <FiUsers size={12} strokeWidth={2} />,
-    location: <FiMapPin size={12} strokeWidth={2} />,
-    stay: <FiClock size={12} strokeWidth={2} />
-  };
-
-  return <GradientIcon>{icons[type]}</GradientIcon>;
-};
-
-// Rating Badge component
-const RatingBadge = ({ rating }: { rating: string }) => (
-  <div className="min-w-[60px] h-[24px] bg-white rounded-[16px] flex items-center justify-center shadow-sm px-3">
-    <span className="text-[#313131] text-sm font-medium font-['Outfit']">{rating}</span>
-  </div>
-);
-
-// Stat Badge component
-const StatBadge = ({ type, children }: { type: 'guests' | 'location' | 'stay', children: React.ReactNode }) => (
-  <div className="h-[24px] bg-white rounded-[16px] flex items-center justify-center px-3 gap-1.5 shadow-sm hover:shadow-md transition-shadow duration-300">
-    <StatIcon type={type} />
-    <span className="text-[#313131] text-sm font-medium font-['Outfit'] whitespace-nowrap">{children}</span>
-  </div>
-);
 
 // View Details Button component
 const ViewDetailsButton = ({ slug }: { slug: string }) => (
@@ -71,10 +34,9 @@ const ResortCard = ({
   image, 
   title, 
   description, 
-  rating = "4.6", 
   slug,
-  duration = "3 hrs",
-  capacity = "15-500",
+  duration,
+  capacity,
   location = "Indoor/Outdoor"
 }: ResortCardProps) => {
   return (
@@ -90,9 +52,6 @@ const ResortCard = ({
             alt={title}
             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
           />
-          <div className="absolute top-3 left-3">
-            <RatingBadge rating={rating} />
-          </div>
         </div>
         
         <div className="space-y-2 flex-1">
@@ -104,10 +63,21 @@ const ResortCard = ({
           </p>
         </div>
         
-        <div className="flex flex-wrap gap-2 justify-between mt-4">
-          <StatBadge type="guests">{capacity}</StatBadge>
-          <StatBadge type="location">{location}</StatBadge>
-          <StatBadge type="stay">{duration}</StatBadge>
+        <div className="flex items-center gap-2 text-gray-600 text-sm mt-3">
+          <div className="flex items-center gap-1.5">
+            <BsPeople className="w-4 h-4" />
+            <span>{capacity || '15-500'}</span>
+          </div>
+          <div className="w-1 h-1 bg-gray-300 rounded-full" />
+          <div className="flex items-center gap-1.5">
+            <BsGeoAlt className="w-4 h-4" />
+            <span>{location}</span>
+          </div>
+          <div className="w-1 h-1 bg-gray-300 rounded-full" />
+          <div className="flex items-center gap-1.5">
+            <BsClock className="w-4 h-4" />
+            <span>{duration || '3 hrs'}</span>
+          </div>
         </div>
 
         <div className="mt-4">

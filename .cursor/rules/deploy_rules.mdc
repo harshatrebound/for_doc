@@ -3,10 +3,13 @@ description: When I ask you to push to git use these rules
 globs: 
 alwaysApply: false
 ---
-1. Always push to https://github.com/seshu13/main_site_trebound to the branch called "main"
+1. Always push to https://github.com/harshatrebound/main_site to the branch called "11may2025"
 
 2. Name the commits properly for identification.
 
 3. Do not over complicate the push. Do it in simple fashion.
 
-Before pushing ensure things are build ready by running "npm run build", if we are facing any errors ensure to solve them without disturbing any functionality, cause I'll ask you to push only when it is working as my desire in dev mode. 
+Username: harshatrebound
+email: harsha@trebound.com
+
+Ask me PAT at the end.
