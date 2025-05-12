@@ -137,14 +137,17 @@ export default function GalleryPage() {
                     transition={{ duration: 0.3 }}
                     className="group relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer"
                     onClick={() => setSelectedImage(image.id)}
+                    style={{ minHeight: '200px' }}
                   >
-                    <Image
-                      src={image.src}
-                      alt={image.alt}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+                      <Image
+                        src={image.src}
+                        alt={image.alt}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                    </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                       <p className="text-white font-medium text-sm md:text-base">{image.alt}</p>
@@ -189,13 +192,15 @@ export default function GalleryPage() {
             onClick={(e) => e.stopPropagation()}
           >
             {galleryImages.find(img => img.id === selectedImage) && (
-              <Image
-                src={galleryImages.find(img => img.id === selectedImage)!.src}
-                alt={galleryImages.find(img => img.id === selectedImage)!.alt}
-                fill
-                sizes="(max-width: 768px) 100vw, 80vw"
-                className="object-contain"
-              />
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+                <Image
+                  src={galleryImages.find(img => img.id === selectedImage)!.src}
+                  alt={galleryImages.find(img => img.id === selectedImage)!.alt}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 80vw"
+                  className="object-contain"
+                />
+              </div>
             )}
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-black/40 backdrop-blur-sm">
               <p className="text-white font-medium">
