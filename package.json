@@ -28,7 +28,7 @@
     "urls:update-links": "node scripts/update-link-urls.js",
     "urls:find-unsplash": "node scripts/search-unsplash-urls.js",
     "urls:find-unsplash-csv": "node scripts/search-csv-unsplash.js",
-    "postbuild": "next-sitemap --config next-sitemap.config.cjs"
+    "_commented_postbuild": "next-sitemap --config next-sitemap.config.cjs"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"

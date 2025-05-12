@@ -24,10 +24,64 @@ if (process.env.NODE_ENV === 'development') {
 function getImagePath(url: string): string {
   if (!url || url === DEFAULT_IMAGE) return DEFAULT_IMAGE;
   
-  // Special case for the arthritis day publication - use a local fallback image
-  if (url.includes('d31fd1c8-world-arthritis-day.jpg') || url.includes('world-arthritis-day')) {
-    console.log('Using local fallback image for arthritis day publication');
-    return '/images/orthopedics/knee-mobility.webp'; // Use a local image that exists
+  // Special case for the arthritis day publication - use the direct URL
+  if (url.includes('world-arthritis-day')) {
+    console.log('Using direct URL for arthritis day publication');
+    return url;
+  }
+  
+  // Special case for the knee replacement page
+  if (url.includes('side-view-young-man-getting-his-leg-exam') || url.includes('e73bcde7-side-view-young-man-getting-his-leg-exam')) {
+    console.log('Using direct URL for knee replacement publication');
+    return url;
+  }
+  
+  // Special case for ACL ligament
+  if (url.includes('young-fitness-man-holding-his-sports-leg-injury')) {
+    console.log('Using direct URL for ACL ligament');
+    return url;
+  }
+  
+  // Special case for ACL partial tears
+  if (url.includes('young-woman-with-bandage-knee-with-effort')) {
+    console.log('Using direct URL for ACL partial tears');
+    return url;
+  }
+  
+  // Special case for Rotator cuff injury
+  if (url.includes('aching-young-handsome-sporty-boy')) {
+    console.log('Using direct URL for rotator cuff injury');
+    return url;
+  }
+  
+  // Special case for shoulder sound
+  if (url.includes('telemarketer-caucasian-man-working-with-headset')) {
+    console.log('Using direct URL for shoulder sound');
+    return url;
+  }
+  
+  // Special case for foam texture (stem cell therapy)
+  if (url.includes('foam-texture')) {
+    console.log('Using direct URL for foam texture');
+    return url;
+  }
+  
+  // Special case for young athlete (summer performance)
+  if (url.includes('young-asian-athletes-competing-track')) {
+    console.log('Using direct URL for athletes performance');
+    return url;
+  }
+  
+  // Special case for knee pain (cartilage loss)
+  if (url.includes('man-having-intense-pain-front-knee')) {
+    console.log('Using direct URL for cartilage loss');
+    return url;
+  }
+  
+  // Special case for ankle injury (lateral ankle ligament)
+  if (url.includes('closeup-athletic-woman-injured-her-foot')) {
+    console.log('Using direct URL for ankle ligament');
+    return url;
   }
   
   try {
@@ -195,6 +249,174 @@ export async function generateMetadata(
 async function getPublicationData(slug: string): Promise<PublicationData | null> {
   console.log(`Starting getPublicationData for slug: ${slug}`);
   
+  // Special case handling for the problematic pages
+  if (slug === 'why-did-my-knee-replacement-fail') {
+    console.log('Using hardcoded content for knee replacement page');
+    // Return hardcoded data for this page
+    return {
+      slug,
+      title: 'Why did my Knee Replacement Fail?',
+      featuredImageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/e73bcde7-side-view-young-man-getting-his-leg-exam.webp',
+      publicationDate: '2025-04-06',
+      authors: 'Dr. Naveen Kumar LV, MBBS, MS Orth, FRCS Orth (Eng), MCh Hip & Knee (UK), MSc Orth (UK), Dip SICOT (Italy), FEBOT (Portugal), MRCGP (UK), Dip FIFA SM (Switzerland), (FSEM (UK))',
+      journal: 'Sports Orthopedics Institute',
+      originalUrl: '',
+      breadcrumbs: [
+        { name: 'Home', url: '/' },
+        { name: 'Publications', url: '/publications' },
+        { name: 'Why did my Knee Replacement Fail?', url: null }
+      ],
+      contentBlocks: [
+        {
+          type: 'paragraph',
+          text: 'The knee replacement surgery is one of the common surgeries performed worldwide now. It is performed to help relieve the pain and stiffness one used to experience due to arthritis of the knee. It is performed with a cut on the front of the knee. The ends of the bones are cut to the shape to remove the arthritic part of the joint. Using cement, the implants are fixed to provide a smooth joint surface.'
+        },
+        {
+          type: 'heading',
+          level: 3,
+          text: 'What is Total Knee Replacement?'
+        },
+        {
+          type: 'paragraph',
+          text: 'Total Knee Replacement gives you a stable knee which can take weight or directly even on the day 1. The only reason why you feel the pain and stiffness is due to the surgery wound. The soft tissues and skin need time to heal. Your bone and joint will already be ready to take the load on! You can expect to walk without a walker by 2 weeks post surgery. You can expect to walk comfortably outdoors by 4 weeks post surgery. You can expect to climb stairs comfortably by 6 weeks.'
+        },
+        {
+          type: 'heading',
+          level: 3,
+          text: 'What are the common complications of knee replacement?'
+        },
+        {
+          type: 'paragraph',
+          text: 'Fortunately, serious complications such as infection, clots, implant failure, loosening of implants are rare. However, we often get to hear that the knee replacement was not successful in someone whom the patient knows. Poor success in patient parameters are persistence of pain, stiffness, poor mobility and difficulty in sitting on floor and standing up. The common reason for this is delayed rehabilitation, immobilization post surgery for a prolonged period of time. If a patient is bed bound for the first few weeks post surgery, it becomes extremely hard to mobilize them later. It often occurs due to poor communication regarding the rehabilitation and physiotherapy by the Doctor, over-protective family or non-availability of quality physiotherapists in remote places.'
+        },
+        {
+          type: 'heading',
+          level: 3,
+          text: 'How can I prevent this issue post my TKR surgery?'
+        },
+        {
+          type: 'paragraph',
+          text: 'Have a thorough discussion with your Surgeon prior to the surgery about the rehabilitation post surgery. Make sure that you have the physiotherapist help available at home in the first few weeks and in the nearby center for further few weeks. Discuss with your Surgeon and physiotherapists about what are the realistic goals and tentative time frames in which you can expect to achieve.'
+        },
+        {
+          type: 'heading',
+          level: 3,
+          text: 'How can I help improve my outcomes post Surgery?'
+        },
+        {
+          type: 'unordered-list',
+          items: [
+            'Need to start ankle and foot movements from day 1, once the sensation in the leg returns.',
+            'Need to start static quads activation exercises such as pressing the knee down to touch the bed from the day 1.',
+            'Start bending the knee as soon as the surgeon allows you.',
+            'From the next day, sitting at the edge of the bed, standing and walking few steps with walker with the help of physiotherapist',
+            'Early quads activation exercises to help gain confidence to walk without a walker by 2 to 3 weeks.'
+          ]
+        },
+        {
+          type: 'heading',
+          level: 3,
+          text: 'What happens if I am late and have ended up with stiffness of the knee post surgery?'
+        },
+        {
+          type: 'paragraph',
+          text: 'If the joint has already become very stiff and the range of movement is not improving with the physiotherapy as well, then you may need manipulation under anesthesia (MUA) to regain the movement. This is a small procedure under anesthesia where the surgeon bends the knee through the full range of movement within a span of 2 to 3 minutes. There will be no cuts made. Post this procedure, you will still need to continue physiotherapy and exercises to sustain the benefits of mobility achieved by manipulation under anesthesia.'
+        },
+        {
+          type: 'paragraph',
+          text: 'Remember that physiotherapy and rehabilitation are done by you! Physiotherapist is there to help, not do it for you!'
+        }
+      ],
+      hasContent: true
+    };
+  }
+
+  if (slug === 'disease-on-this-world-arthritis-day-2023') {
+    console.log('Using hardcoded content for arthritis day page');
+    return {
+      slug,
+      title: 'Disease On This World Arthritis Day 2023',
+      featuredImageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/world-arthritis-day-500x350.jpg',
+      publicationDate: '2023',
+      authors: 'Dr. Naveen Kumar LV, MBBS, MS Orth, FRCS Orth (Eng), MCh Hip & Knee (UK), MSc Orth (UK), Dip SICOT (Italy), FEBOT (Portugal), MRCGP (UK), Dip FIFA SM (Switzerland), (FSEM (UK))',
+      journal: 'Sports Orthopedics Institute',
+      originalUrl: '',
+      breadcrumbs: [
+        { name: 'Home', url: '/' },
+        { name: 'Publications', url: '/publications' },
+        { name: 'Disease On This World Arthritis Day 2023', url: null }
+      ],
+      contentBlocks: [
+        {
+          type: 'paragraph',
+          text: 'World Arthritis Day is an annual observance that aims to raise awareness about arthritis and its impact on millions of people worldwide. By promoting early detection, individuals can receive appropriate medical care and treatment, which can significantly improve their quality of life.'
+        },
+        {
+          type: 'paragraph',
+          text: 'Arthritis is an inflammation of the joints that causes pain and stiffness, which can worsen with age. The most common types include osteoarthritis, which results from wear and tear on the joints, and rheumatoid arthritis, an autoimmune condition.'
+        },
+        {
+          type: 'paragraph',
+          text: 'Early symptoms of arthritis include joint pain, stiffness, swelling, and decreased range of motion. If you experience these symptoms, it\'s important to consult a healthcare professional for proper diagnosis and treatment.'
+        },
+        {
+          type: 'paragraph',
+          text: 'There are various treatment options available for arthritis, depending on the type and severity. These may include medication, physical therapy, and in severe cases, surgery. Additionally, lifestyle changes such as maintaining a healthy weight, regular exercise, and a balanced diet can help manage symptoms.'
+        },
+        {
+          type: 'paragraph',
+          text: 'On this World Arthritis Day, let\'s spread awareness about this condition and support those affected by it. Together, we can work towards improving the quality of life for people living with arthritis.'
+        }
+      ],
+      hasContent: true
+    };
+  }
+
+  if (slug === 'atheletes-performance-summer') {
+    console.log('Using hardcoded content for athletes performance page');
+    return {
+      slug,
+      title: 'Strategies for athletes to perform during Summer Months',
+      featuredImageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/young-asian-athletes-competing-track-1-500x350.jpg',
+      publicationDate: '2023',
+      authors: 'Dr. Naveen Kumar LV, MBBS, MS Orth, FRCS Orth (Eng), MCh Hip & Knee (UK), MSc Orth (UK), Dip SICOT (Italy), FEBOT (Portugal), MRCGP (UK), Dip FIFA SM (Switzerland), (FSEM (UK))',
+      journal: 'Sports Orthopedics Institute',
+      originalUrl: 'http://timesofindia.indiatimes.com/articleshow/10925264.cms',
+      breadcrumbs: [
+        { name: 'Home', url: '/' },
+        { name: 'Publications', url: '/publications' },
+        { name: 'Strategies for athletes to perform during Summer Months', url: null }
+      ],
+      contentBlocks: [
+        {
+          type: 'paragraph',
+          text: 'Athletes face challenges in summer due to high temperatures, which can affect performance and pose health risks.'
+        },
+        {
+          type: 'paragraph',
+          text: 'Hydration is crucial for athletes training in hot conditions. Drink water before, during, and after exercise to maintain performance and prevent heat-related illnesses. Sports drinks can help replace electrolytes lost through sweat.'
+        },
+        {
+          type: 'paragraph',
+          text: 'Train during cooler parts of the day - early morning or evening - to avoid the peak heat. Gradually acclimate to heat by slowly increasing workout duration and intensity over 1-2 weeks.'
+        },
+        {
+          type: 'paragraph',
+          text: 'Wear lightweight, light-colored, loose-fitting clothing that allows sweat to evaporate. Choose moisture-wicking fabrics and don`t forget sun protection including sunscreen, hats, and sunglasses.'
+        },
+        {
+          type: 'paragraph',
+          text: 'Adjust your workout intensity and duration based on temperature and humidity. Consider indoor training alternatives during extreme heat conditions.'
+        },
+        {
+          type: 'paragraph',
+          text: 'Know the signs of heat-related illnesses, including heat cramps, heat exhaustion, and heat stroke. Stop exercising if you experience dizziness, nausea, headache, or extreme fatigue.'
+        }
+      ],
+      hasContent: true
+    };
+  }
+  
   let fileContent: string;
   try {
     try {
@@ -359,7 +581,7 @@ async function getPublicationData(slug: string): Promise<PublicationData | null>
       title,
       featuredImageUrl: featuredImageUrl,
       publicationDate: row.PublicationDate || '',
-      authors: row.Authors || 'Dr. Naveen Kumar LV',
+      authors: row.Authors || 'Dr. Naveen Kumar LV, MBBS, MS Orth, FRCS Orth (Eng), MCh Hip & Knee (UK), MSc Orth (UK), Dip SICOT (Italy), FEBOT (Portugal), MRCGP (UK), Dip FIFA SM (Switzerland), (FSEM (UK))',
       journal: row.Journal || '',
       originalUrl: row.OriginalURL || '',
       contentBlocks,
@@ -396,7 +618,7 @@ const ContentRenderer = ({ contentBlocks }: { contentBlocks: ContentBlock[] }) =
           <ExternalLink className="w-12 h-12 text-gray-400 mx-auto mb-3" />
           <h3 className="text-xl font-medium text-gray-700 mb-2">External Publication</h3>
           <p className="text-gray-500 mb-4">
-            This publication is available on an external website.
+            This publication is available on an external website. Please use the link below to access the full content.
           </p>
         </div>
       </div>
@@ -530,16 +752,27 @@ const ContentRenderer = ({ contentBlocks }: { contentBlocks: ContentBlock[] }) =
 
 // External Link Button Component
 const ExternalLinkButton = ({ url }: { url: string }) => {
+  // Truncate very long URLs for display purposes
+  const displayUrl = url.length > 50 ? url.substring(0, 47) + '...' : url;
+  
   return (
-    <a 
-      href={url} 
-      target="_blank" 
-      rel="noopener noreferrer"
-      className="w-full py-3 mt-4 flex items-center justify-center bg-[#8B5C9E] text-white rounded-md hover:bg-[#7A4C8C] transition-colors"
-    >
-      <ExternalLink className="w-4 h-4 mr-2" />
-      <span>Visit Original Publication</span>
-    </a>
+    <div className="flex flex-col gap-4">
+      <a 
+        href={url} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="w-full py-3 flex items-center justify-center bg-[#8B5C9E] text-white rounded-md hover:bg-[#7A4C8C] transition-colors"
+      >
+        <ExternalLink className="w-4 h-4 mr-2" />
+        <span>Visit Original Publication</span>
+      </a>
+      
+      {url && (
+        <div className="text-xs text-gray-500 break-words">
+          Link: {displayUrl}
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -703,7 +936,12 @@ export default async function PublicationDetail({ params }: Props) {
     // Special case for arthritis day publication
     if (params.slug === 'disease-on-this-world-arthritis-day-2023' || publication?.slug === 'disease-on-this-world-arthritis-day-2023') {
       console.log('Using specific local image for arthritis day publication');
-      heroImage = '/images/orthopedics/knee-mobility.webp';
+      heroImage = 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/world-arthritis-day-500x350.jpg';
+    }
+    // Special case for knee replacement publication
+    else if (params.slug === 'why-did-my-knee-replacement-fail' || publication?.slug === 'why-did-my-knee-replacement-fail') {
+      console.log('Using specific local image for knee replacement publication');
+      heroImage = 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/e73bcde7-side-view-young-man-getting-his-leg-exam.webp';
     }
     // Ensure hero image is valid for other publications
     else if (!isValidUrl(heroImage)) {
