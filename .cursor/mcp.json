@@ -1,19 +1,23 @@
 {
-    "mcpServers": {
-      "postgres": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-postgres",
-          "postgresql://postgres:YxNArNhXkCOREcqXuGDLKdTXoTWiCYiT@shortline.proxy.rlwy.net:18910/railway"
-        ]
-      },
-         "playwright": {
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://postgres:YxNArNhXkCOREcqXuGDLKdTXoTWiCYiT@shortline.proxy.rlwy.net:18910/railway"
+      ]
+    },
+    "playwright": {
       "command": "npx",
       "args": [
         "@playwright/mcp@latest",
         "--vision"
       ]
-    }
+    },
+    "stagewise": {
+      "url": "http://localhost:5746/sse",
+      "env": {}
     }
   }
+}
