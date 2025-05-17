@@ -10,7 +10,6 @@ interface VideoCardProps {
 }
 
 export function VideoCard({ youtubeId, title, category }: VideoCardProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   
   const handleThumbnailClick = () => {
@@ -19,7 +18,7 @@ export function VideoCard({ youtubeId, title, category }: VideoCardProps) {
 
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-md transition-all hover:shadow-lg">
-      <div className="relative aspect-video">
+      <div className="relative aspect-video" style={{ minHeight: "200px" }}>
         {!isPlaying ? (
           // Thumbnail with play button
           <div 
@@ -49,12 +48,20 @@ export function VideoCard({ youtubeId, title, category }: VideoCardProps) {
         ) : (
           // Embedded YouTube player
           <iframe
-            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`}
+            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&modestbranding=1&rel=0&showinfo=0&enablejsapi=1`}
             title={title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
-            className={`absolute top-0 left-0 w-full h-full ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-            onLoad={() => setIsLoaded(true)}
+            className="absolute top-0 left-0 w-full h-full z-50"
+            style={{ 
+              display: 'block',
+              position: 'absolute',
+              zIndex: 9999,
+              visibility: 'visible',
+              opacity: 1,
+              minHeight: "200px",
+              height: "100%"
+            }}
           ></iframe>
         )}
       </div>
