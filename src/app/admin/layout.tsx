@@ -1,6 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import useSWR from 'swr';
+import { format } from 'date-fns';
+import { fetchAppointments } from '@/app/actions/admin';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -26,6 +29,7 @@ import AdminFooter from '@/components/admin/AdminFooter';
 
 const menuItems = [
   { href: '/admin', label: 'Dashboard', icon: BarChart2 },
+  { href: '/admin/today', label: "Today's Appointments", icon: CalendarClock },
   { href: '/admin/doctors', label: 'Doctors', icon: Users },
   { href: '/admin/schedule', label: 'Schedule', icon: Calendar },
   { href: '/admin/appointments', label: 'Appointments', icon: Clock },
@@ -38,7 +42,7 @@ const menuItems = [
 export default function AdminLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: any;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const pathname = usePathname();
@@ -85,6 +89,78 @@ export default function AdminLayout({
       toast.error('Failed to logout');
     }
   };
+
+  // --- GLOBAL NOTIFICATION LOGIC ---
+  const [lastNotificationTime, setLastNotificationTime] = useState<Date>(new Date());
+  const hasRequestedPermission = useRef(false);
+
+  // SWR polling for today's appointments
+  const { data } = useSWR<{
+    success: boolean;
+    error?: string;
+    data?: {
+      appointments: any[];
+      pagination: any;
+    };
+  }>(
+    ['todayAppointments-global'],
+    async ([key]) => {
+      const today = new Date();
+      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+      return await fetchAppointments(1, 100, {
+        startDate: startOfDay,
+        endDate: endOfDay
+      });
+    },
+    {
+      refreshInterval: 30000,
+      revalidateOnFocus: true,
+    }
+  );
+
+  // Play notification sound
+  const playNotificationSound = () => {
+    const audio = new Audio('/notification.wav');
+    audio.play();
+  };
+
+  // Request browser notification permission
+  const requestNotificationPermission = () => {
+    if ('Notification' in window && Notification.permission === 'default' && !hasRequestedPermission.current) {
+      Notification.requestPermission();
+      hasRequestedPermission.current = true;
+    }
+  };
+
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
+
+  useEffect(() => {
+    if (data?.success && data?.data?.appointments) {
+      const newAppointments = data.data.appointments.filter(
+        (apt: any) => new Date(apt.createdAt) > lastNotificationTime
+      );
+      newAppointments.forEach((apt: any) => {
+        const doctorName = apt.doctor?.name ? ` with ${apt.doctor.name}` : '';
+        const timeStr = apt.time || format(new Date(apt.date), 'HH:mm');
+        toast.success(`New appointment for ${apt.patientName || 'Unknown Patient'}${doctorName} at ${timeStr}`, {
+          duration: 5000,
+        });
+        playNotificationSound();
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('New Appointment', {
+            body: `${apt.patientName || 'Unknown Patient'}${doctorName} at ${timeStr}`,
+            icon: '/favicon.ico',
+          });
+        }
+      });
+      if (newAppointments.length > 0) {
+        setLastNotificationTime(new Date());
+      }
+    }
+  }, [data, lastNotificationTime]);
 
   // If this is the login page, render a simplified layout without the sidebar
   if (isLoginPage) {

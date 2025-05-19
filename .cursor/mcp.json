@@ -18,6 +18,12 @@
     "stagewise": {
       "url": "http://localhost:5746/sse",
       "env": {}
+    },
+    "taskmanager": {
+      "command": "npx",
+      "args": ["-y", "@kazuph/mcp-taskmanager"]
     }
   }
 }
+
+

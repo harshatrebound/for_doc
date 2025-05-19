@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, ChangeEvent } from 'react';
-import { PlusCircle, Edit, Trash2, FileText, Search, Filter, Image as ImageIcon, 
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, FileText, Search, Filter, Image as ImageIcon, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -33,9 +32,11 @@ type PageData = {
   categoryId?: string | null;
   publishedAt?: Date | string | null;
   updatedAt: Date | string;
+  featuredImageUrl?: string;
 };
 
-interface PaginationData {
+// Local interface to avoid conflict with imported PaginationData
+interface PaginationState {
   total: number;
   page: number;
   pageSize: number;
@@ -49,9 +50,7 @@ export default function ContentManagementPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeTab, setActiveTab] = useState('bone-joint');
-  
-  // Add pagination state
-  const [pagination, setPagination] = useState<PaginationData>({
+  const [pagination, setPagination] = useState<PaginationState>({
     total: 0,
     page: 1,
     pageSize: 10,
@@ -59,80 +58,62 @@ export default function ContentManagementPage() {
   });
 
   const pageTypeMap: { [key: string]: string } = {
-      'bone-joint': 'bone-joint-school',
-      'procedures': 'procedure-surgery',
-      'posts': 'blog-post',
-      'publications': 'publication',
-      'staff': 'surgeons-staff',
-      'gallery': 'gallery',
-      'videos': 'clinical-video'
+    'bone-joint': 'bone-joint-school',
+    'procedures': 'procedure-surgery',
+    'posts': 'blog-post',
+    'publications': 'publication',
+    'staff': 'surgeons-staff',
+    'gallery': 'gallery',
+    'videos': 'clinical-video'
   };
 
   useEffect(() => {
     const currentType = pageTypeMap[activeTab];
     if (currentType) {
-        fetchPages(currentType);
+      fetchPages(currentType);
     }
     if (categories.length === 0) {
       fetchCategories();
     }
+    // eslint-disable-next-line
   }, [activeTab, categories.length, pagination.page, pagination.pageSize]);
 
   const fetchPages = async (pageType: string) => {
     setLoading(true);
-    console.log("🔍 Fetching pages with pageType:", pageType, "Page:", pagination.page);
-    
     try {
       const apiUrl = `/api/admin/content?pageType=${pageType}&page=${pagination.page}&pageSize=${pagination.pageSize}`;
-      console.log(`📤 Making API request to ${apiUrl}`);
       const response = await fetch(apiUrl);
-      console.log(`🌐 API response status for ${pageType}:`, response.status);
-      
       if (response.ok) {
         const data = await response.json();
-        // Log the raw data structure
-        console.log(`📦 Raw API response data for ${pageType}:`, JSON.stringify(data, null, 2)); 
-        
         if (data && data.pages && data.pagination) {
-          console.log(`📊 Found 'pages' (${data.pages.length}) and 'pagination' keys.`);
           const typedData: PageData[] = data.pages.map((page: any) => ({
-              ...page,
-              updatedAt: page.updatedAt || '',
-              publishedAt: page.publishedAt || null,
-              categoryId: page.category?.id || null
+            ...page,
+            updatedAt: page.updatedAt || '',
+            publishedAt: page.publishedAt || null,
+            categoryId: page.category?.id || null
           }));
           setPages(typedData);
           setPagination(data.pagination);
-          console.log(`✅ Processed pages for ${pageType}:`, typedData.length);
         } else if (Array.isArray(data)) {
-          // Handle potential old format (if API hasn't been fully updated everywhere)
-          console.warn(`⚠️ API for ${pageType} returned an array directly. Handling as old format.`);
-          const typedData: PageData[] = data.map((page: any) => ({ 
-              ...page,
-              updatedAt: page.updatedAt || '',
-              publishedAt: page.publishedAt || null,
-              categoryId: page.category?.id || null
-           }));
-           setPages(typedData);
-           // Reset pagination if old format is detected
-           setPagination({ total: typedData.length, page: 1, pageSize: 10, pageCount: Math.ceil(typedData.length / 10) }); 
-           console.log(`✅ Processed pages for ${pageType} (old format):`, typedData.length);
+          const typedData: PageData[] = data.map((page: any) => ({
+            ...page,
+            updatedAt: page.updatedAt || '',
+            publishedAt: page.publishedAt || null,
+            categoryId: page.category?.id || null
+          }));
+          setPages(typedData);
+          setPagination({ total: typedData.length, page: 1, pageSize: 10, pageCount: Math.ceil(typedData.length / 10) });
         } else {
-           console.error(`❌ Unexpected API response structure for ${pageType}. Expected 'pages' and 'pagination' keys or an array. Received:`, data);
-           setPages([]);
-           setPagination({ total: 0, page: 1, pageSize: 10, pageCount: 0 }); // Reset pagination
+          setPages([]);
+          setPagination({ total: 0, page: 1, pageSize: 10, pageCount: 0 });
         }
       } else {
-        console.error(`❌ Failed to fetch pages for type: ${pageType}. Status: ${response.status}`);
-        const errorText = await response.text();
-        console.error("API Error Response Body:", errorText);
         setPages([]);
-        setPagination({ total: 0, page: 1, pageSize: 10, pageCount: 0 }); // Reset pagination
+        setPagination({ total: 0, page: 1, pageSize: 10, pageCount: 0 });
       }
     } catch (error) {
-      console.error(`💣 Error fetching pages for type ${pageType}:`, error);
       setPages([]);
-      setPagination({ total: 0, page: 1, pageSize: 10, pageCount: 0 }); // Reset pagination
+      setPagination({ total: 0, page: 1, pageSize: 10, pageCount: 0 });
     } finally {
       setLoading(false);
     }
@@ -143,13 +124,10 @@ export default function ContentManagementPage() {
       const response = await fetch('/api/admin/categories');
       if (response.ok) {
         const data: Category[] = await response.json();
-        console.log('Fetched categories:', data);
         setCategories(data);
-      } else {
-        console.error('Failed to fetch categories');
       }
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      // handle error if needed
     }
   };
 
@@ -162,21 +140,16 @@ export default function ContentManagementPage() {
         if (response.ok) {
           const currentType = pageTypeMap[activeTab];
           if (currentType) {
-              fetchPages(currentType);
+            fetchPages(currentType);
           }
-        } else {
-          const errorData = await response.json();
-          console.error('Failed to delete page:', errorData.message || 'Unknown error');
-          alert(`Failed to delete page: ${errorData.message || 'Unknown error'}`);
         }
       } catch (error) {
-        console.error('Error deleting page:', error);
-        alert('An error occurred while deleting the page.');
+        // handle error if needed
       }
     }
   };
 
-  const filteredPages = pages.filter(page => {
+  const filteredPages = pages.filter((page: PageData) => {
     const titleMatch = page.title?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
     const slugMatch = page.slug?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
     const matchesSearch = titleMatch || slugMatch;
@@ -187,22 +160,26 @@ export default function ContentManagementPage() {
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     setSearchTerm('');
-    setSelectedCategory('all'); 
-    // Reset pagination when changing tabs
-    setPagination(prev => ({...prev, page: 1}));
+    setSelectedCategory('all');
+    setPagination((prev: PaginationState) => ({ ...prev, page: 1 }));
   };
-  
-  // Add pagination handlers
+
   const handlePageChange = (newPage: number) => {
-    setPagination(prev => ({ ...prev, page: newPage }));
+    setPagination((prev: PaginationState) => ({ ...prev, page: newPage }));
   };
 
   const handlePageSizeChange = (newSize: number) => {
-    setPagination(prev => ({ ...prev, pageSize: newSize, page: 1 }));
+    setPagination((prev: PaginationState) => ({ ...prev, pageSize: newSize, page: 1 }));
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="relative space-y-6 p-6">
+      {/* Work in Progress Overlay */}
+      <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-[#8B5C9E]/80 to-[#ece9f6]/90 backdrop-blur-[2px] pointer-events-auto select-none">
+        <Lock className="w-16 h-16 text-white drop-shadow-lg mb-4" />
+        <span className="text-2xl font-bold text-white drop-shadow-lg mb-2">Work in Progress</span>
+        <span className="text-md text-white/80">This section will be available in the next launch.</span>
+      </div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Content Management</h1>
@@ -226,78 +203,29 @@ export default function ContentManagementPage() {
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="mb-4 flex flex-wrap gap-2 p-1 bg-gray-100 rounded-lg">
-          <TabsTrigger 
-            value="bone-joint" 
-            className={cn(
-              "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-              "hover:bg-gray-200",
-              "data-[state=active]:bg-[#8B5C9E] data-[state=active]:text-white data-[state=active]:shadow-sm"
-            )}
-          >
+          <TabsTrigger value="bone-joint" className={cn("px-3 py-1.5 text-sm font-medium rounded-md transition-colors", "hover:bg-gray-200", "data-[state=active]:bg-[#8B5C9E] data-[state=active]:text-white data-[state=active]:shadow-sm")}>
             Bone & Joint School
           </TabsTrigger>
-          <TabsTrigger 
-            value="procedures" 
-            className={cn(
-              "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-              "hover:bg-gray-200",
-              "data-[state=active]:bg-[#8B5C9E] data-[state=active]:text-white data-[state=active]:shadow-sm"
-            )}
-          >
+          <TabsTrigger value="procedures" className={cn("px-3 py-1.5 text-sm font-medium rounded-md transition-colors", "hover:bg-gray-200", "data-[state=active]:bg-[#8B5C9E] data-[state=active]:text-white data-[state=active]:shadow-sm")}>
             Procedures
           </TabsTrigger>
-          <TabsTrigger 
-            value="posts" 
-             className={cn(
-              "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-              "hover:bg-gray-200",
-              "data-[state=active]:bg-[#8B5C9E] data-[state=active]:text-white data-[state=active]:shadow-sm"
-            )}
-          >
+          <TabsTrigger value="posts" className={cn("px-3 py-1.5 text-sm font-medium rounded-md transition-colors", "hover:bg-gray-200", "data-[state=active]:bg-[#8B5C9E] data-[state=active]:text-white data-[state=active]:shadow-sm")}>
             Blog Posts
           </TabsTrigger>
-          <TabsTrigger 
-            value="publications" 
-             className={cn(
-              "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-              "hover:bg-gray-200",
-              "data-[state=active]:bg-[#8B5C9E] data-[state=active]:text-white data-[state=active]:shadow-sm"
-            )}
-          >
+          <TabsTrigger value="publications" className={cn("px-3 py-1.5 text-sm font-medium rounded-md transition-colors", "hover:bg-gray-200", "data-[state=active]:bg-[#8B5C9E] data-[state=active]:text-white data-[state=active]:shadow-sm")}>
             Publications
           </TabsTrigger>
-          <TabsTrigger 
-            value="staff" 
-            className={cn(
-              "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-              "hover:bg-gray-200",
-              "data-[state=active]:bg-[#8B5C9E] data-[state=active]:text-white data-[state=active]:shadow-sm"
-            )}
-          >
+          <TabsTrigger value="staff" className={cn("px-3 py-1.5 text-sm font-medium rounded-md transition-colors", "hover:bg-gray-200", "data-[state=active]:bg-[#8B5C9E] data-[state=active]:text-white data-[state=active]:shadow-sm")}>
             Surgeons/Staff
           </TabsTrigger>
-          <TabsTrigger 
-            value="gallery" 
-            className={cn(
-              "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-              "hover:bg-gray-200",
-              "data-[state=active]:bg-[#8B5C9E] data-[state=active]:text-white data-[state=active]:shadow-sm"
-            )}
-          >
+          <TabsTrigger value="gallery" className={cn("px-3 py-1.5 text-sm font-medium rounded-md transition-colors", "hover:bg-gray-200", "data-[state=active]:bg-[#8B5C9E] data-[state=active]:text-white data-[state=active]:shadow-sm")}>
             Gallery
           </TabsTrigger>
-          <TabsTrigger 
-            value="videos" 
-            className={cn(
-              "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-              "hover:bg-gray-200",
-              "data-[state=active]:bg-[#8B5C9E] data-[state=active]:text-white data-[state=active]:shadow-sm"
-            )}
-          >
+          <TabsTrigger value="videos" className={cn("px-3 py-1.5 text-sm font-medium rounded-md transition-colors", "hover:bg-gray-200", "data-[state=active]:bg-[#8B5C9E] data-[state=active]:text-white data-[state=active]:shadow-sm")}>
             Clinical Videos
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value={activeTab} className="space-y-6">
           <Card className="overflow-hidden border-0 shadow-none bg-transparent">
             <CardHeader>
@@ -306,7 +234,7 @@ export default function ContentManagementPage() {
                   .split('-')
                   .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                   .join(' ')}
-                 Pages
+                Pages
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -390,91 +318,91 @@ export default function ContentManagementPage() {
                         ))
                       ) : (
                         <div className="col-span-full text-center text-gray-500 py-8">
-                           No gallery items found. {searchTerm || selectedCategory !== 'all' ? 'Try adjusting your filters.' : ''}
+                          No gallery items found. {searchTerm || selectedCategory !== 'all' ? 'Try adjusting your filters.' : ''}
                         </div>
                       )}
                     </div>
                   ) : (
-                    <div className="border rounded-lg w-full bg-white">
-                      <table className="min-w-full divide-y divide-gray-200 table-fixed">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
-                              Title
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
-                              Slug
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
-                              Category
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
-                              Last Updated
-                            </th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {filteredPages.length > 0 ? (
-                            filteredPages.map((page: PageData) => (
-                              <tr key={page.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="font-medium text-gray-900">{page.title}</div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {page.slug}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {page.category?.name || '-'}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {typeof page.updatedAt === 'string' && page.updatedAt 
-                                    ? format(new Date(page.updatedAt), 'MMM d, yyyy')
-                                    : '-'}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                  <div className="flex justify-end gap-2">
-                                    <Link href={`/${page.pageType}/${page.slug}`} target="_blank">
-                                      <Button variant="outline" size="sm" title="View on site">
-                                        <FileText className="h-4 w-4 text-gray-500" />
-                                      </Button>
-                                    </Link>
-                                    <Link href={`/admin/content/edit/${page.id}`}>
-                                      <Button variant="outline" size="sm">
-                                        <Edit className="h-4 w-4 text-blue-500" />
-                                      </Button>
-                                    </Link>
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      onClick={() => handleDelete(page.id)}
-                                    >
-                                      <Trash2 className="h-4 w-4 text-red-500" />
-                                    </Button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                                No pages found. {searchTerm || selectedCategory !== 'all' ? 'Try adjusting your filters.' : ''}
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
+                    <div className="overflow-x-auto min-w-full border border-gray-200 rounded-lg mt-4">
+                      <table className="min-w-full divide-y divide-gray-200 text-xs">
+  <thead className="bg-gray-50">
+    <tr>
+      <th className="px-3 py-2 text-left font-semibold text-gray-500 uppercase tracking-wider sticky top-0 z-20 bg-white min-w-[100px] max-w-[200px] truncate">Title</th>
+      <th className="px-3 py-2 text-left font-semibold text-gray-500 uppercase tracking-wider sticky top-0 z-20 bg-white min-w-[80px] max-w-[130px] truncate">Slug</th>
+      <th className="px-3 py-2 text-left font-semibold text-gray-500 uppercase tracking-wider sticky top-0 z-20 bg-white min-w-[70px] max-w-[100px] truncate">Category</th>
+      <th className="px-3 py-2 text-left font-semibold text-gray-500 uppercase tracking-wider sticky top-0 z-20 bg-white min-w-[80px] max-w-[100px] truncate">Last Updated</th>
+      <th className="px-3 py-2 text-center font-semibold text-gray-500 uppercase tracking-wider w-1/6 sticky top-0 z-20 bg-white min-w-[80px] max-w-[100px] truncate">
+        Actions
+      </th>
+    </tr>
+  </thead>
+  <tbody className="bg-white divide-y divide-gray-200">
+    {filteredPages.length > 0 ? (
+      filteredPages.map((page: PageData) => (
+        <tr key={page.id} className="hover:bg-violet-50 transition-colors">
+          <td className="px-3 py-2 whitespace-nowrap min-w-[100px] max-w-[200px] truncate">
+            <div className="font-medium text-gray-900 truncate" title={page.title}>{page.title}</div>
+          </td>
+          <td className="px-3 py-2 whitespace-nowrap text-gray-500 min-w-[80px] max-w-[130px] truncate" title={page.slug}>
+            {page.slug}
+          </td>
+          <td className="px-3 py-2 whitespace-nowrap text-gray-500 min-w-[70px] max-w-[100px] truncate" title={page.category?.name || '-'}>
+            {page.category?.name || '-'}
+          </td>
+          <td className="px-3 py-2 whitespace-nowrap text-gray-500 min-w-[80px] max-w-[100px] truncate">
+            {typeof page.updatedAt === 'string' && page.updatedAt 
+              ? format(new Date(page.updatedAt), 'MMM d, yyyy')
+              : '-'}
+          </td>
+          <td className="px-3 py-2 whitespace-nowrap text-center font-medium min-w-[80px] max-w-[100px] truncate">
+            <div className="flex flex-nowrap gap-1 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 py-0.5 px-1 rounded-md bg-white/80">
+              <Link href={`/${page.pageType}/${page.slug}`} target="_blank" title="View on site">
+                <Button variant="outline" size="sm" tabIndex={0} aria-label="View on site">
+                  <FileText className="h-3 w-3 text-gray-500" />
+                </Button>
+              </Link>
+              <Link href={`/admin/content/edit/${page.id}`} title="Edit">
+                <Button variant="outline" size="sm" tabIndex={0} aria-label="Edit">
+                  <Edit className="h-3 w-3 text-blue-500" />
+                </Button>
+              </Link>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => handleDelete(page.id)}
+                title="Delete"
+                tabIndex={0}
+                aria-label="Delete"
+              >
+                <Trash2 className="h-3 w-3 text-red-500" />
+              </Button>
+            </div>
+          </td>
+        </tr>
+      ))
+    ) : (
+      <tr>
+        <td colSpan={5} className="px-3 py-2 text-center text-gray-500">
+          No pages found. {searchTerm || selectedCategory !== 'all' ? 'Try adjusting your filters.' : ''}
+        </td>
+      </tr>
+    )}
+  </tbody>
+</table>
                     </div>
                   )}
-                  
-                  {!loading && filteredPages.length > 0 && (
-                    <Pagination 
-                      pagination={pagination}
-                      onPageChange={handlePageChange}
-                      onPageSizeChange={handlePageSizeChange}
-                    />
+                  {!loading &&
+                    filteredPages.length > 0 &&
+                    pagination &&
+                    typeof pagination.page === 'number' &&
+                    typeof pagination.pageCount === 'number' &&
+                    typeof pagination.total === 'number' &&
+                    typeof pagination.pageSize === 'number' && (
+                      <Pagination 
+                        pagination={pagination}
+                        onPageChange={handlePageChange}
+                        onPageSizeChange={handlePageSizeChange}
+                      />
                   )}
                 </>
               )}
@@ -484,4 +412,4 @@ export default function ContentManagementPage() {
       </Tabs>
     </div>
   );
-} 
+}
