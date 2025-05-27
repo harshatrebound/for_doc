@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   creator: "Sports Orthopedics Institute",
   publisher: "Sports Orthopedics Institute",
   verification: {
-    google: "YOUR_GOOGLE_SEARCH_CONSOLE_VERIFICATION_STRING",
+    google: "WG2k4FYTe0K1OeP4FzV1OxFKmGUO0OJmsQUQveB-9zY",
   },
   formatDetection: {
     email: false,
