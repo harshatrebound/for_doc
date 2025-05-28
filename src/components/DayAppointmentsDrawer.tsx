@@ -83,10 +83,27 @@ const DayAppointmentsDrawer = ({
       .sort((a, b) => parseTime(a.time) - parseTime(b.time)); // Sort by time ascending
   }, [allAppointments, selectedDate]);
 
-  // Generate time slots for the day
+  // Generate time slots for the day, extending to latest appointment if needed
   const timeSlots = useMemo(() => {
-    return generateTimeSlots(workingHoursStart, workingHoursEnd, timeSlotIntervalMinutes);
-  }, [workingHoursStart, workingHoursEnd, timeSlotIntervalMinutes]);
+    let effectiveEnd = workingHoursEnd;
+    if (todaysAppointments.length > 0) {
+      // Find the latest appointment time in minutes from midnight
+      const latestAppMinutes = Math.max(
+        ...todaysAppointments
+          .map(app => parseTime(app.time))
+          .filter(mins => mins >= 0)
+      );
+      // Calculate the end boundary in minutes from midnight
+      const endBoundaryMinutes = workingHoursEnd * 60;
+      if (latestAppMinutes + 1 > endBoundaryMinutes) {
+        // Round up to the next slot interval
+        const slotInterval = timeSlotIntervalMinutes;
+        const roundedEnd = Math.ceil((latestAppMinutes + 1) / slotInterval) * slotInterval;
+        effectiveEnd = Math.max(workingHoursEnd, Math.ceil(roundedEnd / 60));
+      }
+    }
+    return generateTimeSlots(workingHoursStart, effectiveEnd, timeSlotIntervalMinutes);
+  }, [workingHoursStart, workingHoursEnd, timeSlotIntervalMinutes, todaysAppointments]);
 
   // Map appointments to the time slot they fall *within*
   const appointmentsBySlot = useMemo(() => {
