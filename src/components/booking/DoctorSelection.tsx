@@ -105,6 +105,19 @@ const DoctorCard = ({ doctor, isSelected, onSelect }: DoctorCardProps) => {
                 <h3 className={`text-lg font-semibold tracking-tight ${isSelected ? 'text-white' : 'text-gray-900'}`}>
                   {doctor.name}
                 </h3>
+                {/* Special note for Dr. Naveen */}
+                {doctor.name === 'Dr. Naveen' && (
+                  <div
+                    className={`mt-2 text-xs font-medium rounded border p-2 transition-colors ${isSelected
+                      ? 'bg-[--primary-light] border-[--primary] text-[--primary-foreground]'
+                      : 'bg-[--primary]/10 border-[--primary] text-[--primary]'}
+                    `}
+                    style={{ lineHeight: 1.5 }}
+                  >
+                    Dr. Naveen no longer treats <b>back pain, neck pain, or spine-related issues</b>.<br />
+                    All patients with these conditions should schedule with <b>Dr. Sameer</b>.
+                  </div>
+                )}
                 <p className={`text-sm mt-0.5 ${isSelected ? 'text-white/90' : 'text-gray-600'}`}>
                   {doctor.speciality}
                 </p>
