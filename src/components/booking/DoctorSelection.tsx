@@ -320,21 +320,27 @@ const DoctorSelection = ({ onNext }: DoctorSelectionProps = {}) => {
         </button>
       </div>
 
-      {/* Dr. Naveen special note marquee */}
-      <div className="relative w-full overflow-hidden py-2">
-        <div className="whitespace-nowrap animate-marquee flex items-center gap-6 px-2">
-          <AlertCircle className="inline-block w-5 h-5 text-[#8B5C9E] mr-2" />
-          <span className="text-sm font-medium text-[#8B5C9E]">
-            Dr. Naveen no longer treats <b>back pain, neck pain, or spine-related issues</b>. All patients with these conditions should schedule with <b>Dr. Sameer</b>.
-          </span>
+      {/* Dr. Naveen special note marquee (seamless) */}
+      <div className="relative w-full overflow-hidden py-2 bg-white">
+        <div className="flex items-center gap-6 px-2 whitespace-nowrap animate-marquee" style={{ width: 'max-content' }}>
+          {[1, 2].map((_, i) => (
+            <span key={i} className="flex items-center gap-2 mr-12">
+              <AlertCircle className="inline-block w-5 h-5 text-[#8B5C9E]" />
+              <span className="text-sm font-medium text-[#8B5C9E]">
+                Dr. Naveen no longer treats <b>back pain, neck pain, or spine-related issues</b>. All patients with these conditions should schedule with <b>Dr. Sameer</b>.
+              </span>
+            </span>
+          ))}
         </div>
         <style jsx>{`
           @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
           }
           .animate-marquee {
+            display: flex;
             animation: marquee 18s linear infinite;
+            will-change: transform;
           }
         `}</style>
       </div>
