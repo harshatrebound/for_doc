@@ -105,19 +105,6 @@ const DoctorCard = ({ doctor, isSelected, onSelect }: DoctorCardProps) => {
                 <h3 className={`text-lg font-semibold tracking-tight ${isSelected ? 'text-white' : 'text-gray-900'}`}>
                   {doctor.name}
                 </h3>
-                {/* Special note for Dr. Naveen */}
-                {doctor.name.includes('Dr. Naveen') && (
-                  <div
-                    className={`mt-2 text-xs font-medium rounded border p-2 transition-colors ${isSelected
-                      ? 'bg-[--primary-light] border-[--primary] text-[--primary-foreground]'
-                      : 'bg-[--primary]/10 border-[--primary] text-[--primary]'}
-                    `}
-                    style={{ lineHeight: 1.5 }}
-                  >
-                    Dr. Naveen no longer treats <b>back pain, neck pain, or spine-related issues</b>.<br />
-                    All patients with these conditions should schedule with <b>Dr. Sameer</b>.
-                  </div>
-                )}
                 <p className={`text-sm mt-0.5 ${isSelected ? 'text-white/90' : 'text-gray-600'}`}>
                   {doctor.speciality}
                 </p>
@@ -331,6 +318,25 @@ const DoctorSelection = ({ onNext }: DoctorSelectionProps = {}) => {
         >
           <Filter className="w-5 h-5" />
         </button>
+      </div>
+
+      {/* Dr. Naveen special note marquee */}
+      <div className="relative w-full overflow-hidden py-2">
+        <div className="whitespace-nowrap animate-marquee flex items-center gap-6 px-2">
+          <AlertCircle className="inline-block w-5 h-5 text-[#8B5C9E] mr-2" />
+          <span className="text-sm font-medium text-[#8B5C9E]">
+            Dr. Naveen no longer treats <b>back pain, neck pain, or spine-related issues</b>. All patients with these conditions should schedule with <b>Dr. Sameer</b>.
+          </span>
+        </div>
+        <style jsx>{`
+          @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+          }
+          .animate-marquee {
+            animation: marquee 18s linear infinite;
+          }
+        `}</style>
       </div>
 
       {/* Doctor List */}
