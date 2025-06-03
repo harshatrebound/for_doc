@@ -106,7 +106,7 @@ const DoctorCard = ({ doctor, isSelected, onSelect }: DoctorCardProps) => {
                   {doctor.name}
                 </h3>
                 {/* Special note for Dr. Naveen */}
-                {doctor.name === 'Dr. Naveen' && (
+                {doctor.name.includes('Dr. Naveen') && (
                   <div
                     className={`mt-2 text-xs font-medium rounded border p-2 transition-colors ${isSelected
                       ? 'bg-[--primary-light] border-[--primary] text-[--primary-foreground]'
