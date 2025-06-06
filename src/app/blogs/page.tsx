@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { PostCard, FeaturedPost, BlogPost, formatDate } from '@/components/blog/PostCard';
 import Image from 'next/image';
 import { getDirectusImageUrl, extractCategories } from '../utils/image-utils'; // Added extractCategories
-import { directus, DirectusBlogPost } from '../../../lib/directus'; // Adjusted path
+import { directus, DirectusBlogPost } from '../../lib/directus'; // Corrected path
 
 // Add metadata for SEO
 export const metadata: Metadata = {
