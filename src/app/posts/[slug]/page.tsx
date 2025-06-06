@@ -1,31 +1,29 @@
-import { promises as fs } from 'fs';
-import { existsSync } from 'fs';
-import path from 'path';
 import Link from 'next/link';
 import Image from 'next/image';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
-import Papa from 'papaparse';
 import { Metadata, ResolvingMetadata } from 'next';
 import { ChevronLeft, Calendar, Clock, Share2, Facebook, Twitter, Linkedin, Mail } from 'lucide-react';
 import PostContentRenderer from '../components/PostContentRenderer';
-import { BlogPost, RelatedPostCard, formatDate } from '../components/PostCard';
+import { BlogPost, RelatedPostCard, formatDate } from '../components/PostCard'; // BlogPost might need content_html, meta_title, meta_description
 import BookingModal from '@/components/BookingModal';
+import { directus, DirectusBlogPost } from '../../lib/directus'; // Adjusted path
+import { getDirectusImageUrl, extractCategories } from '../../utils/image-utils'; // Added extractCategories
 
 // Define props for the dynamic page
 type Props = {
   params: { slug: string };
 };
 
+// Removed local getDirectusImageUrl function
+
 // Generate metadata for the page
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  // Get the post data
   const post = await getPostBySlug(params.slug);
   
-  // If post is not found, return minimal metadata
   if (!post) {
     return {
       title: 'Post Not Found',
@@ -33,286 +31,183 @@ export async function generateMetadata(
     };
   }
   
-  // Generate metadata based on post content
   return {
-    title: `${post.title} | Medical Blog`,
-    description: post.summary,
+    title: post.meta_title || `${post.title} | Medical Blog`,
+    description: post.meta_description || post.summary,
     openGraph: {
-      title: post.title,
-      description: post.summary,
+      title: post.meta_title || post.title,
+      description: post.meta_description || post.summary,
       type: 'article',
-      images: [post.featuredImageUrl],
+      images: [post.featuredImageUrl], // Assumes featuredImageUrl is populated correctly
+      url: post.originalUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/posts/${params.slug}`,
     },
+    alternates: {
+      canonical: post.originalUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/posts/${params.slug}`,
+    }
   };
 }
 
-// Helper to safely parse JSON from a string
-function safeJsonParse<T>(jsonString: string | undefined | null): T | null {
-  if (!jsonString) return null;
-  try {
-    return JSON.parse(jsonString) as T;
-  } catch (e) {
-    console.warn("Failed to parse JSON string:", jsonString, e);
-    return null;
-  }
+// Helper to strip HTML tags from text (kept for summary generation)
+function stripHtml(html: string | undefined): string {
+  if (!html) return '';
+  return html.replace(/<[^>]*>?/gm, '');
 }
 
-// Helper to strip HTML tags from text
-function stripHtml(html: string): string {
-  return html?.replace(/<[^>]*>?/gm, '') || '';
-}
-
-// Calculate estimated read time based on content length
-function calculateReadTime(content: string): number {
+// Calculate estimated read time based on content length (kept for fallback)
+function calculateReadTime(content: string | undefined): number {
+  if (!content) return 3; // Default if no content
   const wordsPerMinute = 200;
   const words = content.split(/\s+/).length;
   return Math.max(1, Math.ceil(words / wordsPerMinute));
 }
 
-// Helper to check and process image URLs
-function processImageUrl(url: string): string {
-  // Default fallback image for posts
-  const fallbackImage = '/images/default-blog-image.webp';
-  
-  // If URL is empty or null, return fallback
-  if (!url) return fallbackImage;
-  
-  // Check if URL is an absolute URL (starts with http or https)
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
-  }
-  
-  // Check if URL is a local path and exists in the public directory
-  try {
-    const localPath = path.join(process.cwd(), 'public', url);
-    if (existsSync(localPath)) {
-      return url;
-    }
-  } catch (error) {
-    console.warn(`Error checking if image exists at ${url}:`, error);
-  }
-  
-  // For local paths that don't exist yet, try to use them anyway (they might be added later)
-  // but log a warning
-  console.warn(`Image might not exist: ${url}, using it anyway`);
-  return url;
-}
-
-// Helper to extract categories from a post title or content
-function extractCategories(title: string, content: string): string {
-  const titleLower = title.toLowerCase();
-  const contentLower = content.toLowerCase();
-  
-  if (titleLower.includes('knee') || contentLower.includes('knee')) return 'Knee';
-  if (titleLower.includes('hip') || contentLower.includes('hip')) return 'Hip';
-  if (titleLower.includes('shoulder') || contentLower.includes('shoulder')) return 'Shoulder';
-  if (titleLower.includes('elbow') || contentLower.includes('elbow')) return 'Elbow';
-  if (titleLower.includes('wrist') || contentLower.includes('wrist') || 
-      titleLower.includes('hand') || contentLower.includes('hand')) return 'Hand & Wrist';
-  if (titleLower.includes('ankle') || contentLower.includes('ankle') || 
-      titleLower.includes('foot') || contentLower.includes('foot')) return 'Foot & Ankle';
-  if (titleLower.includes('spine') || contentLower.includes('spine') || 
-      titleLower.includes('back') || contentLower.includes('back')) return 'Spine';
-  if (titleLower.includes('achilles') || contentLower.includes('achilles')) return 'Achilles';
-  
-  return 'General';
-}
-
-// Get a specific post by its slug
+// Get a specific post by its slug from Directus
 async function getPostBySlug(slug: string): Promise<BlogPost | null> {
-  const csvFilePath = path.join(process.cwd(), 'docs', 'post_cms.csv');
-  
   try {
-    const fileContent = await fs.readFile(csvFilePath, 'utf-8');
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
+    const response = await directus.items('blog_content').readByQuery({
+      fields: [
+        'slug', 'title', 'featured_image_url', 'excerpt', 'category',
+        'date_created', 'reading_time', 'content_text', 'content_html',
+        'status', 'meta_title', 'meta_description', 'canonical_url'
+      ],
+      filter: {
+        slug: { _eq: slug },
+        status: { _eq: 'published' },
+      },
+      limit: 1,
     });
 
-    // Find the post with the matching slug
-    const postRow = parsedCsv.data.find(row => row.Slug === slug);
-    
-    if (!postRow) {
-      console.error(`Post with slug "${slug}" not found`);
+    const item = response.data?.[0] as DirectusBlogPost | undefined;
+
+    if (!item) {
+      console.error(`Post with slug "${slug}" not found in Directus.`);
       return null;
     }
-    
-    // Clean up title
-    const title = (postRow.Title || slug).split('|')[0].trim();
-    
-    // Process the featured image URL
-    const featuredImageUrl = processImageUrl(postRow.FeaturedImageURL);
-    
-    // Generate summary and calculate read time
-    let summary = 'No summary available.';
-    let contentForCategory = '';
-    let readTime = 3; // Default read time in minutes
-    
-    const contentBlocks = safeJsonParse<{type: string, text: string}[]>(postRow.ContentBlocksJSON);
-    if (contentBlocks) {
-      // Get first paragraph for summary
-      const firstParagraph = contentBlocks.find(block => block.type === 'paragraph');
-      if (firstParagraph && firstParagraph.text) {
-        // Strip HTML and truncate
-        const plainText = stripHtml(firstParagraph.text);
-        summary = plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
-      }
-      
-      // Combine content for category extraction and read time calculation
-      const allText = contentBlocks
-        .filter(block => block.type === 'paragraph' || block.type === 'heading')
-        .map(block => stripHtml(block.text || ''))
-        .join(' ');
-        
-      contentForCategory = allText;
-      readTime = calculateReadTime(allText);
-    }
-    
-    // Extract category
-    const category = extractCategories(title, contentForCategory);
-    
-    // Use ScrapedAt as publish date or fallback to current date
-    const publishedAt = postRow.ScrapedAt || new Date().toISOString();
 
-    return { 
-      slug,
-      pageType: postRow.PageType || 'post',
+    const title = (item.title || item.slug || 'Untitled Post').split('|')[0].trim();
+    
+    let summary = item.excerpt || '';
+    if (!summary && item.content_text) {
+      const plainText = stripHtml(item.content_text);
+      summary = plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
+    } else if (!summary) {
+      summary = 'No summary available.';
+    }
+
+    // const category = item.category || 'General'; // OLD
+    const derivedCategory = extractCategories(title, item.content_text || ''); // NEW
+    const featuredImageUrl = getDirectusImageUrl(item.featured_image_url);
+    const publishedAt = item.date_created || new Date().toISOString();
+    
+    let readTime = item.reading_time || 0;
+    if (readTime === 0 && item.content_text) {
+      readTime = calculateReadTime(stripHtml(item.content_text));
+    } else if (readTime === 0) {
+      readTime = 3;
+    }
+
+    return {
+      slug: item.slug!,
+      pageType: 'post',
       title,
-      originalUrl: postRow.OriginalURL || '',
+      originalUrl: item.canonical_url || '',
       featuredImageUrl,
       summary,
-      category,
+      category: derivedCategory, // Use derived category
       publishedAt,
-      readTime
+      readTime,
+      meta_title: item.meta_title || title,
+      meta_description: item.meta_description || summary,
+      content_html: item.content_html || '',
     };
   } catch (error) {
-    console.error("Error reading or parsing post_cms.csv:", error);
+    console.error(`Error fetching post "${slug}" from Directus:`, error);
     return null;
   }
 }
 
-// Get content blocks for a post
-async function getPostContent(slug: string) {
-  const csvFilePath = path.join(process.cwd(), 'docs', 'post_cms.csv');
-  
+// Get HTML content for a post from Directus
+async function getPostContent(slug: string): Promise<string> {
   try {
-    const fileContent = await fs.readFile(csvFilePath, 'utf-8');
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
+    const response = await directus.items('blog_content').readByQuery({
+      fields: ['content_html'],
+      filter: {
+        slug: { _eq: slug },
+        status: { _eq: 'published' },
+      },
+      limit: 1,
     });
 
-    // Find the post with the matching slug
-    const postRow = parsedCsv.data.find(row => row.Slug === slug);
-    
-    if (!postRow) {
-      console.error(`Post with slug "${slug}" not found`);
-      return [];
-    }
-    
-    // Parse content blocks
-    const contentBlocks = safeJsonParse<any[]>(postRow.ContentBlocksJSON);
-    
-    // Process image URLs in content blocks
-    if (contentBlocks) {
-      return contentBlocks.map(block => {
-        if (block.type === 'image' && block.src) {
-          return { ...block, src: processImageUrl(block.src) };
-        }
-        return block;
-      });
-    }
-    
-    return [];
+    const item = response.data?.[0] as DirectusBlogPost | undefined;
+    return item?.content_html || '';
   } catch (error) {
-    console.error(`Error getting content for post "${slug}":`, error);
-    return [];
+    console.error(`Error fetching content for post "${slug}" from Directus:`, error);
+    return '';
   }
 }
 
-// Get related posts based on category
+// Get related posts based on category from Directus
 async function getRelatedPosts(currentSlug: string, category: string, limit = 3): Promise<BlogPost[]> {
-  const csvFilePath = path.join(process.cwd(), 'docs', 'post_cms.csv');
-  const relatedPosts: BlogPost[] = [];
-  
+  let relatedPosts: BlogPost[] = [];
   try {
-    const fileContent = await fs.readFile(csvFilePath, 'utf-8');
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
+    const response = await directus.items('blog_content').readByQuery({
+      fields: [
+        'slug', 'title', 'featured_image_url', 'excerpt',
+        'category', 'date_created', 'reading_time', 'content_text', 'status'
+      ],
+      filter: {
+        status: { _eq: 'published' },
+        category: { _eq: category },
+        slug: { _neq: currentSlug },
+      },
+      sort: ['-date_created'] as any,
+      limit,
     });
 
-    // Process each row
-    for (const row of parsedCsv.data) {
-      // Skip current post and non-post types
-      if (row.Slug === currentSlug || !row.Slug || !row.Title) {
-        continue;
-      }
-      
-      const slug = row.Slug;
-      const title = (row.Title || slug).split('|')[0].trim();
-      
-      // Process the featured image URL
-      const featuredImageUrl = processImageUrl(row.FeaturedImageURL);
-      
-      // Get summary and determine category
-      let summary = 'No summary available.';
-      let contentForCategory = '';
-      let postCategory = '';
-      let readTime = 3;
-      
-      const contentBlocks = safeJsonParse<{type: string, text: string}[]>(row.ContentBlocksJSON);
-      if (contentBlocks) {
-        // Get first paragraph for summary
-        const firstParagraph = contentBlocks.find(block => block.type === 'paragraph');
-        if (firstParagraph && firstParagraph.text) {
-          const plainText = stripHtml(firstParagraph.text);
-          summary = plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
-        }
-        
-        // Content for category extraction
-        const allText = contentBlocks
-          .filter(block => block.type === 'paragraph' || block.type === 'heading')
-          .map(block => stripHtml(block.text || ''))
-          .join(' ');
-          
-        contentForCategory = allText;
-        readTime = calculateReadTime(allText);
-      }
-      
-      // Extract category
-      postCategory = extractCategories(title, contentForCategory);
-      
-      // Only include posts in the same category
-      if (postCategory === category) {
-        const publishedAt = row.ScrapedAt || new Date().toISOString();
-        
-        relatedPosts.push({
-          slug,
-          pageType: row.PageType || 'post',
-          title,
-          originalUrl: row.OriginalURL || '',
-          featuredImageUrl,
-          summary,
-          category: postCategory,
-          publishedAt,
-          readTime
-        });
-        
-        // Break once we have enough related posts
-        if (relatedPosts.length >= limit) {
-          break;
-        }
-      }
+    if (response.data) {
+      relatedPosts = response.data
+        .map((item: DirectusBlogPost) => {
+          const title = (item.title || item.slug || 'Untitled Post').split('|')[0].trim();
+          const itemContentText = item.content_text || '';
+          const itemDerivedCategory = extractCategories(title, itemContentText); // Derive category for this item
+
+          let summary = item.excerpt || '';
+          if (!summary && itemContentText) {
+            const plainText = stripHtml(itemContentText);
+            summary = plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
+          } else if (!summary) {
+            summary = 'No summary available.';
+          }
+          const featuredImageUrl = getDirectusImageUrl(item.featured_image_url);
+          const publishedAt = item.date_created || new Date().toISOString();
+          let readTime = item.reading_time || 0;
+          if (readTime === 0 && itemContentText) {
+            readTime = calculateReadTime(stripHtml(itemContentText));
+          } else if (readTime === 0) {
+            readTime = 3;
+          }
+
+          return {
+            slug: item.slug!,
+            pageType: 'post',
+            title,
+            originalUrl: '',
+            featuredImageUrl,
+            summary,
+            category: itemDerivedCategory, // Store its own derived category
+            publishedAt,
+            readTime,
+          };
+        })
+        .filter(p => p.category === category); // Filter by comparing with the main post's derived category
     }
   } catch (error) {
-    console.error("Error getting related posts:", error);
+    console.error("Error fetching related posts from Directus:", error);
   }
-  
   return relatedPosts;
 }
 
-// Social share component
+// Social share component (remains the same)
 const SocialShare = ({ url, title }: { url: string; title: string }) => {
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
@@ -358,14 +253,14 @@ const SocialShare = ({ url, title }: { url: string; title: string }) => {
   );
 };
 
-// Table of Contents component
+// Table of Contents component (receives empty array for now)
 const TableOfContents = ({ contentBlocks }: { contentBlocks: any[] }) => {
   // Extract headings from content blocks
-  const headings = contentBlocks
+  const headings = contentBlocks // This will be an empty array for now
     .filter(block => block.type === 'heading' && block.level && block.level <= 3)
     .map((block, index) => ({
       id: `heading-${index}`,
-      text: stripHtml(block.text || ''),
+      text: stripHtml(block.text || ''), // stripHtml needs to handle undefined if block.text is not guaranteed
       level: block.level
     }));
   
@@ -408,7 +303,7 @@ export default async function PostPage({ params }: Props) {
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Post Not Found</h1>
           <p className="text-gray-600 mb-6">The article you're looking for could not be found.</p>
           <Link 
-            href="/posts" 
+            href="/blogs"  // Corrected link to /blogs
             className="inline-flex items-center text-[#8B5C9E] hover:underline"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
@@ -420,11 +315,9 @@ export default async function PostPage({ params }: Props) {
     );
   }
   
-  // Get post content blocks and related posts
-  const contentBlocks = await getPostContent(slug);
+  const contentHtml = await getPostContent(slug); // NEW: Fetches HTML string
   const relatedPosts = await getRelatedPosts(slug, post.category);
   
-  // Create the full URL for sharing
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://sportsorthopedics.in';
   const fullUrl = `${baseUrl}/posts/${slug}`;
   
@@ -443,7 +336,6 @@ export default async function PostPage({ params }: Props) {
             priority
             className="object-cover opacity-70"
           />
-          {/* Apply gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
         </div>
         
@@ -473,7 +365,7 @@ export default async function PostPage({ params }: Props) {
           <nav className="flex text-sm">
             <Link href="/" className="text-gray-500 hover:text-[#8B5C9E]">Home</Link>
             <span className="mx-2 text-gray-400">/</span>
-            <Link href="/posts" className="text-gray-500 hover:text-[#8B5C9E]">Blog</Link>
+            <Link href="/blogs" className="text-gray-500 hover:text-[#8B5C9E]">Blog</Link> {/* Corrected link to /blogs */}
             <span className="mx-2 text-gray-400">/</span>
             <span className="text-gray-700 truncate max-w-[200px]">{post.title}</span>
           </nav>
@@ -484,26 +376,22 @@ export default async function PostPage({ params }: Props) {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content Area */}
           <div className="lg:w-2/3">
-            {/* Content */}
             <article className="bg-white rounded-xl shadow-sm p-6 md:p-8">
-              <PostContentRenderer contentBlocks={contentBlocks} />
+              <PostContentRenderer htmlContent={contentHtml} /> {/* MODIFIED: Pass htmlContent */}
               
-              {/* Tags and Social Share */}
               <div className="mt-12 pt-6 border-t border-gray-200 flex flex-wrap justify-between items-center gap-4">
                 <div className="flex flex-wrap gap-2">
                   <Link 
-                    href={`/posts?category=${post.category}`}
+                    href={`/blogs?category=${post.category}`} // Corrected link to /blogs
                     className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full hover:bg-[#8B5C9E]/10 hover:text-[#8B5C9E] transition-colors"
                   >
                     {post.category}
                   </Link>
                 </div>
-                
                 <SocialShare url={fullUrl} title={post.title} />
               </div>
             </article>
             
-            {/* Related Articles - Mobile Only */}
             <div className="mt-8 lg:hidden">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Related Articles</h3>
               <div className="bg-white rounded-xl shadow-sm p-4">
@@ -522,9 +410,7 @@ export default async function PostPage({ params }: Props) {
           
           {/* Sidebar */}
           <div className="lg:w-1/3 space-y-8">
-            {/* Sticky sidebar container */}
             <div className="lg:sticky lg:top-24">
-              {/* Booking Widget */}
               <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Schedule an Appointment</h3>
                 <p className="text-gray-600 mb-4 text-sm">
@@ -535,10 +421,8 @@ export default async function PostPage({ params }: Props) {
                 </div>
               </div>
               
-              {/* Table of Contents */}
-              <TableOfContents contentBlocks={contentBlocks} />
+              <TableOfContents contentBlocks={[]} /> {/* MODIFIED: Pass empty array */}
               
-              {/* Related Articles - Desktop Only */}
               <div className="hidden lg:block bg-white rounded-xl shadow-sm p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Related Articles</h3>
                 {relatedPosts.length > 0 ? (
@@ -552,7 +436,6 @@ export default async function PostPage({ params }: Props) {
                 )}
               </div>
               
-              {/* Doctor Info */}
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-3">About the Doctor</h3>
                 <div className="flex items-center space-x-4 mb-3">
@@ -581,4 +464,4 @@ export default async function PostPage({ params }: Props) {
       <SiteFooter />
     </div>
   );
-} 
+}

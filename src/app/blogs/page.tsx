@@ -1,15 +1,12 @@
-import { promises as fs } from 'fs';
-import { existsSync } from 'fs';
-import path from 'path';
 import Link from 'next/link';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
-import Papa from 'papaparse';
 import { Metadata } from 'next';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { PostCard, FeaturedPost, BlogPost, formatDate } from '@/components/blog/PostCard';
 import Image from 'next/image';
-import { processImageUrl, extractCategories } from '@/app/utils/image-utils';
+import { getDirectusImageUrl, extractCategories } from '../utils/image-utils'; // Added extractCategories
+import { directus, DirectusBlogPost } from '../../../lib/directus'; // Adjusted path
 
 // Add metadata for SEO
 export const metadata: Metadata = {
@@ -22,19 +19,9 @@ export const metadata: Metadata = {
   }
 };
 
-// Helper to safely parse JSON from CSV, returning null on error
-function safeJsonParse<T>(jsonString: string | undefined | null): T | null {
-  if (!jsonString) return null;
-  try {
-    return JSON.parse(jsonString) as T;
-  } catch (e) {
-    console.warn("Failed to parse JSON string:", jsonString, e);
-    return null;
-  }
-}
-
 // Helper to strip HTML tags for a plain text summary
-function stripHtml(html: string): string {
+function stripHtml(html: string | undefined): string {
+  if (!html) return '';
   return html.replace(/<[^>]*>?/gm, '');
 }
 
@@ -45,90 +32,78 @@ function calculateReadTime(content: string): number {
   return Math.max(1, Math.ceil(words / wordsPerMinute));
 }
 
-// Enhanced function to get posts from the CSV
+// Removed local getDirectusImageUrl function
+
 async function getBlogPosts(): Promise<{
   posts: BlogPost[],
   categories: string[]
 }> {
-  const csvFilePath = path.join(process.cwd(), 'docs', 'post_cms.csv');
-  const posts: BlogPost[] = [];
   const categoriesSet = new Set<string>(['All']);
+  let posts: BlogPost[] = [];
 
   try {
-    const fileContent = await fs.readFile(csvFilePath, 'utf-8');
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
+    const response = await directus.items('blog_content').readByQuery({
+      fields: [
+        'slug',
+        'title',
+        'featured_image_url',
+        'excerpt',
+        'category',
+        'date_created',
+        'reading_time',
+        'content_text',
+        'status'
+      ],
+      filter: {
+        status: { _eq: 'published' },
+      },
+      sort: ['-date_created'] as any,
     });
 
-    if (parsedCsv.errors.length > 0) {
-      console.error("CSV Parsing errors:", parsedCsv.errors);
-    }
-
-    for (const row of parsedCsv.data) {
-      // Check if the row has necessary data
-      if (row.Slug && row.Title) {
-        const slug = row.Slug;
-        // Clean up title (e.g., remove site name suffix)
-        const title = (row.Title || slug).split('|')[0].trim();
+    if (response.data) {
+      posts = response.data.map((item: DirectusBlogPost) => {
+        const title = (item.title || item.slug || 'Untitled Post').split('|')[0].trim();
         
-        // Attempt to generate summary and extract category from content
-        let summary = 'No summary available.';
-        let contentForCategory = '';
-        let readTime = 3; // Default read time in minutes
-        
-        const contentBlocks = safeJsonParse<{type: string, text: string}[]>(row.ContentBlocksJSON);
-        if (contentBlocks) {
-          // Get first paragraph for summary
-          const firstParagraph = contentBlocks.find(block => block.type === 'paragraph');
-          if (firstParagraph && firstParagraph.text) {
-            // Strip HTML and truncate
-            const plainText = stripHtml(firstParagraph.text);
-            summary = plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
-          }
-          
-          // Combine content for category extraction and read time calculation
-          const allText = contentBlocks
-            .filter(block => block.type === 'paragraph' || block.type === 'heading')
-            .map(block => stripHtml(block.text || ''))
-            .join(' ');
-            
-          contentForCategory = allText;
-          readTime = calculateReadTime(allText);
+        let summary = item.excerpt || '';
+        if (!summary && item.content_text) {
+          const plainText = stripHtml(item.content_text);
+          summary = plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
+        } else if (!summary) {
+          summary = 'No summary available.';
         }
-        
-        // Extract category from title and content
-        const category = extractCategories(title, contentForCategory);
-        if (category) {
-          categoriesSet.add(category);
-        }
-        
-        // Process featured image URL based on the determined category
-        const featuredImageUrl = processImageUrl(row.FeaturedImageURL, category);
-        
-        // Use ScrapedAt as publish date or fallback to current date
-        const publishedAt = row.ScrapedAt || new Date().toISOString();
 
-        posts.push({ 
-          slug, 
-          pageType: row.PageType || 'post',
-          title, 
-          originalUrl: row.OriginalURL || '',
-          featuredImageUrl, 
+        // const category = item.category || 'General'; // OLD: Directus category
+        const derivedCategory = extractCategories(title, item.content_text || ''); // NEW: Derived category
+        categoriesSet.add(derivedCategory);
+        
+        const featuredImageUrl = getDirectusImageUrl(item.featured_image_url);
+        
+        const publishedAt = item.date_created || new Date().toISOString();
+        
+        let readTime = item.reading_time || 0;
+        if (readTime === 0 && item.content_text) {
+          readTime = calculateReadTime(stripHtml(item.content_text));
+        } else if (readTime === 0) {
+          readTime = 3; // Default read time
+        }
+
+        return {
+          slug: item.slug!,
+          pageType: 'post',
+          title,
+          originalUrl: '', // Was from CSV, set to empty or map if available in Directus
+          featuredImageUrl,
           summary,
-          category,
+          category: derivedCategory, // Use derived category
           publishedAt,
-          readTime
-        });
-      }
+          readTime,
+        };
+      });
     }
   } catch (error) {
-    console.error("Error reading or parsing post_cms.csv:", error);
-    return { posts: [], categories: [] }; // Return empty arrays on error
+    console.error("Error fetching blog posts from Directus:", error);
+    return { posts: [], categories: ['All'] };
   }
-
-  // Sort posts by date, newest first
-  posts.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
   
   return { 
     posts, 

@@ -114,4 +114,35 @@ export function extractCategories(title: string, content: string): string {
   if (titleLower.includes('achilles') || contentLower.includes('achilles')) return 'Achilles';
   
   return 'General';
-} 
+}
+
+/**
+ * NEW FUNCTION FOR DIRECTUS
+ * Constructs a full URL for a Directus asset.
+ * @param identifier The asset ID or path from Directus.
+ * @returns A full URL to the asset or a fallback image URL.
+ */
+export function getDirectusImageUrl(identifier: string | undefined | null): string {
+  const fallbackImage = '/images/default-hero.jpg'; // Using a generic fallback from the plan
+  if (!identifier) {
+    // console.warn('getDirectusImageUrl: Identifier is missing, returning fallback.');
+    return fallbackImage;
+  }
+
+  // Check if it's already a full URL
+  if (identifier.startsWith('http://') || identifier.startsWith('https://')) {
+    return identifier;
+  }
+
+  const directusBaseUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL;
+  if (!directusBaseUrl) {
+    console.warn('getDirectusImageUrl: NEXT_PUBLIC_DIRECTUS_URL is not set. Cannot form full image URL.');
+    return fallbackImage; // Return fallback if base URL is not set
+  }
+
+  // Assuming identifier is an asset ID like 'uuid-uuid-uuid' or 'filename.jpg'
+  // and Directus serves assets at '/assets/'
+  // Ensure no double slashes if directusBaseUrl might have a trailing slash
+  const cleanBaseUrl = directusBaseUrl.endsWith('/') ? directusBaseUrl.slice(0, -1) : directusBaseUrl;
+  return `${cleanBaseUrl}/assets/${identifier}`;
+}
