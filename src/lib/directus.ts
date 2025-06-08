@@ -1,14 +1,16 @@
-import { createDirectus, rest, readItems, readItem } from '@directus/sdk';
+import { createDirectus, rest, readItems, readItem, createItem, updateItem, deleteItem, type RestCommand, aggregate } from '@directus/sdk';
 import { ProcedureSurgery } from '@/types/procedure-surgery';
 import { GalleryImage, GalleryCategory } from '@/types/gallery';
 import { ClinicalVideo, VideoCategory } from '@/types/clinical-videos';
 import { StaffMember } from '@/types/staff';
+import { Publication } from '@/types/publications';
 
 const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL;
 const directusToken = process.env.DIRECTUS_ADMIN_TOKEN;
 
 if (!directusUrl || !directusToken) {
-  throw new Error('Directus URL or admin token is not configured in environment variables.');
+  console.error('Missing Directus environment variables');
+  throw new Error('Directus configuration is required');
 }
 
 const client = createDirectus(directusUrl).with(rest({
@@ -77,6 +79,7 @@ interface DirectusSchema {
   gallery: GalleryImage[];
   clinical_videos: ClinicalVideo[];
   staff_info: StaffMember[];
+  publications: Publication[];
 }
 
 function toAssetUrl(fileId: string): string {
@@ -1587,6 +1590,355 @@ export async function debugStaffData(): Promise<any> {
     return response;
   } catch (error) {
     console.error('Debug staff data error:', error);
+    return { error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+// ===== PUBLICATIONS FUNCTIONS =====
+
+// Function to get all publications with client-side pagination
+export async function getPublications(
+  limit = 12, 
+  offset = 0, 
+  category?: string,
+  search?: string,
+  publication_type?: string
+): Promise<{
+  data: Publication[];
+  total: number;
+  page: number;
+  totalPages: number;
+}> {
+  try {
+    console.log('Attempting to fetch publications from Directus...');
+    
+    // Build filters
+    const filters: any = {
+      status: { _eq: 'published' }
+    };
+
+    if (category && category !== 'All') {
+      filters.category = { _eq: category };
+    }
+
+    if (publication_type && publication_type !== 'All') {
+      filters.publication_type = { _eq: publication_type };
+    }
+
+    if (search) {
+      filters._or = [
+        { title: { _icontains: search } },
+        { content_text: { _icontains: search } },
+        { authors: { _icontains: search } }
+      ];
+    }
+
+    // Fetch ALL publications to avoid Directus pagination issues
+    const response = await client.request(
+      readItems('publications', {
+        fields: [
+          'id',
+          'title',
+          'slug',
+          'status',
+          'featured_image_url',
+          'authors',
+          'publication_date',
+          'publication_type',
+          'category',
+          'meta_title',
+          'meta_description',
+          'content_text',
+          'date_created',
+          'date_updated'
+        ],
+        filter: filters,
+        sort: ['-publication_date', '-date_created'],
+        limit: -1 // Get all items
+      })
+    );
+
+    const allPublications = (response as Publication[]) || [];
+    
+    // Process image URLs
+    const processedPublications = allPublications.map(publication => ({
+      ...publication,
+      featured_image_url: publication.featured_image_url ? getImageUrl(publication.featured_image_url) : undefined
+    }));
+
+    // Client-side pagination for accuracy
+    const total = processedPublications.length;
+    const totalPages = Math.ceil(total / limit);
+    const currentPage = Math.floor(offset / limit) + 1;
+    const startIndex = offset;
+    const endIndex = startIndex + limit;
+    const paginatedPublications = processedPublications.slice(startIndex, endIndex);
+
+    console.log(`Publications: ${paginatedPublications.length}/${total} total, page ${currentPage}/${totalPages}`);
+
+    return {
+      data: paginatedPublications,
+      total,
+      page: currentPage,
+      totalPages
+    };
+  } catch (error) {
+    console.error('Error fetching publications:', error);
+    return {
+      data: [],
+      total: 0,
+      page: 1,
+      totalPages: 0
+    };
+  }
+}
+
+// Function to get a single publication by slug
+export async function getPublicationBySlug(slug: string): Promise<Publication | null> {
+  try {
+    const response = await client.request(
+      readItems('publications', {
+        fields: [
+          'id',
+          'title',
+          'slug',
+          'status',
+          'content_html',
+          'content_text',
+          'content_length',
+          'featured_image_url',
+          'authors',
+          'publication_date',
+          'publication_type',
+          'category',
+          'meta_title',
+          'meta_description',
+          'canonical_url',
+          'source_url',
+          'parent_slug',
+          'date_created',
+          'date_updated'
+        ],
+        filter: {
+          slug: { _eq: slug },
+          status: { _eq: 'published' }
+        },
+        limit: 1
+      })
+    );
+
+    const publications = response as Publication[];
+    if (!publications || publications.length === 0) {
+      return null;
+    }
+
+    const publication = publications[0];
+    
+    // Process image URL
+    return {
+      ...publication,
+      featured_image_url: publication.featured_image_url ? getImageUrl(publication.featured_image_url) : undefined
+    };
+  } catch (error) {
+    console.error('Error fetching publication by slug:', error);
+    return null;
+  }
+}
+
+// Function to get publication categories
+export async function getPublicationCategories(): Promise<string[]> {
+  try {
+    const response = await client.request(
+      readItems('publications', {
+        fields: ['category'],
+        filter: {
+          category: { _nnull: true },
+          status: { _eq: 'published' }
+        },
+        meta: 'total_count'
+      })
+    );
+
+    const publications = response as Publication[];
+    const categories = Array.from(new Set(publications.map(item => item.category).filter((cat): cat is string => Boolean(cat))));
+    
+    // Add 'All' at the beginning
+    return ['All', ...categories.sort()];
+  } catch (error) {
+    console.error('Error fetching publication categories:', error);
+    return ['All'];
+  }
+}
+
+// Function to get publication types
+export async function getPublicationTypes(): Promise<string[]> {
+  try {
+    const response = await client.request(
+      readItems('publications', {
+        fields: ['publication_type'],
+        filter: {
+          publication_type: { _nnull: true },
+          status: { _eq: 'published' }
+        },
+        meta: 'total_count'
+      })
+    );
+
+    const publications = response as Publication[];
+    const types = Array.from(new Set(publications.map(item => item.publication_type).filter((type): type is string => Boolean(type))));
+    
+    // Add 'All' at the beginning
+    return ['All', ...types.sort()];
+  } catch (error) {
+    console.error('Error fetching publication types:', error);
+    return ['All'];
+  }
+}
+
+// Function to search publications
+export async function searchPublications(
+  searchTerm: string,
+  limit = 10
+): Promise<Publication[]> {
+  try {
+    const response = await client.request(
+      readItems('publications', {
+        fields: [
+          'id',
+          'title',
+          'slug',
+          'featured_image_url',
+          'authors',
+          'publication_date',
+          'publication_type',
+          'category',
+          'date_created'
+        ],
+        filter: {
+          status: { _eq: 'published' },
+          _or: [
+            { title: { _icontains: searchTerm } },
+            { content_text: { _icontains: searchTerm } },
+            { authors: { _icontains: searchTerm } },
+            { category: { _icontains: searchTerm } }
+          ]
+        },
+        limit,
+        sort: ['-publication_date', '-date_created']
+      })
+    );
+
+    const publications = (response as Publication[]) || [];
+    // Process image URLs
+    return publications.map(publication => ({
+      ...publication,
+      featured_image_url: publication.featured_image_url ? getImageUrl(publication.featured_image_url) : undefined
+    }));
+  } catch (error) {
+    console.error('Error searching publications:', error);
+    return [];
+  }
+}
+
+// Function to get related publications
+export async function getRelatedPublications(
+  currentId: string,
+  category?: string,
+  limit = 3
+): Promise<Publication[]> {
+  try {
+    const filters: any = {
+      id: { _neq: currentId },
+      status: { _eq: 'published' }
+    };
+
+    if (category) {
+      filters.category = { _eq: category };
+    }
+
+    const response = await client.request(
+      readItems('publications', {
+        fields: [
+          'id',
+          'title',
+          'slug',
+          'featured_image_url',
+          'authors',
+          'publication_date',
+          'publication_type',
+          'category',
+          'date_created'
+        ],
+        filter: filters,
+        limit,
+        sort: ['-publication_date', '-date_created']
+      })
+    );
+
+    const publications = (response as Publication[]) || [];
+    // Process image URLs
+    return publications.map(publication => ({
+      ...publication,
+      featured_image_url: publication.featured_image_url ? getImageUrl(publication.featured_image_url) : undefined
+    }));
+  } catch (error) {
+    console.error('Error fetching related publications:', error);
+    return [];
+  }
+}
+
+// Function to get featured publications
+export async function getFeaturedPublications(limit = 6): Promise<Publication[]> {
+  try {
+    const response = await client.request(
+      readItems('publications', {
+        fields: [
+          'id',
+          'title',
+          'slug',
+          'featured_image_url',
+          'authors',
+          'publication_date',
+          'publication_type',
+          'category',
+          'date_created'
+        ],
+        filter: {
+          status: { _eq: 'published' }
+        },
+        limit,
+        sort: ['-publication_date', '-date_created']
+      })
+    );
+
+    const publications = (response as Publication[]) || [];
+    // Process image URLs
+    return publications.map(publication => ({
+      ...publication,
+      featured_image_url: publication.featured_image_url ? getImageUrl(publication.featured_image_url) : undefined
+    }));
+  } catch (error) {
+    console.error('Error fetching featured publications:', error);
+    return [];
+  }
+}
+
+// Debug function for publications data
+export async function debugPublicationsData(): Promise<any> {
+  try {
+    console.log('=== DEBUGGING PUBLICATIONS DATA ===');
+    
+    const response = await client.request(
+      readItems('publications', {
+        meta: 'total_count',
+        limit: 5
+      })
+    );
+
+    console.log('Publications debug response:', response);
+    return response;
+  } catch (error) {
+    console.error('Debug publications data error:', error);
     return { error: error instanceof Error ? error.message : 'Unknown error' };
   }
 } 

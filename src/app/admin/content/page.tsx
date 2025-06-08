@@ -174,11 +174,20 @@ export default function ContentManagementPage() {
 
   return (
     <div className="relative space-y-6 p-6">
-      {/* Work in Progress Overlay */}
-      <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-[#8B5C9E]/80 to-[#ece9f6]/90 backdrop-blur-[2px] pointer-events-auto select-none">
+      {/* Directus CMS Overlay */}
+      <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-[#8B5C9E]/80 to-[#ece9f6]/90 backdrop-blur-[2px] pointer-events-auto">
         <Lock className="w-16 h-16 text-white drop-shadow-lg mb-4" />
-        <span className="text-2xl font-bold text-white drop-shadow-lg mb-2">Work in Progress</span>
-        <span className="text-md text-white/80">This section will be available in the next launch.</span>
+        <span className="text-2xl font-bold text-white drop-shadow-lg mb-2">Content Management</span>
+        <span className="text-md text-white/80 mb-6">Manage your content through Directus CMS</span>
+        <a 
+          href={process.env.NEXT_PUBLIC_DIRECTUS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center px-6 py-3 bg-white text-[#8B5C9E] font-semibold rounded-lg hover:bg-gray-50 transition-colors shadow-lg"
+        >
+          <FileText className="w-5 h-5 mr-2" />
+          Open Directus CMS
+        </a>
       </div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>

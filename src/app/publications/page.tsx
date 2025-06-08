@@ -1,10 +1,7 @@
-import { promises as fs } from 'fs';
-import path from 'path';
 import Link from 'next/link';
 import Image from 'next/image';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
-import Papa from 'papaparse';
 import { Metadata } from 'next';
 import { BookOpen, Calendar, User, ChevronRight, ArrowRight } from 'lucide-react';
 import ClientImage from '@/app/components/ClientImage';
@@ -12,18 +9,8 @@ import HeroSection from '@/components/ui/HeroSection';
 import { Button } from '@/components/ui/button';
 import BookingButton from '@/components/BookingButton';
 import { ScrollToContentButton } from './components/ScrollToContentButton';
-
-// Define Publication type
-interface Publication {
-  slug: string;
-  title: string;
-  featuredImageUrl: string;
-  originalUrl: string;
-  authors: string;
-  journal: string;
-  publicationDate: string;
-  hasContent: boolean;
-}
+import { getPublicationsAction } from '@/app/actions/publications';
+import type { Publication } from '@/types/publications';
 
 // Add metadata for SEO
 export const metadata: Metadata = {
@@ -39,159 +26,29 @@ export const metadata: Metadata = {
 // Default fallback image
 const DEFAULT_IMAGE = '/images/default-procedure.jpg';
 
-// Get direct path to image in uploads folder
-function getImagePath(url: string): string {
-  if (!url || url === DEFAULT_IMAGE) return DEFAULT_IMAGE;
-  
-  try {
-    // Extract just the filename from the URL
-    let filename = '';
-    if (url.startsWith('http')) {
-      const urlObj = new URL(url);
-      const pathParts = urlObj.pathname.split('/');
-      filename = pathParts[pathParts.length - 1];
-    } else {
-      const pathParts = url.split('/');
-      filename = pathParts[pathParts.length - 1];
-    }
-    
-    if (filename) {
-      // Extract the base filename without extension
-      const baseFilename = filename.split('.')[0];
-      
-      // Map of known problematic filenames to their correct versions
-      const filenameMap: {[key: string]: string} = {
-        'knee-joint-model.webp': '1725afa5-artificial-human-knee-joint-model-medica.webp',
-        '4ac9985c-man-having-intense-pain-front-knee.webp': '4ac9985c-man-having-intense-pain-front-knee.webp.webp',
-        'cea71f95-foam-texture.webp': 'cea71f95-foam-texture.webp.webp',
-        'd31fd1c8-world-arthritis-day.jpg': 'd31fd1c8-world-arthritis-day.jpg.jpg',
-        'a81fc9bb-young-asian-athletes-competing-track-1.jpg': 'a81fc9bb-young-asian-athletes-competing-track-1.j.jpg',
-        'a66be8fe-young-asian-athletes-competing-track-1-5.jpg': 'a66be8fe-young-asian-athletes-competing-track-1-5.jpg',
-        'shoulder-pain-sports-injury.webp': '71c96aa7-aching-young-handsome-sporty-boy-wearing.webp',
-        'e73bcde7-side-view-young-man-getting-his-leg-exam.webp': 'e73bcde7-side-view-young-man-getting-his-leg-exam.webp',
-        'fdd30975-telemarketer-caucasian-man-working-with-.webp': 'fdd30975-telemarketer-caucasian-man-working-with-.webp',
-        '1c0718c6-closeup-athletic-woman-injured-her-foot-.webp': '1c0718c6-closeup-athletic-woman-injured-her-foot-.webp',
-        '5b1a06ba-young-fitness-man-holding-his-sports-leg.webp': '5b1a06ba-young-fitness-man-holding-his-sports-leg.webp',
-        '40ed85cd-young-woman-with-bandage-knee-with-effor.webp': '40ed85cd-young-woman-with-bandage-knee-with-effor.webp',
-        '8abe425e-side-view-young-man-getting-his-leg-exam.webp': '8abe425e-side-view-young-man-getting-his-leg-exam.webp',
-        'a273c131-telemarketer-caucasian-man-working-with-.webp': 'a273c131-telemarketer-caucasian-man-working-with-.webp'
-      };
-      
-      // Check if we have a direct mapping for this filename
-      if (filenameMap[filename]) {
-        return `/uploads/content/${filenameMap[filename]}`;
-      }
-      
-      // Check if we have a mapping for the base filename
-      for (const [key, value] of Object.entries(filenameMap)) {
-        if (key.startsWith(baseFilename) || value.startsWith(baseFilename)) {
-          return `/uploads/content/${value}`;
-        }
-      }
-      
-      // If no mapping found, use the original filename
-      // This will at least show the default image if it fails
-      return `/uploads/content/${filename}`;
-    }
-  } catch (e) {
-    console.warn(`Failed to process image URL: ${url}`, e);
-  }
-  
-  return DEFAULT_IMAGE;
-}
-
-// Get publications from CSV
-async function getPublications(): Promise<Publication[]> {
-  const csvFilePath = path.join(process.cwd(), 'docs', 'publication_cms.csv');
-  const publications: Publication[] = [];
-  
-  // Track if we've processed the main publications page
-  let mainPublicationPage = null;
-
-  try {
-    const fileContent = await fs.readFile(csvFilePath, 'utf-8');
-    
-    // Use a simple and consistent configuration for Papa Parse
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
-      quoteChar: '"',
-      escapeChar: '"',
-      dynamicTyping: false,
-      transformHeader: (header) => {
-        return header.trim();
-      }
-    });
-    
-    // Process each row in the CSV
-    for (const row of parsedCsv.data) {
-      // Skip rows without a slug or page type
-      if (!row.Slug || !row.PageType) continue;
-      
-      // Skip the main publications page for now (we'll process it separately)
-      if (row.Slug === 'publication' && row.PageType === 'publication') {
-        mainPublicationPage = row;
-        continue;
-      }
-      
-      // Only include publication page types
-      if (row.PageType !== 'publication') continue;
-      
-      // Create a new publication object
-      const publication: Publication = {
-        slug: row.Slug,
-        title: row.Title || '',
-        featuredImageUrl: row.FeaturedImageURL || DEFAULT_IMAGE,
-        originalUrl: row.OriginalURL || '',
-        authors: row.Authors || '',
-        journal: row.Journal || '',
-        publicationDate: row.PublicationDate || '',
-        hasContent: false, // Default to false, we'll check for content below
-      };
-      
-      // Check if this publication has content blocks
-      if (row.ContentBlocksJSON) {
-        try {
-          const contentBlocks = JSON.parse(row.ContentBlocksJSON);
-          publication.hasContent = contentBlocks.length > 0;
-        } catch (e) {
-          console.error(`Error parsing ContentBlocksJSON for ${row.Slug}: ${e}`);
-        }
-      }
-      
-      // Add to our publications array
-      publications.push(publication);
-    }
-    
-    // Sort publications by publication date (newest first)
-    publications.sort((a, b) => {
-      if (!a.publicationDate) return 1;
-      if (!b.publicationDate) return -1;
-      return new Date(b.publicationDate).getTime() - new Date(a.publicationDate).getTime();
-    });
-    
-    return publications;
-  } catch (error) {
-    console.error('Error loading publications:', error);
-    return [];
-  }
-}
-
 // Publication Card Component
 function PublicationCard({ publication }: { publication: Publication }) {
-  const { title, featuredImageUrl, originalUrl, authors, journal, publicationDate, slug, hasContent } = publication;
+  const { title, featured_image_url, source_url, authors, publication_date, slug, content_html, publication_type, category } = publication;
   
-  // Get image path
-  const imageUrl = getImagePath(featuredImageUrl);
+  // Use featured_image_url from Directus or fallback to default
+  const imageUrl = featured_image_url || DEFAULT_IMAGE;
   
-  // Format the title for display
+  // Always link to individual publication page - let that page handle content vs external link
+  // const hasContent = Boolean(content_html && content_html.trim().length > 0);
+  
+  // Format the title for display (remove common suffixes)
   const displayTitle = title.replace(' | Sports Orthopedics', '').trim();
+  
+  // Format publication date
+  const formattedDate = publication_date ? new Date(publication_date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }) : '';
   
   return (
     <Link 
-      href={hasContent ? `/publications/${slug}` : originalUrl}
-      target={hasContent ? '_self' : '_blank'}
-      rel={hasContent ? '' : 'noopener noreferrer'}
+      href={`/publications/${slug}`}
       className="group block bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow"
     >
       <div className="relative h-48 overflow-hidden">
@@ -201,7 +58,7 @@ function PublicationCard({ publication }: { publication: Publication }) {
             alt={displayTitle}
             fill
             className="object-cover transition-transform group-hover:scale-105"
-            unoptimized={true} // Set to true for all images
+            unoptimized={true}
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
@@ -220,24 +77,24 @@ function PublicationCard({ publication }: { publication: Publication }) {
             </div>
           )}
           
-          {journal && (
+          {publication_type && (
             <div className="flex items-center">
               <BookOpen className="w-4 h-4 mr-1" />
-              <span className="line-clamp-1">{journal}</span>
+              <span className="line-clamp-1">{publication_type}</span>
             </div>
           )}
           
-          {publicationDate && (
+          {formattedDate && (
             <div className="flex items-center">
               <Calendar className="w-4 h-4 mr-1" />
-              <span>{publicationDate}</span>
+              <span>{formattedDate}</span>
             </div>
           )}
         </div>
         
         <div className="flex items-center mt-auto text-[#8B5C9E]">
           <span className="inline-flex items-center text-sm font-medium">
-            {hasContent ? 'Read More' : 'View Publication'}
+            Read More
             <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-0.5" />
           </span>
         </div>
@@ -248,10 +105,13 @@ function PublicationCard({ publication }: { publication: Publication }) {
 
 // Publication Highlight Component (for the first publication)
 function PublicationHighlight({ publication }: { publication: Publication }) {
-  const { title, featuredImageUrl, originalUrl, authors, journal, publicationDate, slug, hasContent } = publication;
+  const { title, featured_image_url, source_url, authors, publication_date, slug, content_html, publication_type } = publication;
   
-  // Get image path
-  const imageUrl = getImagePath(featuredImageUrl);
+  // Use featured_image_url from Directus or fallback to default
+  const imageUrl = featured_image_url || DEFAULT_IMAGE;
+  
+  // Always link to individual publication page - let that page handle content vs external link
+  // const hasContent = Boolean(content_html && content_html.trim().length > 0);
   
   // Format the title for display
   const displayTitle = title.replace(' | Sports Orthopedics', '').trim();
@@ -266,7 +126,7 @@ function PublicationHighlight({ publication }: { publication: Publication }) {
               alt={displayTitle}
               fill
               className="object-cover"
-              unoptimized={true} // Set to true for all images
+              unoptimized={true}
             />
           </div>
         </div>
@@ -290,12 +150,10 @@ function PublicationHighlight({ publication }: { publication: Publication }) {
           </div>
           
           <Link 
-            href={hasContent ? `/publications/${slug}` : originalUrl}
-            target={hasContent ? '_self' : '_blank'}
-            rel={hasContent ? '' : 'noopener noreferrer'}
+            href={`/publications/${slug}`}
             className="inline-flex items-center text-[#8B5C9E] font-medium hover:underline"
           >
-            {hasContent ? 'Read full publication' : 'View publication'}
+            Read full publication
             <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-0.5" />
           </Link>
         </div>
@@ -306,9 +164,11 @@ function PublicationHighlight({ publication }: { publication: Publication }) {
 
 // Main Publications Page Component
 export default async function PublicationsPage() {
-  const publications = await getPublications();
-  
-  // Simplified approach - no need to fetch main page content blocks
+  // Fetch publications from Directus
+  const { publications, total } = await getPublicationsAction({
+    limit: 50, // Get more publications for the main page
+    page: 1
+  });
   
   // Split the first publication as a highlight if there are any
   const highlightPublication = publications.length > 0 ? publications[0] : null;
@@ -324,9 +184,7 @@ export default async function PublicationsPage() {
         className="pt-24 pb-16" // Add top and bottom padding for balance
         variant="color" // Change to color to remove background image 
         height="medium"
-        // bgImage={DEFAULT_IMAGE} // Remove background image
         bgColor="#2E3A59" // Dark background color
-        // overlayOpacity={0.7} // Remove this as we're not using an image
         title={
           <div className="max-w-5xl mx-auto">
             {/* Badge */}
@@ -343,7 +201,7 @@ export default async function PublicationsPage() {
           </div>
         }
         actions={
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-6 mb-0"> {/* Reduce top margin, ensure no bottom margin */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-6 mb-0">
             {/* Secondary Action: Use ScrollToContentButton */}
             <ScrollToContentButton 
               targetId="publications-content"
@@ -364,7 +222,7 @@ export default async function PublicationsPage() {
             </h2>
             
             <div className="text-sm text-gray-500">
-              {publications.length} publication{publications.length !== 1 ? 's' : ''}
+              {total} publication{total !== 1 ? 's' : ''}
             </div>
           </div>
           
