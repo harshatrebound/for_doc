@@ -1,10 +1,8 @@
 'use server';
 
-import path from 'path';
-import { promises as fs } from 'fs';
-import Papa from 'papaparse';
+import { getBoneJointContent, getBoneJointCategories, getImageUrl } from '@/lib/directus';
 
-// Define the structure for our topic data based on CSV columns
+// Define the structure for our topic data
 interface BoneJointTopic {
   slug: string;
   title: string;
@@ -13,95 +11,54 @@ interface BoneJointTopic {
   category?: string; 
 }
 
-// Helper to safely parse JSON from CSV, returning null on error
-// NOTE: Keep these helpers (safeJsonParse, stripHtml) in page.tsx or move to utils
-// if they are needed on the client, as they don't use server modules.
-// For simplicity, we assume they are available where needed or redefined/imported in page.tsx
-function safeJsonParse<T>(jsonString: string | undefined | null): T | null {
-  if (!jsonString) return null;
-  try {
-    return JSON.parse(jsonString) as T;
-  } catch (e) {
-    console.warn("Failed to parse JSON string:", jsonString, e);
-    return null;
-  }
-}
-
 // Helper to strip HTML tags for a plain text summary
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>?/gm, '');
 }
 
-// Enhanced function to get topics from the main CSV with categories
+// Enhanced function to get topics from Directus with categories
 export async function getBoneJointTopics(): Promise<{
   topics: BoneJointTopic[],
   categories: string[]
 }> {
-  const csvFilePath = path.join(process.cwd(), 'docs', 'bone_joint_school_cms.csv');
-  const topics: BoneJointTopic[] = [];
-  const categoriesSet = new Set<string>(['All']);
-
   try {
-    const fileContent = await fs.readFile(csvFilePath, 'utf-8');
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
+    // Fetch data from Directus
+    const [content, categories] = await Promise.all([
+      getBoneJointContent(),
+      getBoneJointCategories()
+    ]);
+
+    // Convert to BoneJointTopic format
+    const topics: BoneJointTopic[] = content.map(item => {
+      let summary = 'No summary available.';
+      
+      // Try to get summary from content_text first, then content_html
+      if (item.content_text) {
+        const plainText = stripHtml(item.content_text);
+        summary = plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
+      } else if (item.content_html) {
+        const plainText = stripHtml(item.content_html);
+        summary = plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
+      }
+
+      return {
+        slug: item.slug,
+        title: item.title,
+        imageUrl: getImageUrl(item.featured_image_url),
+        summary,
+        category: item.category || 'General'
+      };
     });
 
-    if (parsedCsv.errors.length > 0) {
-      console.error("CSV Parsing errors:", parsedCsv.errors);
-    }
+    // Sort topics alphabetically by title
+    topics.sort((a, b) => a.title.localeCompare(b.title));
 
-    for (const row of parsedCsv.data) {
-      if (row.Slug && row.PageType === 'bone-joint-school') {
-        const slug = row.Slug;
-        const title = (row.Title || slug).split('|')[0].trim();
-        const imageUrl = row.FeaturedImageURL || '/images_bone_joint/doctor-holding-tablet-e-health-concept-business-concept.webp'; 
-        
-        let category = row.Category || '';
-        if (!category) {
-          const titleLower = title.toLowerCase();
-          if (titleLower.includes('knee')) category = 'Knee';
-          else if (titleLower.includes('hip')) category = 'Hip';
-          else if (titleLower.includes('shoulder')) category = 'Shoulder';
-          else if (titleLower.includes('elbow')) category = 'Elbow';
-          else if (titleLower.includes('wrist') || titleLower.includes('hand')) category = 'Hand & Wrist';
-          else if (titleLower.includes('ankle') || titleLower.includes('foot')) category = 'Foot & Ankle';
-          else if (titleLower.includes('spine') || titleLower.includes('back')) category = 'Spine';
-          else category = 'General';
-        }
-        
-        if (category) {
-          categoriesSet.add(category);
-        }
-
-        let summary = 'No summary available.';
-        const contentBlocks = safeJsonParse<{type: string, text: string}[]>(row.ContentBlocksJSON);
-        if (contentBlocks) {
-          const firstParagraph = contentBlocks.find(block => block.type === 'paragraph');
-          if (firstParagraph && firstParagraph.text) {
-            const plainText = stripHtml(firstParagraph.text);
-            summary = plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
-          }
-        }
-
-        topics.push({ 
-          slug, 
-          title, 
-          imageUrl, 
-          summary,
-          category 
-        });
-      }
-    }
+    return { 
+      topics, 
+      categories
+    };
   } catch (error) {
-    console.error("Error reading or parsing bone_joint_school_cms.csv:", error);
-    return { topics: [], categories: [] }; 
+    console.error("Error fetching bone joint topics from Directus:", error);
+    return { topics: [], categories: ['All'] }; 
   }
-
-  topics.sort((a, b) => a.title.localeCompare(b.title));
-  return { 
-    topics, 
-    categories: Array.from(categoriesSet)
-  };
 } 

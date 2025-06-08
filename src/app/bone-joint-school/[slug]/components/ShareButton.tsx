@@ -42,19 +42,19 @@ export default function ShareButton({ url, title }: ShareButtonProps) {
   return (
     <div className="relative group">
       <button 
-        className="flex items-center gap-2 py-2 px-3 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
+        className="flex items-center gap-2 py-4 px-8 bg-white border-2 border-white text-[#8B5C9E] hover:bg-gray-100 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105"
         aria-label="Share this article"
       >
-        <Share2 className="w-4 h-4" />
-        <span className="hidden sm:inline">Share</span>
+        <Share2 className="w-5 h-5" />
+        <span>Share</span>
       </button>
       
-      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+      <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-10">
         <div className="py-2">
           {shareHandlers.map((handler) => (
             <button
               key={handler.name}
-              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#8B5C9E]/10 hover:text-[#8B5C9E]"
+              className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-[#8B5C9E]/10 hover:text-[#8B5C9E] transition-colors font-medium"
               onClick={handler.action}
             >
               {handler.name}

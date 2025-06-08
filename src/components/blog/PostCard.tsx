@@ -1,18 +1,14 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Calendar, Clock, ArrowUpRight } from 'lucide-react';
+import type { BlogPost } from '@/lib/directus';
 
-// Define BlogPost interface
-export interface BlogPost {
-  slug: string;
-  pageType: string;
-  title: string;
-  originalUrl: string;
-  featuredImageUrl: string;
-  summary: string;
-  category: string;
-  publishedAt: string;
-  readTime: number;
+// Calculate estimated read time based on content length
+function calculateReadTime(content: string): number {
+  if (!content) return 3;
+  const wordsPerMinute = 200;
+  const words = content.split(/\s+/).length;
+  return Math.max(1, Math.ceil(words / wordsPerMinute));
 }
 
 // Format date for display
@@ -32,7 +28,7 @@ export const PostCard = ({ post, priority = false }: { post: BlogPost; priority?
       <div className="group bg-white rounded-xl overflow-hidden shadow hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
         <div className="relative h-48 overflow-hidden">
           <Image
-            src={post.featuredImageUrl}
+            src={post.featured_image?.url || '/images/default-blog-image.webp'}
             alt={post.title}
             fill
             sizes="(max-width: 768px) 100vw, 33vw"
@@ -47,9 +43,9 @@ export const PostCard = ({ post, priority = false }: { post: BlogPost; priority?
         <div className="p-5 flex flex-col flex-grow">
           <div className="flex items-center text-xs text-gray-500 mb-2">
             <Calendar className="w-3 h-3 mr-1" />
-            <span className="mr-3">{formatDate(post.publishedAt)}</span>
+            <span className="mr-3">{formatDate(post.published_date)}</span>
             <Clock className="w-3 h-3 mr-1" />
-            <span>{post.readTime} min read</span>
+            <span>{calculateReadTime(post.summary)} min read</span>
           </div>
           <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-[#8B5C9E] transition-colors">
             {post.title}
@@ -74,7 +70,7 @@ export const FeaturedPost = ({ post }: { post: BlogPost }) => {
         <div className="flex flex-col lg:flex-row">
           <div className="relative h-64 lg:h-auto lg:w-1/2 overflow-hidden">
             <Image
-              src={post.featuredImageUrl}
+              src={post.featured_image?.url || '/images/default-blog-image.webp'}
               alt={post.title}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
@@ -89,9 +85,9 @@ export const FeaturedPost = ({ post }: { post: BlogPost }) => {
           <div className="p-6 lg:w-1/2 lg:p-8 flex flex-col">
             <div className="flex items-center text-sm text-gray-500 mb-4">
               <Calendar className="w-4 h-4 mr-1" />
-              <span className="mr-4">{formatDate(post.publishedAt)}</span>
+              <span className="mr-4">{formatDate(post.published_date)}</span>
               <Clock className="w-4 h-4 mr-1" />
-              <span>{post.readTime} min read</span>
+              <span>{calculateReadTime(post.summary)} min read</span>
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-[#8B5C9E] transition-colors">
               {post.title}
@@ -116,7 +112,7 @@ export const RelatedPostCard = ({ post }: { post: BlogPost }) => {
       <div className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
         <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
           <Image
-            src={post.featuredImageUrl}
+            src={post.featured_image?.url || '/images/default-blog-image.webp'}
             alt={post.title}
             fill
             sizes="64px"
@@ -129,7 +125,7 @@ export const RelatedPostCard = ({ post }: { post: BlogPost }) => {
           </h4>
           <div className="flex items-center mt-1 text-xs text-gray-500">
             <Calendar className="w-3 h-3 mr-1" />
-            <span>{formatDate(post.publishedAt)}</span>
+            <span>{formatDate(post.published_date)}</span>
           </div>
         </div>
       </div>

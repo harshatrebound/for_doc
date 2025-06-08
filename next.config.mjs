@@ -25,6 +25,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'sportsorthopedics.in',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'directus-production-d39c.up.railway.app',
+        pathname: '/assets/**',
       }
     ],
   },

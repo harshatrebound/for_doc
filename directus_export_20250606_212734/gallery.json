@@ -1,0 +1,513 @@
+{
+  "meta": {
+    "collection": "gallery",
+    "meta": {
+      "collection": "gallery",
+      "icon": "photo_library",
+      "note": "Photo gallery including awards, events, facilities, and professional achievements",
+      "display_template": "{{title}}",
+      "hidden": false,
+      "singleton": false,
+      "translations": {},
+      "archive_field": null,
+      "archive_app_filter": true,
+      "archive_value": null,
+      "unarchive_value": null,
+      "sort_field": "id",
+      "accountability": "all",
+      "color": "#4CAF50",
+      "item_duplication_fields": null,
+      "sort": null,
+      "group": null,
+      "collapse": "open",
+      "preview_url": null,
+      "versioning": false
+    },
+    "schema": {
+      "schema": "public",
+      "name": "gallery",
+      "comment": null
+    }
+  },
+  "fields": [
+    {
+      "collection": "gallery",
+      "field": "id",
+      "type": "integer",
+      "schema": {
+        "name": "id",
+        "table": "gallery",
+        "data_type": "integer",
+        "default_value": "nextval('gallery_id_seq'::regclass)",
+        "generation_expression": null,
+        "max_length": null,
+        "numeric_precision": 32,
+        "numeric_scale": 0,
+        "is_generated": false,
+        "is_nullable": false,
+        "is_unique": true,
+        "is_indexed": false,
+        "is_primary_key": true,
+        "has_auto_increment": true,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "id": 208,
+        "collection": "gallery",
+        "field": "id",
+        "special": null,
+        "interface": "numeric",
+        "options": null,
+        "display": null,
+        "display_options": null,
+        "readonly": true,
+        "hidden": true,
+        "sort": 1,
+        "width": "full",
+        "translations": null,
+        "note": null,
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null
+      }
+    },
+    {
+      "collection": "gallery",
+      "field": "title",
+      "type": "string",
+      "schema": {
+        "name": "title",
+        "table": "gallery",
+        "data_type": "character varying",
+        "default_value": null,
+        "generation_expression": null,
+        "max_length": 255,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "id": 209,
+        "collection": "gallery",
+        "field": "title",
+        "special": null,
+        "interface": "input",
+        "options": null,
+        "display": null,
+        "display_options": null,
+        "readonly": false,
+        "hidden": false,
+        "sort": 2,
+        "width": "full",
+        "translations": null,
+        "note": "Title of the gallery image",
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null
+      }
+    },
+    {
+      "collection": "gallery",
+      "field": "category",
+      "type": "string",
+      "schema": {
+        "name": "category",
+        "table": "gallery",
+        "data_type": "character varying",
+        "default_value": null,
+        "generation_expression": null,
+        "max_length": 100,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "id": 210,
+        "collection": "gallery",
+        "field": "category",
+        "special": null,
+        "interface": "select-dropdown",
+        "options": {
+          "choices": [
+            {
+              "text": "Awards & Recognition",
+              "value": "Awards & Recognition"
+            },
+            {
+              "text": "Ceremony",
+              "value": "Ceremony"
+            },
+            {
+              "text": "Events",
+              "value": "Events"
+            },
+            {
+              "text": "Faculty & Presentations",
+              "value": "Faculty & Presentations"
+            },
+            {
+              "text": "General",
+              "value": "General"
+            }
+          ]
+        },
+        "display": null,
+        "display_options": null,
+        "readonly": false,
+        "hidden": false,
+        "sort": 3,
+        "width": "half",
+        "translations": null,
+        "note": null,
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null
+      }
+    },
+    {
+      "collection": "gallery",
+      "field": "image",
+      "type": "uuid",
+      "schema": {
+        "name": "image",
+        "table": "gallery",
+        "data_type": "uuid",
+        "default_value": null,
+        "generation_expression": null,
+        "max_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": "public",
+        "foreign_key_table": "directus_files",
+        "foreign_key_column": "id",
+        "comment": null
+      },
+      "meta": {
+        "id": 211,
+        "collection": "gallery",
+        "field": "image",
+        "special": null,
+        "interface": "select-dropdown-m2o",
+        "options": null,
+        "display": "image",
+        "display_options": null,
+        "readonly": false,
+        "hidden": false,
+        "sort": 4,
+        "width": "full",
+        "translations": null,
+        "note": "Gallery image file",
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null
+      }
+    },
+    {
+      "collection": "gallery",
+      "field": "alt_text",
+      "type": "string",
+      "schema": {
+        "name": "alt_text",
+        "table": "gallery",
+        "data_type": "character varying",
+        "default_value": null,
+        "generation_expression": null,
+        "max_length": 255,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "id": 212,
+        "collection": "gallery",
+        "field": "alt_text",
+        "special": null,
+        "interface": "input",
+        "options": null,
+        "display": null,
+        "display_options": null,
+        "readonly": false,
+        "hidden": false,
+        "sort": 5,
+        "width": "half",
+        "translations": null,
+        "note": "Alt text for accessibility",
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null
+      }
+    },
+    {
+      "collection": "gallery",
+      "field": "date_created",
+      "type": "timestamp",
+      "schema": {
+        "name": "date_created",
+        "table": "gallery",
+        "data_type": "timestamp with time zone",
+        "default_value": null,
+        "generation_expression": null,
+        "max_length": null,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "id": 213,
+        "collection": "gallery",
+        "field": "date_created",
+        "special": [
+          "date-created"
+        ],
+        "interface": "datetime",
+        "options": null,
+        "display": null,
+        "display_options": null,
+        "readonly": true,
+        "hidden": false,
+        "sort": 6,
+        "width": "half",
+        "translations": null,
+        "note": null,
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": 1,
+      "title": "Gallery hero image",
+      "category": "General",
+      "image": "32003b87-98f0-485b-ae4a-c07e22946937",
+      "alt_text": "Gallery hero image",
+      "date_created": "2025-06-06T10:11:36.333Z"
+    },
+    {
+      "id": 2,
+      "title": "Felicitation by Prof M Rudert",
+      "category": "General",
+      "image": "06c4ad05-3a05-4af7-a2fb-6034c48068a6",
+      "alt_text": "Felicitation by Prof M Rudert",
+      "date_created": "2025-06-06T10:11:45.177Z"
+    },
+    {
+      "id": 3,
+      "title": "Royal College of England Member",
+      "category": "General",
+      "image": "ceab4fc2-3b2f-4d32-94b6-ba6846ef68c5",
+      "alt_text": "Royal College of England Member",
+      "date_created": "2025-06-06T10:11:53.955Z"
+    },
+    {
+      "id": 4,
+      "title": "SICOT Topper",
+      "category": "General",
+      "image": "549e4f45-4dc7-4cbe-b228-25cbda658d7d",
+      "alt_text": "SICOT Topper",
+      "date_created": "2025-06-06T10:12:02.758Z"
+    },
+    {
+      "id": 5,
+      "title": "MCh Hip & Knee Award Graduation Ceremony, Edgehill Uni, UK",
+      "category": "General",
+      "image": "0c146453-906c-4721-a048-5a1a327ce1df",
+      "alt_text": "MCh Hip & Knee Award Graduation Ceremony, Edgehill Uni, UK",
+      "date_created": "2025-06-06T10:12:11.985Z"
+    },
+    {
+      "id": 6,
+      "title": "MCh Graduation Ceremony",
+      "category": "General",
+      "image": "65b54eab-732d-4f47-b363-7e9f83b2514e",
+      "alt_text": "MCh Graduation Ceremony",
+      "date_created": "2025-06-06T10:12:21.489Z"
+    },
+    {
+      "id": 7,
+      "title": "Gold medal with my Mentor",
+      "category": "General",
+      "image": "5b60865c-f461-487f-bdce-dee86efa31a4",
+      "alt_text": "Gold medal with my Mentor",
+      "date_created": "2025-06-06T10:12:30.371Z"
+    },
+    {
+      "id": 8,
+      "title": "SICOT Topper Award Ceremony, Rome, Italy",
+      "category": "General",
+      "image": "50da9289-b77a-44e5-a21e-e41ec5bda7a1",
+      "alt_text": "SICOT Topper Award Ceremony, Rome, Italy",
+      "date_created": "2025-06-06T10:12:37.595Z"
+    },
+    {
+      "id": 9,
+      "title": "BLDEA's Medical College Welcome by Dean Prof Aravind Patil",
+      "category": "General",
+      "image": "3ff651a5-99bc-4989-a4aa-5e6c8c54e516",
+      "alt_text": "BLDEA's Medical College Welcome by Dean Prof Aravind Patil",
+      "date_created": "2025-06-06T10:12:45.953Z"
+    },
+    {
+      "id": 10,
+      "title": "FRCS Convocation Ceremony, London, UK",
+      "category": "General",
+      "image": "08e813cc-d26f-4361-840a-4ee961b647ea",
+      "alt_text": "FRCS Convocation Ceremony, London, UK",
+      "date_created": "2025-06-06T10:12:54.194Z"
+    },
+    {
+      "id": 11,
+      "title": "Wrightington Gold Medal",
+      "category": "General",
+      "image": "e9325db9-f548-4adf-af61-5671e8fafc02",
+      "alt_text": "Wrightington Gold Medal",
+      "date_created": "2025-06-06T10:13:03.717Z"
+    },
+    {
+      "id": 12,
+      "title": "Hall of Fame - Wurzburg, Germany",
+      "category": "General",
+      "image": "aa049b52-4c1e-4535-88c1-01330836d1c9",
+      "alt_text": "Hall of Fame - Wurzburg, Germany",
+      "date_created": "2025-06-06T10:13:12.284Z"
+    },
+    {
+      "id": 13,
+      "title": "Hall of Fame - Wrightington Hospital, UK",
+      "category": "General",
+      "image": "6b992067-dd93-4767-b39a-861309701e6d",
+      "alt_text": "Hall of Fame - Wrightington Hospital, UK",
+      "date_created": "2025-06-06T10:13:20.136Z"
+    },
+    {
+      "id": 14,
+      "title": "Depuy Meet the Masters Faculty",
+      "category": "General",
+      "image": "45e652da-e4d1-4583-9ca5-06b08f8bb57c",
+      "alt_text": "Depuy Meet the Masters Faculty",
+      "date_created": "2025-06-06T10:13:28.268Z"
+    },
+    {
+      "id": 15,
+      "title": "Faculty - Arthrex Arthrolab",
+      "category": "General",
+      "image": "cfc8764c-22cd-41b0-8b18-4bdef4f491c8",
+      "alt_text": "Faculty - Arthrex Arthrolab",
+      "date_created": "2025-06-06T10:13:37.323Z"
+    },
+    {
+      "id": 16,
+      "title": "APJ Abdul Kalam Health Award",
+      "category": "General",
+      "image": "7da5e574-cb03-45e5-abfb-1b8c02f165bd",
+      "alt_text": "APJ Abdul Kalam Health Award",
+      "date_created": "2025-06-06T10:13:47.031Z"
+    },
+    {
+      "id": 17,
+      "title": "SICOT Presentation, Rome, Italy",
+      "category": "General",
+      "image": "af55fd41-f094-49e6-ae93-6986edf3bb9c",
+      "alt_text": "SICOT Presentation, Rome, Italy",
+      "date_created": "2025-06-06T10:13:54.910Z"
+    },
+    {
+      "id": 18,
+      "title": "BLDEA's Medical College CME Memento",
+      "category": "General",
+      "image": "197f4118-3185-414f-8876-7c45c6071ad3",
+      "alt_text": "BLDEA's Medical College CME Memento",
+      "date_created": "2025-06-06T10:14:03.021Z"
+    },
+    {
+      "id": 19,
+      "title": "BLDEA CME, Bijapur",
+      "category": "General",
+      "image": "58711ee8-f7a0-4f92-93e8-e24c4a484d05",
+      "alt_text": "BLDEA CME, Bijapur",
+      "date_created": "2025-06-06T10:14:10.816Z"
+    },
+    {
+      "id": 20,
+      "title": "Presentation at Klinikum rechts der Isar, Munich",
+      "category": "General",
+      "image": "0fb46b5b-4b21-4767-a90d-11b14c1205a2",
+      "alt_text": "Presentation at Klinikum rechts der Isar, Munich",
+      "date_created": "2025-06-06T10:14:19.508Z"
+    },
+    {
+      "id": 21,
+      "title": "British Hip Society Presentation",
+      "category": "General",
+      "image": "e37da289-9561-41f9-84ec-89b0f9b6f8c1",
+      "alt_text": "British Hip Society Presentation",
+      "date_created": "2025-06-06T10:14:27.923Z"
+    },
+    {
+      "id": 22,
+      "title": "FRCS Convocation Ceremony, London",
+      "category": "General",
+      "image": "341b7585-1481-4f93-9a88-7edb87b55b4b",
+      "alt_text": "FRCS Convocation Ceremony, London",
+      "date_created": "2025-06-06T10:14:36.962Z"
+    }
+  ]
+}

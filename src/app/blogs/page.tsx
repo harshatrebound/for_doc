@@ -1,469 +1,218 @@
-import { promises as fs } from 'fs';
-import { existsSync } from 'fs';
-import path from 'path';
-import Link from 'next/link';
+import { getBlogPosts } from '@/lib/directus';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
-import Papa from 'papaparse';
-import { Metadata } from 'next';
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
-import { PostCard, FeaturedPost, BlogPost, formatDate } from '@/components/blog/PostCard';
 import Image from 'next/image';
-import { processImageUrl, extractCategories } from '@/app/utils/image-utils';
+import Link from 'next/link';
+import { Calendar, Clock, ArrowRight, BookOpen } from 'lucide-react';
 
-// Add metadata for SEO
-export const metadata: Metadata = {
-  title: 'Medical Blog | Expert Orthopedic Resources',
-  description: 'Explore expert articles on orthopedic conditions, treatments, and recovery strategies written by leading medical professionals.',
-  openGraph: {
-    title: 'Medical Blog | Sports Orthopedics',
-    description: 'Expert articles on orthopedic conditions and treatments from leading medical professionals.',
-    images: ['/images/blog-hero.webp'],
-  }
-};
-
-// Helper to safely parse JSON from CSV, returning null on error
-function safeJsonParse<T>(jsonString: string | undefined | null): T | null {
-  if (!jsonString) return null;
-  try {
-    return JSON.parse(jsonString) as T;
-  } catch (e) {
-    console.warn("Failed to parse JSON string:", jsonString, e);
-    return null;
-  }
+// Helper function to format date
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
 }
 
-// Helper to strip HTML tags for a plain text summary
-function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>?/gm, '');
+// Helper function to generate category colors
+function getCategoryColor(category: string) {
+  const colors = [
+    'bg-blue-100 text-blue-800',
+    'bg-green-100 text-green-800',
+    'bg-purple-100 text-purple-800',
+    'bg-pink-100 text-pink-800',
+    'bg-indigo-100 text-indigo-800',
+    'bg-teal-100 text-teal-800',
+    'bg-orange-100 text-orange-800',
+    'bg-red-100 text-red-800'
+  ];
+  
+  const hash = category.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return colors[hash % colors.length];
 }
 
-// Calculate estimated read time based on content length
-function calculateReadTime(content: string): number {
-  const wordsPerMinute = 200;
-  const words = content.split(/\s+/).length;
-  return Math.max(1, Math.ceil(words / wordsPerMinute));
+// Helper function to get image URL with proper handling
+function getImageUrl(imageId: string | null): string {
+  if (!imageId) return '/images/default-blog.jpg';
+  
+  // Use authenticated URL with admin token
+  return `${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${imageId}?access_token=${process.env.DIRECTUS_ADMIN_TOKEN}`;
 }
 
-// Enhanced function to get posts from the CSV
-async function getBlogPosts(): Promise<{
-  posts: BlogPost[],
-  categories: string[]
-}> {
-  const csvFilePath = path.join(process.cwd(), 'docs', 'post_cms.csv');
-  const posts: BlogPost[] = [];
-  const categoriesSet = new Set<string>(['All']);
-
-  try {
-    const fileContent = await fs.readFile(csvFilePath, 'utf-8');
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
-    });
-
-    if (parsedCsv.errors.length > 0) {
-      console.error("CSV Parsing errors:", parsedCsv.errors);
-    }
-
-    for (const row of parsedCsv.data) {
-      // Check if the row has necessary data
-      if (row.Slug && row.Title) {
-        const slug = row.Slug;
-        // Clean up title (e.g., remove site name suffix)
-        const title = (row.Title || slug).split('|')[0].trim();
-        
-        // Attempt to generate summary and extract category from content
-        let summary = 'No summary available.';
-        let contentForCategory = '';
-        let readTime = 3; // Default read time in minutes
-        
-        const contentBlocks = safeJsonParse<{type: string, text: string}[]>(row.ContentBlocksJSON);
-        if (contentBlocks) {
-          // Get first paragraph for summary
-          const firstParagraph = contentBlocks.find(block => block.type === 'paragraph');
-          if (firstParagraph && firstParagraph.text) {
-            // Strip HTML and truncate
-            const plainText = stripHtml(firstParagraph.text);
-            summary = plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
-          }
-          
-          // Combine content for category extraction and read time calculation
-          const allText = contentBlocks
-            .filter(block => block.type === 'paragraph' || block.type === 'heading')
-            .map(block => stripHtml(block.text || ''))
-            .join(' ');
+// Blog Card Component
+function BlogCard({ post, featured = false }: { post: any; featured?: boolean }) {
+  const categoryColor = getCategoryColor(post.category);
+  
+  if (featured) {
+    return (
+                    <Link href={`/blogs/${post.slug}`} className="block">
+        <div className="group relative overflow-hidden bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all duration-500 hover:-translate-y-2">
+          <div className="flex flex-col lg:flex-row">
+            {/* Featured Image */}
+            <div className="relative h-80 lg:h-96 lg:w-1/2 overflow-hidden">
+                             <Image
+                 src={getImageUrl(post.featured_image_url)}
+                 alt={post.title}
+                 fill
+                 sizes="(max-width: 768px) 100vw, 50vw"
+                 className="object-cover transition-transform duration-700 group-hover:scale-110"
+                 priority
+               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+              <div className={`absolute top-6 left-6 px-4 py-2 rounded-full text-sm font-semibold ${categoryColor}`}>
+                {post.category}
+              </div>
+              <div className="absolute bottom-6 left-6 text-white">
+                <span className="inline-flex items-center text-sm font-medium bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full">
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Featured Article
+                </span>
+              </div>
+            </div>
             
-          contentForCategory = allText;
-          readTime = calculateReadTime(allText);
-        }
-        
-        // Extract category from title and content
-        const category = extractCategories(title, contentForCategory);
-        if (category) {
-          categoriesSet.add(category);
-        }
-        
-        // Process featured image URL based on the determined category
-        const featuredImageUrl = processImageUrl(row.FeaturedImageURL, category);
-        
-        // Use ScrapedAt as publish date or fallback to current date
-        const publishedAt = row.ScrapedAt || new Date().toISOString();
-
-        posts.push({ 
-          slug, 
-          pageType: row.PageType || 'post',
-          title, 
-          originalUrl: row.OriginalURL || '',
-          featuredImageUrl, 
-          summary,
-          category,
-          publishedAt,
-          readTime
-        });
-      }
-    }
-  } catch (error) {
-    console.error("Error reading or parsing post_cms.csv:", error);
-    return { posts: [], categories: [] }; // Return empty arrays on error
-  }
-
-  // Sort posts by date, newest first
-  posts.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
-  
-  return { 
-    posts, 
-    categories: Array.from(categoriesSet)
-  };
-}
-
-// Responsive Pagination Controls
-const PaginationControls = ({ 
-  currentPage, 
-  totalPages, 
-  baseUrl,
-  queryParams = {} 
-}: { 
-  currentPage: number, 
-  totalPages: number, 
-  baseUrl: string,
-  queryParams?: Record<string, string>
-}) => {
-  const prevPage = currentPage > 1 ? currentPage - 1 : null;
-  const nextPage = currentPage < totalPages ? currentPage + 1 : null;
-  
-  // Build query string with current filters + page
-  const buildQueryString = (page: number) => {
-    const params = new URLSearchParams();
-    
-    // Add all current query params except page
-    for (const [key, value] of Object.entries(queryParams)) {
-      if (key !== 'page' && value) {
-        params.append(key, value);
-      }
-    }
-    
-    // Add the page parameter
-    params.append('page', page.toString());
-    
-    return params.toString();
-  };
-
-  return (
-    <div className="flex justify-center items-center space-x-2 mt-12">
-      {prevPage ? (
-        <Link 
-          href={`${baseUrl}?${buildQueryString(prevPage)}`} 
-          className="flex items-center px-4 py-2 rounded-md bg-[#8B5C9E]/10 text-[#8B5C9E] hover:bg-[#8B5C9E]/20 transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4 mr-1" />
-          <span>Previous</span>
-        </Link>
-      ) : (
-        <span className="flex items-center px-4 py-2 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">
-          <ChevronLeft className="w-4 h-4 mr-1" />
-          <span>Previous</span>
-        </span>
-      )}
-      
-      <div className="hidden sm:flex space-x-1">
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-          <Link
-            key={page}
-            href={`${baseUrl}?${buildQueryString(page)}`}
-            className={`
-              w-8 h-8 flex items-center justify-center rounded-md text-sm
-              ${currentPage === page 
-                ? 'bg-[#8B5C9E] text-white font-medium' 
-                : 'bg-gray-100 text-gray-700 hover:bg-[#8B5C9E]/10 hover:text-[#8B5C9E]'
-              }
-            `}
-          >
-            {page}
-          </Link>
-        ))}
-      </div>
-      
-      <span className="text-gray-600 text-sm sm:hidden">
-        Page {currentPage} of {totalPages}
-      </span>
-
-      {nextPage ? (
-        <Link 
-          href={`${baseUrl}?${buildQueryString(nextPage)}`} 
-          className="flex items-center px-4 py-2 rounded-md bg-[#8B5C9E]/10 text-[#8B5C9E] hover:bg-[#8B5C9E]/20 transition-colors"
-        >
-          <span>Next</span>
-          <ChevronRight className="w-4 h-4 ml-1" />
-        </Link>
-      ) : (
-        <span className="flex items-center px-4 py-2 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">
-          <span>Next</span>
-          <ChevronRight className="w-4 h-4 ml-1" />
-        </span>
-      )}
-    </div>
-  );
-};
-
-// Modern Category Filter
-const CategoryFilter = ({ 
-  categories, 
-  activeCategory,
-  baseUrl 
-}: { 
-  categories: string[],
-  activeCategory: string | null,
-  baseUrl: string
-}) => {
-  return (
-    <div className="flex flex-wrap gap-2 mb-8">
-      {categories.map(category => (
-        <Link
-          key={category}
-          href={`${baseUrl}?category=${category === 'All' ? '' : category}`}
-          className={`
-            px-4 py-2 rounded-full text-sm font-medium transition-colors
-            ${category === activeCategory || (category === 'All' && !activeCategory)
-              ? 'bg-[#8B5C9E] text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-[#8B5C9E]/10 hover:text-[#8B5C9E]'
-            }
-          `}
-        >
-          {category}
-        </Link>
-      ))}
-    </div>
-  );
-};
-
-// Search component
-const SearchBar = ({ baseUrl }: { baseUrl: string }) => {
-  return (
-    <form action={baseUrl} className="relative max-w-md w-full mx-auto mb-8">
-      <input
-        type="search"
-        name="search"
-        placeholder="Search articles..."
-        className="w-full py-3 pl-4 pr-12 bg-white rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#8B5C9E]/50 focus:border-transparent"
-      />
-      <button 
-        type="submit"
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#8B5C9E]"
-      >
-        <Search className="w-5 h-5" />
-      </button>
-    </form>
-  );
-};
-
-export default async function BlogPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
-  const { posts, categories } = await getBlogPosts();
-  
-  // Handle filtering by category
-  const categoryParam = typeof searchParams?.category === 'string' ? searchParams.category : null;
-  
-  // Handle search query
-  const searchQuery = typeof searchParams?.search === 'string' ? searchParams.search.toLowerCase() : null;
-  
-  // Filter posts based on category and search query
-  let filteredPosts = posts;
-  
-  if (categoryParam) {
-    filteredPosts = filteredPosts.filter(post => post.category === categoryParam);
-  }
-  
-  if (searchQuery) {
-    filteredPosts = filteredPosts.filter(post => 
-      post.title.toLowerCase().includes(searchQuery) || 
-      post.summary.toLowerCase().includes(searchQuery)
-    );
-  }
-  
-  // Handle pagination  
-  const page = typeof searchParams?.page === 'string' ? parseInt(searchParams.page, 10) : 1;
-  const pageSize = 9; // Posts per page
-  const totalPages = Math.ceil(filteredPosts.length / pageSize);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1)); // Ensure page is within bounds
-  
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const paginatedPosts = filteredPosts.slice(startIndex, endIndex);
-  
-  // Extract featured posts (only if on first page and no search/category filter)
-  const featuredPosts = (!searchQuery && !categoryParam && currentPage === 1) 
-    ? filteredPosts.slice(0, 1) // Get first post as featured
-    : [];
-  
-  // Skip featured posts in pagination if they exist
-  const mainPosts = (!searchQuery && !categoryParam && currentPage === 1) 
-    ? paginatedPosts.slice(featuredPosts.length) 
-    : paginatedPosts;
-  
-  // Build query params for pagination
-  const queryParams: Record<string, string> = {};
-  if (categoryParam) {
-    queryParams.category = categoryParam;
-  }
-  if (searchQuery) {
-    queryParams.search = searchQuery;
-  }
-  
-  return (
-    <div className="min-h-screen bg-gray-50"> 
-      <SiteHeader theme="light" />
-      
-      {/* Hero Section with simplified background */}
-      <section className="relative py-20 md:py-28 flex items-center justify-center text-center overflow-hidden">
-        {/* Background image */}
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
-            alt="Medical background"
-            fill
-            priority
-            className="object-cover"
-          />
-          {/* Simple dark overlay for text readability */}
-          <div className="absolute inset-0 bg-black/40"></div>
-        </div>
-        
-        <div className="relative z-10 container mx-auto px-4">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 tracking-tight">
-            Medical Blog
-          </h1>
-          <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Expert insights on orthopedic conditions, cutting-edge treatments,
-            and recovery strategies from leading medical professionals.
-          </p>
-          
-          {/* Search Bar */}
-          <SearchBar baseUrl="/blogs" />
-        </div>
-      </section>
-
-      {/* Main Content Area */}
-      <main className="container mx-auto px-4 py-12 md:py-16">
-        {/* Category and Filter Section */}
-        <div className="mb-10">
-          <div className="flex flex-wrap justify-between items-center mb-6">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-              {searchQuery 
-                ? `Search Results for "${searchQuery}"` 
-                : categoryParam 
-                  ? `${categoryParam} Articles` 
-                  : 'Latest Articles'}
-            </h2>
-            
-            <div className="text-sm text-gray-500">
-              Showing {filteredPosts.length} article{filteredPosts.length !== 1 ? 's' : ''}
+            {/* Content */}
+            <div className="p-8 lg:w-1/2 lg:p-12 flex flex-col">
+              <div className="flex items-center text-sm text-gray-500 mb-4">
+                <Calendar className="w-4 h-4 mr-2" />
+                <span className="mr-6">{formatDate(post.date_created)}</span>
+                <Clock className="w-4 h-4 mr-2" />
+                <span>{post.reading_time} min read</span>
+              </div>
+              
+              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4 group-hover:text-[#8B5C9E] transition-colors leading-tight">
+                {post.title}
+              </h2>
+              
+              <p className="text-lg text-gray-600 mb-6 flex-grow leading-relaxed">
+                {post.excerpt}
+              </p>
+              
+              <div className="inline-flex items-center font-semibold text-[#8B5C9E] group-hover:text-[#7a4f8a] transition-colors">
+                Read Full Article 
+                <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+              </div>
             </div>
           </div>
-          
-          {/* Category Filter */}
-          <CategoryFilter 
-            categories={categories}
-            activeCategory={categoryParam}
-            baseUrl="/blogs"
-          />
+        </div>
+      </Link>
+    );
+  }
+
+  return (
+              <Link href={`/blogs/${post.slug}`} className="block h-full">
+      <div className="group bg-white rounded-xl overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_25px_rgba(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
+        {/* Image */}
+        <div className="relative h-48 overflow-hidden">
+                     <Image
+             src={getImageUrl(post.featured_image_url)}
+             alt={post.title}
+             fill
+             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+             className="object-cover transition-transform duration-500 group-hover:scale-105"
+           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60" />
+          <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-semibold ${categoryColor}`}>
+            {post.category}
+          </div>
         </div>
         
-        {/* Featured Posts Section - Only show on first page without filters */}
-        {featuredPosts.length > 0 && (
-          <section className="mb-12">
-            <FeaturedPost post={featuredPosts[0]} />
-          </section>
-        )}
-        
-        {/* Main Posts Grid */}
-        {mainPosts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {mainPosts.map((post) => (
-              <PostCard key={post.slug} post={post} />
-            ))}
+        {/* Content */}
+        <div className="p-6 flex flex-col flex-grow">
+          <div className="flex items-center text-xs text-gray-500 mb-3">
+            <Calendar className="w-3 h-3 mr-1" />
+            <span className="mr-4">{formatDate(post.date_created)}</span>
+            <Clock className="w-3 h-3 mr-1" />
+            <span>{post.reading_time} min read</span>
           </div>
-        ) : (
-          <div className="bg-white rounded-lg p-8 text-center shadow-sm">
-            <h3 className="text-xl font-medium text-gray-900 mb-2">No articles found</h3>
-            <p className="text-gray-600">
-              {searchQuery 
-                ? `No articles found matching "${searchQuery}"`
-                : categoryParam 
-                  ? `No articles found in the "${categoryParam}" category.`
-                  : 'No articles found in the database.'}
-            </p>
-            <Link href="/blogs" className="mt-4 inline-block text-[#8B5C9E] hover:underline">
-              View all articles
-            </Link>
+          
+          <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#8B5C9E] transition-colors leading-tight line-clamp-2">
+            {post.title}
+          </h3>
+          
+          <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-3 leading-relaxed">
+            {post.excerpt}
+          </p>
+          
+          <div className="inline-flex items-center text-sm font-semibold text-[#8B5C9E] group-hover:text-[#7a4f8a] transition-colors mt-auto">
+            Read More 
+            <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
           </div>
-        )}
+        </div>
+      </div>
+    </Link>
+  );
+}
 
-        {/* Pagination */}
-        {filteredPosts.length > pageSize && (
-          <PaginationControls 
-            currentPage={currentPage} 
-            totalPages={totalPages} 
-            baseUrl="/blogs"
-            queryParams={queryParams}
-          />
+export default async function BlogPage() {
+  const blogPosts = await getBlogPosts();
+  const featuredPost = blogPosts[0]; // First post as featured
+  const regularPosts = blogPosts.slice(1); // Rest as regular cards
+
+  return (
+    <div className="bg-white">
+      <SiteHeader />
+      
+      <main className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        {/* Hero Section */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight mb-6">
+            Our Medical <span className="text-[#8B5C9E]">Blog</span>
+          </h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Expert insights, research, and guidance from our team of orthopedic specialists. 
+            Stay informed about the latest advances in sports medicine and orthopedic care.
+          </p>
+        </div>
+
+        {blogPosts.length > 0 ? (
+          <>
+            {/* Featured Post */}
+            {featuredPost && (
+              <div className="mb-16">
+                <BlogCard post={featuredPost} featured />
+              </div>
+            )}
+
+            {/* Regular Posts Grid */}
+            {regularPosts.length > 0 && (
+              <>
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Latest Articles</h2>
+                  <div className="w-24 h-1 bg-[#8B5C9E] rounded-full"></div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {regularPosts.map(post => (
+                    <BlogCard key={post.id} post={post} />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* Show only featured if no other posts */}
+            {blogPosts.length === 1 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500">More articles coming soon...</p>
+              </div>
+            )}
+          </>
+        ) : (
+          /* Empty State */
+          <div className="text-center py-20">
+            <div className="max-w-md mx-auto">
+              <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+                <BookOpen className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Articles Yet</h3>
+              <p className="text-gray-500">
+                We're working on bringing you the latest insights in orthopedic care. Check back soon!
+              </p>
+            </div>
+          </div>
         )}
       </main>
-
-      {/* Newsletter Section */}
-      <section className="bg-gray-100 py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-md p-8 md:p-10 text-center">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-              Stay Updated with Latest Medical Insights
-            </h2>
-            <p className="text-gray-600 mb-6 max-w-xl mx-auto">
-              Subscribe to our newsletter and receive the latest articles, treatment advances, 
-              and expert advice delivered straight to your inbox.
-            </p>
-            <form className="flex flex-col sm:flex-row max-w-md mx-auto gap-3">
-              <input
-                type="email"
-                placeholder="Your email address"
-                className="flex-grow px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#8B5C9E]/50 focus:border-transparent"
-                required
-              />
-              <button
-                type="submit"
-                className="px-6 py-3 bg-[#8B5C9E] hover:bg-[#7a4f8a] text-white font-medium rounded-lg transition-colors"
-              >
-                Subscribe
-              </button>
-            </form>
-            <p className="text-xs text-gray-500 mt-4">
-              We respect your privacy. Unsubscribe at any time.
-            </p>
-          </div>
-        </div>
-      </section>
-
+      
       <SiteFooter />
     </div>
   );

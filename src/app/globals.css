@@ -141,6 +141,20 @@
     background-color: #E5E7EB;
     margin: 10px auto;
   }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
 
 /* Animations */
@@ -596,4 +610,99 @@ figure:has(img:not([src]),
        img[src$="svg+xml;base64,"],
        img[src^="data:image/"]) {
   display: none;
+}
+
+/* Custom Prose Styles */
+.prose {
+  --tw-prose-body: theme(colors.gray[700]);
+  --tw-prose-headings: theme(colors.gray[900]);
+  --tw-prose-lead: theme(colors.gray[600]);
+  --tw-prose-links: theme(colors.purple[700]);
+  --tw-prose-bold: theme(colors.gray[900]);
+  --tw-prose-counters: theme(colors.gray[500]);
+  --tw-prose-bullets: theme(colors.purple[400]);
+  --tw-prose-hr: theme(colors.gray[200]);
+  --tw-prose-quotes: theme(colors.gray[900]);
+  --tw-prose-quote-borders: theme(colors.purple[300]);
+  --tw-prose-captions: theme(colors.gray[500]);
+  --tw-prose-code: theme(colors.purple[900]);
+  --tw-prose-pre-code: theme(colors.purple[200]);
+  --tw-prose-pre-bg: theme(colors.gray[800]);
+  --tw-prose-th-borders: theme(colors.gray[300]);
+  --tw-prose-td-borders: theme(colors.gray[200]);
+
+  --tw-prose-invert-body: theme(colors.gray[300]);
+  --tw-prose-invert-headings: theme(colors.white);
+  --tw-prose-invert-lead: theme(colors.gray[400]);
+  --tw-prose-invert-links: theme(colors.purple[400]);
+  --tw-prose-invert-bold: theme(colors.white);
+  --tw-prose-invert-counters: theme(colors.gray[400]);
+  --tw-prose-invert-bullets: theme(colors.purple[500]);
+  --tw-prose-invert-hr: theme(colors.gray[700]);
+  --tw-prose-invert-quotes: theme(colors.gray[100]);
+  --tw-prose-invert-quote-borders: theme(colors.purple[700]);
+  --tw-prose-invert-captions: theme(colors.gray[400]);
+  --tw-prose-invert-code: theme(colors.white);
+  --tw-prose-invert-pre-code: theme(colors.gray[300]);
+  --tw-prose-invert-pre-bg: theme(colors.gray[900]);
+  --tw-prose-invert-th-borders: theme(colors.gray[600]);
+  --tw-prose-invert-td-borders: theme(colors.gray[700]);
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  @apply font-bold tracking-tight;
+}
+
+.prose h1 {
+  @apply text-4xl mb-6 mt-8;
+}
+
+.prose h2 {
+  @apply text-3xl mb-5 mt-7 border-b border-gray-200 pb-2;
+}
+
+.prose h3 {
+  @apply text-2xl mb-4 mt-6;
+}
+
+.prose h4 {
+  @apply text-xl mb-3 mt-5;
+}
+
+.prose p {
+  @apply leading-relaxed;
+}
+
+.prose a {
+  @apply transition-colors duration-200 hover:text-purple-900;
+  text-decoration-skip-ink: auto;
+}
+
+.prose blockquote {
+  @apply font-medium italic;
+  @apply border-l-4;
+  @apply pl-4;
+  @apply text-lg;
+}
+
+.prose ul > li::before {
+  @apply h-1.5 w-1.5;
+}
+
+.prose code {
+  @apply font-mono text-sm font-medium rounded-md px-1.5 py-0.5;
+}
+
+.prose code::before,
+.prose code::after {
+  content: '';
+}
+
+.prose pre {
+  @apply rounded-xl shadow-md;
 }

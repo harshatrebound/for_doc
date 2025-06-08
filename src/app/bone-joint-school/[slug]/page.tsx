@@ -1,28 +1,21 @@
-'use server';
-
-import { promises as fs } from 'fs';
-import path from 'path';
-import { notFound } from 'next/navigation';
+// import { notFound } from 'next/navigation'; // Removed due to import issue
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import { Metadata, ResolvingMetadata } from 'next';
 import TopicImage from './components/TopicImage';
 import Link from 'next/link';
-import { ChevronRight, ArrowRight, Clock, Tag, Calendar, Share2, FileText } from 'lucide-react';
+import Image from 'next/image';
+import { ChevronRight, ArrowRight, Clock, Tag, Calendar, Share2, FileText, BookOpen, User } from 'lucide-react';
 import TopicContentRenderer from './components/TopicContentRenderer';
 import BookingButton from './components/BookingButton';
 import ShareButton from './components/ShareButton';
-import Papa from 'papaparse';
-import { getTopicData, getRelatedTopics as getRelatedTopicsFromService } from '@/lib/content-integration';
-import PageContent from '@/components/content/PageContent';
 import HeroSection from '@/components/ui/HeroSection';
-import NotFound from '@/app/not-found';
+import { getBoneJointContentBySlug, getRelatedBoneJointContent, getImageUrl } from '@/lib/directus';
 
 // --- Constants ---
-const CSV_FILE_PATH = path.join(process.cwd(), 'docs', 'bone_joint_school_cms.csv');
 const DEFAULT_FALLBACK_IMAGE = '/images_bone_joint/doctor-holding-tablet-e-health-concept-business-concept.webp';
 
-// --- Type Definitions from CSV --- 
+// --- Type Definitions --- 
 // Structure for individual content blocks from ContentBlocksJSON
 export interface ContentBlock {
   type: 'heading' | 'paragraph' | 'styled_list_item';
@@ -31,19 +24,21 @@ export interface ContentBlock {
   icon?: string;  // For styled_list_item (e.g., 'arrow-right')
 }
 
-// Structure for breadcrumb items from BreadcrumbJSON
+// Structure for breadcrumb items
 interface BreadcrumbItem {
   name: string;
   url: string | null; // URL might be null for the current page
 }
 
-// Structure for the entire topic data fetched from CSV row
+// Structure for the entire topic data
 interface TopicData {
   slug: string;
   title: string;
   featuredImageUrl: string;
   breadcrumbData: BreadcrumbItem[];
   contentBlocks: ContentBlock[];
+  content_html: string;
+  content_text: string;
   category?: string;
   publishDate?: string;
   readingTime?: string;
@@ -53,6 +48,7 @@ interface TopicData {
   ogImage?: string;
   canonicalUrl?: string;
   keywords?: string;
+  summary?: string;
 }
 
 // Define Props type
@@ -73,556 +69,483 @@ function safeJsonParse<T>(jsonString: string | undefined | null, fallback: T): T
   }
 }
 
-// Function to get specific topic data from CSV file
-async function getTopicDataFromCsv(slug: string): Promise<TopicData | null> {
+// Function to get specific topic data from Directus
+async function getTopicDataFromDirectus(slug: string): Promise<TopicData | null> {
   try {
-    const fileContent = await fs.readFile(CSV_FILE_PATH, 'utf-8');
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
-    });
-
-    if (parsedCsv.errors.length > 0) {
-      console.error("CSV Parsing errors:", parsedCsv.errors);
-    }
-
-    // Find the row matching the slug
-    const row = parsedCsv.data.find(r => r.Slug === slug && r.PageType === 'bone-joint-school');
-
-    if (!row) {
+    const content = await getBoneJointContentBySlug(slug);
+    
+    if (!content) {
       return null; // Topic not found
     }
 
     // Clean up title
-    const title = (row.Title || slug).split('|')[0].trim();
-    const featuredImageUrl = row.FeaturedImageURL || DEFAULT_FALLBACK_IMAGE;
+    const title = content.title;
+    const featuredImageUrl = getImageUrl(content.featured_image_url) || DEFAULT_FALLBACK_IMAGE;
 
-    // Parse JSON blobs safely
-    const breadcrumbData = safeJsonParse<BreadcrumbItem[]>(row.BreadcrumbJSON, []);
-    const contentBlocks = safeJsonParse<ContentBlock[]>(row.ContentBlocksJSON, []);
-    
-    // Add category - either from direct field or infer from title
-    let category = row.Category || '';
-    if (!category) {
-      const titleLower = title.toLowerCase();
-      if (titleLower.includes('knee')) category = 'Knee';
-      else if (titleLower.includes('hip')) category = 'Hip';
-      else if (titleLower.includes('shoulder')) category = 'Shoulder';
-      else if (titleLower.includes('elbow')) category = 'Elbow';
-      else if (titleLower.includes('wrist') || titleLower.includes('hand')) category = 'Hand & Wrist';
-      else if (titleLower.includes('ankle') || titleLower.includes('foot')) category = 'Foot & Ankle';
-      else if (titleLower.includes('spine') || titleLower.includes('back')) category = 'Spine';
-    }
+    // Create breadcrumb data
+    const breadcrumbData: BreadcrumbItem[] = [
+      { name: 'Home', url: '/' },
+      { name: 'Bone & Joint School', url: '/bone-joint-school' },
+      { name: title, url: null }
+    ];
+
+    // Parse content blocks from HTML content if needed
+    // For now, we'll create a simple content block structure
+    const contentBlocks: ContentBlock[] = [];
     
     // Calculate reading time based on content length
-    const readingTime = calculateReadingTime(contentBlocks);
+    const readingTime = calculateReadingTime(content.content_text || '');
     
-    // Use publish date from CSV or default to current date minus 30 days
-    const publishDate = row.PublishDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    
-    // Parse related slugs if available or leave empty
-    const relatedSlugs = safeJsonParse<string[]>(row.RelatedSlugs, []);
+    // Format date
+    const publishDate = content.date_created ? new Date(content.date_created).toISOString().split('T')[0] : undefined;
 
     return {
-      slug,
+      slug: content.slug,
       title,
       featuredImageUrl,
       breadcrumbData,
       contentBlocks,
-      category,
+      content_html: content.content_html,
+      content_text: content.content_text,
+      category: content.category,
       publishDate,
       readingTime,
-      relatedSlugs,
-      metaTitle: row.MetaTitle,
-      metaDescription: row.MetaDescription,
-      ogImage: row.OGImage,
-      canonicalUrl: row.CanonicalURL,
-      keywords: row.Keywords,
+      relatedSlugs: [],
+      metaTitle: content.meta_title,
+      metaDescription: content.meta_description,
+      ogImage: featuredImageUrl,
+      canonicalUrl: content.canonical_url,
+      keywords: '',
+      summary: '',
     };
 
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-       console.error(`Error reading or parsing CSV data for slug ${slug}:`, error);
-    }
+    console.error(`Error fetching topic data for slug ${slug}:`, error);
     return null;
   }
 }
 
 // Helper to calculate reading time
-function calculateReadingTime(blocks: ContentBlock[]): string {
-  // Assume average reading speed of 200 words per minute
-  const wordCount = blocks.reduce((count, block) => {
-    if (block.type === 'paragraph' || block.type === 'heading') {
-      // Strip HTML and count words
-      const textContent = stripHtml(block.text);
-      return count + textContent.split(/\s+/).length;
-    }
-    return count;
-  }, 0);
+function calculateReadingTime(content: string): string {
+  if (!content) return '2 min read';
   
+  // Assume average reading speed of 200 words per minute
+  const textContent = stripHtml(content);
+  const wordCount = textContent.split(/\s+/).length;
   const minutes = Math.ceil(wordCount / 200);
   return `${minutes} min read`;
 }
 
-// Function to get related topics based on category and/or a list of slugs
-async function getRelatedTopics(currentSlug: string, category?: string, relatedSlugs?: string[]): Promise<TopicData[]> {
+// Function to get related topics from Directus
+async function getRelatedTopics(currentSlug: string, category?: string): Promise<TopicData[]> {
   try {
-    const fileContent = await fs.readFile(CSV_FILE_PATH, 'utf-8');
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
+    const relatedContent = await getRelatedBoneJointContent(currentSlug, category);
+    
+    return relatedContent.map(content => {
+      const text = (content.content_text || content.content_html || '').replace(/<[^>]*>?/gm, '');
+      const summary = content.meta_description 
+        ? (content.meta_description.length > 120 ? content.meta_description.substring(0, 120) + '...' : content.meta_description)
+        : (text.length > 100 ? text.substring(0, 100) + '...' : text);
+
+      return {
+        slug: content.slug,
+        title: content.title,
+        featuredImageUrl: getImageUrl(content.featured_image_url) || DEFAULT_FALLBACK_IMAGE,
+        breadcrumbData: [],
+        contentBlocks: [],
+        content_html: '',
+        content_text: '',
+        category: content.category,
+        publishDate: content.date_created ? new Date(content.date_created).toISOString().split('T')[0] : undefined,
+        readingTime: '2 min read',
+        summary: summary,
+      };
     });
-    
-    const allTopics = parsedCsv.data
-      .filter((row: any) => row.Slug && row.PageType === 'bone-joint-school' && row.Slug !== currentSlug)
-      .map((row: any) => {
-        const title = (row.Title || row.Slug).split('|')[0].trim();
-        const imageUrl = row.FeaturedImageURL || DEFAULT_FALLBACK_IMAGE;
-        
-        // Determine category
-        let rowCategory = row.Category || '';
-        if (!rowCategory) {
-          const titleLower = title.toLowerCase();
-          if (titleLower.includes('knee')) rowCategory = 'Knee';
-          else if (titleLower.includes('hip')) rowCategory = 'Hip';
-          else if (titleLower.includes('shoulder')) rowCategory = 'Shoulder';
-          else if (titleLower.includes('elbow')) rowCategory = 'Elbow';
-          else if (titleLower.includes('wrist') || titleLower.includes('hand')) rowCategory = 'Hand & Wrist';
-          else if (titleLower.includes('ankle') || titleLower.includes('foot')) rowCategory = 'Foot & Ankle';
-          else if (titleLower.includes('spine') || titleLower.includes('back')) rowCategory = 'Spine';
-        }
-        
-        // Get summary from first paragraph
-        let summary = 'No summary available.';
-        const contentBlocks = safeJsonParse<ContentBlock[]>(row.ContentBlocksJSON, []);
-        if (contentBlocks && contentBlocks.length > 0) {
-          const firstParagraph = contentBlocks.find(block => block.type === 'paragraph');
-          if (firstParagraph && firstParagraph.text) {
-            const plainText = stripHtml(firstParagraph.text);
-            summary = plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
-          }
-        }
-        
-        return {
-          slug: row.Slug,
-          title,
-          featuredImageUrl: imageUrl,
-          category: rowCategory,
-          summary,
-          breadcrumbData: [],
-          contentBlocks: [],
-        };
-      });
-    
-    // First try to find topics from related slugs
-    let relatedTopics: TopicData[] = [];
-    
-    if (relatedSlugs && relatedSlugs.length > 0) {
-      relatedTopics = allTopics.filter((topic: TopicData) => 
-        relatedSlugs.includes(topic.slug)
-      );
-    }
-    
-    // If not enough related topics by slug, add some from the same category
-    if (relatedTopics.length < 3 && category) {
-      const sameCategory = allTopics.filter((topic: TopicData) => 
-        topic.category === category && !relatedTopics.some(r => r.slug === topic.slug)
-      );
-      
-      relatedTopics = [...relatedTopics, ...sameCategory.slice(0, 3 - relatedTopics.length)];
-    }
-    
-    // If still not enough, just add some random ones
-    if (relatedTopics.length < 3) {
-      const otherTopics = allTopics.filter((topic: TopicData) => 
-        !relatedTopics.some(r => r.slug === topic.slug)
-      );
-      
-      relatedTopics = [...relatedTopics, ...otherTopics.slice(0, 3 - relatedTopics.length)];
-    }
-    
-    return relatedTopics.slice(0, 3); // Limit to 3 related topics
-    
   } catch (error) {
-    console.error("Error getting related topics:", error);
+    console.error(`Error fetching related topics for ${currentSlug}:`, error);
     return [];
   }
 }
 
-// --- Static Generation (Uses CSV Data) --- 
-export async function generateStaticParams() {
-  try {
-    const fileContent = await fs.readFile(CSV_FILE_PATH, 'utf-8');
-    const parsedCsv = Papa.parse<any>(fileContent, {
-      header: true,
-      skipEmptyLines: true,
-    });
-    return parsedCsv.data
-      .filter((row: any) => row.Slug && row.PageType === 'bone-joint-school')
-      .map((row: any) => ({ slug: row.Slug }))
-      .filter((param: any) => param.slug);
-  } catch (error) {
-    console.error("Error generating static params from CSV:", error);
-    return [];
-  }
-}
+// --- Component Functions ---
 
-// --- Metadata Generation using integration layer ---
+// Static params generation - we'll remove this for now as it requires knowing all slugs
+// export async function generateStaticParams() {
+//   // Could be implemented to fetch all slugs from Directus for static generation
+//   return [];
+// }
+
+// Metadata generation
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const data = await getTopicData(params.slug);
+  try {
+    const topicData = await getTopicDataFromDirectus(params.slug);
+    
+    if (!topicData) {
+      return {
+        title: 'Topic Not Found',
+        description: 'The requested topic could not be found.',
+      };
+    }
 
-  if (!data) {
+    const previousImages = (await parent).openGraph?.images || [];
+    const ogImage = topicData.ogImage || topicData.featuredImageUrl;
+
     return {
-      title: 'Page Not Found',
-      description: 'The requested topic could not be found.'
-    };
-  }
-
-  // Use SEO fields if available, otherwise fall back to defaults
-  const pageTitle = data.metaTitle || data.title || params.slug.replace(/-/g, ' ');
-  
-  // Use meta description if available
-  let description = data.metaDescription;
-  
-  // Fall back to first paragraph if no meta description
-  if (!description) {
-    const firstParagraph = data.contentBlocks?.find(b => b.type === 'paragraph');
-    const plainTextDescription = firstParagraph ? stripHtml(firstParagraph.text) : `Learn about ${pageTitle}.`;
-    description = plainTextDescription.length > 160 ? plainTextDescription.substring(0, 157) + '...' : plainTextDescription;
-  }
-
-  // Use og image if available, otherwise featured image
-  const imageUrl = data.ogImage || data.featuredImageUrl;
-  
-  // Use keywords if available
-  const keywordsList = data.keywords ? 
-    data.keywords.split(',').map(k => k.trim()) : 
-    [pageTitle, 'orthopedics', 'bone', 'joint', data.category || ''].filter(Boolean);
-
-  return {
-    title: pageTitle,
-    description: description,
-    openGraph: {
-        title: pageTitle,
-        description: description,
-        images: imageUrl ? [{ url: imageUrl }] : [],
+      title: topicData.metaTitle || `${topicData.title} | Sports Orthopedics`,
+      description: topicData.metaDescription || `Learn about ${topicData.title.toLowerCase()} from expert orthopedic specialists.`,
+      keywords: topicData.keywords || `${topicData.title}, orthopedics, sports medicine, ${topicData.category}`,
+      ...(topicData.canonicalUrl && {
+        alternates: {
+          canonical: topicData.canonicalUrl
+        }
+      }),
+      openGraph: {
+        title: topicData.metaTitle || topicData.title,
+        description: topicData.metaDescription || `Learn about ${topicData.title.toLowerCase()} from expert orthopedic specialists.`,
+        images: ogImage ? [ogImage, ...previousImages] : previousImages,
         type: 'article',
-    },
-    ...(data.canonicalUrl && { 
-      alternates: {
-        canonical: data.canonicalUrl
-      }
-    }),
-    authors: [{ name: 'Sports Orthopedics Institute' }],
-    keywords: keywordsList,
+        publishedTime: topicData.publishDate,
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: topicData.metaTitle || topicData.title,
+        description: topicData.metaDescription || `Learn about ${topicData.title.toLowerCase()} from expert orthopedic specialists.`,
+        images: ogImage ? [ogImage] : undefined,
+      },
+    };
+  } catch (error) {
+    console.error('Error generating metadata:', error);
+    return {
+      title: 'Bone & Joint School | Sports Orthopedics',
+      description: 'Educational resources about orthopedic conditions and treatments.',
+    };
   }
 }
 
-// --- Helper Functions ---
+// Helper to strip HTML tags
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>?/gm, '');
 }
 
-// --- Components ---
-
-// Breadcrumbs Component to handle dynamic data
+// Enhanced Breadcrumbs Component
 const Breadcrumbs = ({ items, className = '' }: { items: BreadcrumbItem[], className?: string }) => {
-  // Fallback if items array is empty or invalid
-  if (!items || items.length === 0) {
-    // Provide a minimal default breadcrumb
-    return (
-      <nav aria-label="Breadcrumb" className={`text-sm text-gray-500 ${className}`}>
-        <ol className="flex items-center space-x-1">
-          <li><Link href="/" className="hover:text-[#8B5C9E] transition-colors">Home</Link></li>
-        </ol>
-      </nav>
-    );
-  }
-
   return (
-    <nav aria-label="Breadcrumb" className={`text-sm text-gray-500 ${className}`}>
-      <ol className="flex items-center space-x-1 flex-wrap">
-        {items.map((item, index) => (
-          <li key={index} className="flex items-center">
-            {index > 0 && <ChevronRight className="w-4 h-4 text-gray-400 mx-1" />}
-            {item.url ? (
-              <Link href={item.url} className="hover:text-[#8B5C9E] transition-colors">
-                {item.name}
-              </Link>
-            ) : (
-              <span className="font-medium text-gray-800" aria-current="page">
-                {item.name}
-              </span>
-            )}
-          </li>
-        ))}
-      </ol>
+    <nav className={`flex items-center space-x-2 text-sm ${className}`} aria-label="Breadcrumb">
+      {items.map((item, index) => (
+        <div key={index} className="flex items-center">
+          {index > 0 && (
+            <ChevronRight className="w-4 h-4 text-white/40 mx-2" />
+          )}
+          {item.url ? (
+            <Link href={item.url} className="text-white/80 hover:text-white transition-colors font-medium">
+              {item.name}
+            </Link>
+          ) : (
+            <span className="text-white font-semibold">{item.name}</span>
+          )}
+        </div>
+      ))}
     </nav>
   );
 };
 
-// Function to generate a table of contents from content blocks
-const generateTOC = (contentBlocks: ContentBlock[]) => {
-  // Find all h2 headings with their original indices
-  return contentBlocks
-    .map((block, index) => ({ block, originalIndex: index }))
-    .filter(item => item.block.type === 'heading' && item.block.level === 2);
+// Table of Contents Generator and HTML Processor
+const processContentForTOC = (contentHtml: string) => {
+  const headings: { level: number; text: string; id: string }[] = [];
+  
+  if (!contentHtml) {
+    return {
+      processedHtml: '',
+      tableOfContents: headings
+    };
+  }
+
+  const processedHtml = contentHtml.replace(
+    /<h([2-6])(.*?)>(.*?)<\/h[2-6]>/gi,
+    (match, levelStr, attrs, innerHTML) => {
+      const level = parseInt(levelStr);
+      const text = stripHtml(innerHTML);
+      
+      if (!text) return match; // Skip empty headings
+      
+      const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      
+      // Avoid duplicate IDs by appending a number if needed
+      let uniqueId = id;
+      let counter = 1;
+      while (headings.some(h => h.id === uniqueId)) {
+        uniqueId = `${id}-${counter}`;
+        counter++;
+      }
+
+      headings.push({ level, text, id: uniqueId });
+      
+      // Check if the tag already has an ID
+      if (/id\s*=\s*["']/.test(attrs)) {
+        // If it has an ID, don't change it, but use it for the TOC
+        const existingId = attrs.match(/id\s*=\s*["'](.*?)["']/)[1];
+        headings[headings.length - 1].id = existingId;
+        return match;
+      }
+
+      return `<h${level} id="${uniqueId}"${attrs}>${innerHTML}</h${level}>`;
+    }
+  );
+
+  return { processedHtml, tableOfContents: headings };
 };
 
-// Related Topic Card component
-const RelatedTopicCard = ({ title, slug, imageUrl }: { title: string, slug: string, imageUrl: string }) => (
-  <Link href={`/bone-joint-school/${slug}`} className="group flex rounded-lg p-2 hover:bg-[#8B5C9E]/5 transition-colors">
-    <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
-      <TopicImage
-        src={imageUrl}
+// Enhanced Related Topic Card Component
+const RelatedTopicCard = ({ title, slug, imageUrl, summary }: { title: string, slug: string, imageUrl: string, summary?: string }) => (
+  <Link href={`/bone-joint-school/${slug}`} className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border border-gray-200/80 hover:border-[#8B5C9E]/30">
+    <div className="relative h-48 w-full">
+      {/* Image */}
+      <Image 
+        src={imageUrl} 
         alt={title}
-        fallbackSrc={DEFAULT_FALLBACK_IMAGE}
-        fill
-        className="object-cover"
+        fill={true}
+        className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
       />
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+      
+      {/* Icon that appears on hover */}
+      <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+        <BookOpen className="h-10 w-10 text-white/90" />
+      </div>
+
+      {/* Category Tag */}
+      <div className="absolute bottom-4 left-4">
+        <div className="bg-black/50 backdrop-blur-sm rounded-md px-3 py-1 border border-white/20">
+          <span className="text-white text-xs font-medium tracking-wide">Educational Topic</span>
+        </div>
+      </div>
     </div>
-    <div className="ml-3 flex-1">
-      <h4 className="text-sm font-medium text-gray-900 group-hover:text-[#8B5C9E] transition-colors line-clamp-2">
+
+    {/* Content */}
+    <div className="flex flex-1 flex-col p-6 transition-colors duration-300 group-hover:bg-gray-50/50">
+      <h4 className="font-bold text-lg text-gray-900 group-hover:text-[#8B5C9E] transition-colors duration-300 line-clamp-2 mb-2 leading-tight">
         {title}
       </h4>
-      <span className="text-xs text-[#8B5C9E] font-medium mt-1 opacity-0 group-hover:opacity-100 transition-opacity flex items-center">
-        Read more <ArrowRight className="w-3 h-3 ml-1" />
-      </span>
+      {summary && (
+        <p className="text-gray-600 text-sm mt-1 line-clamp-2">
+          {summary}
+        </p>
+      )}
+      <div className="flex items-center text-sm font-semibold text-[#8B5C9E] mt-auto pt-4">
+        <span className="group-hover:underline decoration-2 underline-offset-4">View Topic</span>
+        <ArrowRight className="w-4 h-4 ml-1.5 transition-transform duration-300 group-hover:translate-x-1" />
+      </div>
     </div>
   </Link>
 );
 
-// --- The Page Component (Server Component) ---
+// Main Component
 export default async function BoneJointTopicPage({ params }: Props) {
-  const { slug } = params;
-  
-  // Use new integration layer to get data
-  const topicData = await getTopicData(slug);
+  const topicData = await getTopicDataFromDirectus(params.slug);
 
   if (!topicData) {
-    notFound(); // Show 404 if content is missing
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Topic Not Found</h1>
+          <p className="text-gray-600 mb-4">The requested topic could not be found.</p>
+          <Link href="/bone-joint-school" className="text-[#8B5C9E] hover:underline">
+            ← Back to Bone & Joint School
+          </Link>
+        </div>
+      </div>
+    );
   }
 
-  // Get all related topics using the integration layer
-  const relatedTopics = await getRelatedTopicsFromService(
-    slug, 
-    'bone-joint-school', 
-    3, 
-    topicData.category || undefined
-  );
-
-  const { 
-    title: pageTitle, 
-    featuredImageUrl: mainImage, 
-    contentBlocks,
-    category,
-    publishedAt,
-    readingTime,
-  } = topicData;
-  
-  // For breadcrumb, we need to create a compatible structure
-  const breadcrumbData = [
-    { name: 'Home', url: '/' },
-    { name: 'Bone & Joint School', url: '/bone-joint-school' },
-    { name: pageTitle, url: null }
-  ];
-  
-  // Get the first paragraph for intro text
-  const firstParagraph = contentBlocks.find(block => block.type === 'paragraph');
-  const introText = firstParagraph ? firstParagraph.text : '';
-  
-  // Generate table of contents with original indices
-  const tocItems = generateTOC(contentBlocks);
-  
-  // Current URL for sharing
-  const pageUrl = `https://sportsorthopedics.in/bone-joint-school/${slug}`;
+  const relatedTopics = await getRelatedTopics(params.slug, topicData.category);
+  const { processedHtml, tableOfContents } = processContentForTOC(topicData.content_html);
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Use light theme for header on topic pages */}
-      <SiteHeader theme="light" />
-
-      {/* New Two-Column Hero Section */}
-      <section className="pt-24 pb-8 md:pt-32 md:pb-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <Breadcrumbs items={breadcrumbData} className="mb-6" />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            {/* Left - Content Column */}
-            <div>
-              {/* Metadata (category, date, reading time) */}
-              <div className="flex flex-wrap items-center gap-3 mb-4 text-sm">
-                {category && (
-                  <Link 
-                    href={`/bone-joint-school?category=${category}`} 
-                    className="inline-flex items-center text-[#8B5C9E] font-medium"
-                  >
-                    <Tag className="w-4 h-4 mr-1" />
-                    {category}
-                  </Link>
-                )}
-                
-                {publishedAt && (
-                  <div className="inline-flex items-center text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                    <Calendar className="w-3 h-3 mr-1" />
-                    <time dateTime={publishedAt}>{new Date(publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</time>
-                  </div>
-                )}
-                
-                {readingTime && (
-                  <div className="inline-flex items-center text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                    <Clock className="w-3 h-3 mr-1" />
-                    {readingTime}
-                  </div>
-                )}
+    <div className="min-h-screen bg-gray-50">
+      <SiteHeader />
+      
+      {/* Enhanced Hero Section */}
+      <div className="relative h-[70vh] min-h-[500px] bg-gradient-to-br from-gray-900 to-gray-800 overflow-hidden">
+        <TopicImage 
+          src={topicData.featuredImageUrl}
+          alt={topicData.title}
+          fallbackSrc={DEFAULT_FALLBACK_IMAGE}
+          fill={true}
+          className="object-cover opacity-50"
+          priority={true}
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+        
+        <div className="absolute inset-0 flex items-center justify-start">
+          <div className="container mx-auto px-4">
+            <div className="max-w-2xl">
+              <Breadcrumbs items={topicData.breadcrumbData} className="mb-6" />
+              
+              <div className="inline-block bg-[#8B5C9E]/20 text-white px-4 py-2 rounded-full text-sm font-medium mb-6 backdrop-blur-sm border border-[#8B5C9E]/30">
+                EDUCATIONAL TOPIC
               </div>
               
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-                {pageTitle}
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                {topicData.title}
               </h1>
               
-              {introText && (
-                <div 
-                  className="text-gray-600 text-lg mb-8 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: introText }}
-                />
-              )}
-              
-              <div className="flex flex-wrap items-center gap-4">
-                <BookingButton 
-                  size="lg" 
-                  variant="default" 
-                />
-                
-                {tocItems.length > 0 && (
-                  <Link 
-                    href="#table-of-contents" 
-                    className="inline-flex items-center text-[#8B5C9E] px-6 py-3 rounded-md border-2 border-[#8B5C9E] hover:bg-[#8B5C9E]/5 transition-colors"
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    View Contents
-                  </Link>
+              <div className="flex flex-wrap items-center gap-6 text-white/90 mb-8">
+                {topicData.category && (
+                  <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                    <Tag className="w-4 h-4 mr-2" />
+                    <span className="font-medium">{topicData.category}</span>
+                  </div>
                 )}
-                
-                {/* Share Button */}
-                <ShareButton 
-                  url={pageUrl} 
-                  title={pageTitle} 
-                />
+                {topicData.readingTime && (
+                  <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                    <Clock className="w-4 h-4 mr-2" />
+                    <span>{topicData.readingTime}</span>
+                  </div>
+                )}
+                {topicData.publishDate && (
+                  <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    <span>{new Date(topicData.publishDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                  </div>
+                )}
               </div>
-            </div>
-            
-            {/* Right - Image Column */}
-            <div className="relative h-[300px] md:h-[400px] rounded-xl overflow-hidden shadow-xl order-first md:order-last mb-6 md:mb-0">
-              <TopicImage
-                src={mainImage}
-                alt={pageTitle}
-                fallbackSrc={DEFAULT_FALLBACK_IMAGE}
-                fill
-                className="object-cover"
-                priority
-              />
+
+                             <div className="flex flex-wrap gap-4">
+                 <BookingButton 
+                   size="lg" 
+                   variant="rounded"
+                 />
+                 <ShareButton 
+                   url={`${process.env.NEXT_PUBLIC_BASE_URL || 'https://sportsorthopedics.in'}/bone-joint-school/${params.slug}`}
+                   title={topicData.title}
+                 />
+               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Main Content - Two Column Layout */}
-      <main className="container mx-auto px-4 py-12 md:py-16">
-        <div className="lg:grid lg:grid-cols-3 gap-12">
-          {/* Main Article Column */}
-          <div className="lg:col-span-2">
-            {/* Table of Contents */}
-            {tocItems.length > 0 && (
-              <div id="table-of-contents" className="bg-gray-50 rounded-lg p-6 mb-12 border border-gray-200 scroll-mt-24 print:hidden">
-                <h2 className="text-xl font-semibold mb-4 text-gray-900">Contents</h2>
-                <nav className="space-y-1">
-                  <ul>
-                    {tocItems.map((item) => (
-                      <li key={item.originalIndex} className="py-1">
-                        <Link 
-                          href={`#heading-${item.originalIndex}`} 
-                          className="text-[#8B5C9E] hover:text-[#5a3a6d] hover:underline flex items-center"
-                        >
-                          <ArrowRight className="w-4 h-4 mr-2" />
-                          <span dangerouslySetInnerHTML={{ __html: stripHtml(item.block.text) }} />
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-              </div>
-            )}
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-12 md:py-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
             
-            {/* Main Content */}
-            <article className="prose lg:prose-lg max-w-none">
-              <TopicContentRenderer 
-                contentBlocks={contentBlocks.filter(block => 
-                  // Filter out the first paragraph as we already displayed it in the hero
-                  !(block === firstParagraph)
-                )} 
-                addHeadingIds={true}
-                firstParagraphIndex={contentBlocks.indexOf(firstParagraph!)} // Pass first paragraph index for proper offset calculation
-              />
-            </article>
-          </div>
-          
-          {/* Sidebar Column */}
-          <div className="mt-12 lg:mt-0">
-            <div className="sticky top-24 space-y-8">
-              {/* CTA Card */}
-              <div className="bg-gradient-to-br from-[#8B5C9E]/20 to-purple-200 rounded-xl p-6 shadow-sm">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Need Expert Help?</h3>
-                <p className="text-gray-700 mb-6">
-                  Schedule a consultation with our specialists to discuss your orthopedic concerns.
-                </p>
-                <BookingButton 
-                  size="default" 
-                  variant="default" 
-                  fullWidth
-                />
-              </div>
-              
-              {/* Related Articles */}
-              {relatedTopics.length > 0 && (
-                <div className="bg-white rounded-xl p-6 border border-gray-200">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Related Topics</h3>
-                  <div className="space-y-4">
-                    {relatedTopics.map((topic) => (
-                      <RelatedTopicCard 
-                        key={topic.slug}
-                        title={topic.title}
-                        slug={topic.slug}
-                        imageUrl={topic.featuredImageUrl}
-                      />
-                    ))}
+            {/* Table of Contents - Desktop Sidebar */}
+            {tableOfContents.length > 0 && (
+              <div className="lg:col-span-1 order-2 lg:order-1">
+                <div className="sticky top-24">
+                  <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                    <h3 className="font-bold text-gray-900 mb-6 flex items-center text-lg">
+                      <div className="w-8 h-8 bg-[#8B5C9E]/10 rounded-lg flex items-center justify-center mr-3">
+                        <FileText className="w-4 h-4 text-[#8B5C9E]" />
+                      </div>
+                      Contents
+                    </h3>
+                    <nav className="space-y-3">
+                      {tableOfContents.map((heading, index) => (
+                        <a
+                          key={index}
+                          href={`#${heading.id}`}
+                          className={`block text-sm hover:text-[#8B5C9E] transition-colors py-2 px-3 rounded-lg hover:bg-[#8B5C9E]/5 ${
+                            heading.level === 2 ? 'font-semibold text-gray-900 border-l-2 border-[#8B5C9E]' : 'text-gray-600 pl-6 border-l-2 border-gray-200'
+                          }`}
+                        >
+                          {heading.text}
+                        </a>
+                      ))}
+                    </nav>
                   </div>
                 </div>
-              )}
+              </div>
+            )}
+
+            {/* Main Content */}
+            <div className={`${tableOfContents.length > 0 ? 'lg:col-span-3' : 'lg:col-span-4'} order-1 lg:order-2`}>
               
-              {/* Category Box (if category exists) */}
-              {category && (
-                <div className="bg-white rounded-xl p-6 border border-gray-200">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">More About {category}</h3>
-                  <p className="text-gray-600 mb-4">
-                    Explore more educational resources about {category.toLowerCase()} conditions, treatments and recovery.
+              {/* Content Card */}
+              <article className="bg-white rounded-2xl shadow-lg p-8 md:p-12 border border-gray-100 mb-8">
+                {/* Content Renderer */}
+                <div 
+                  className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-headings:leading-tight prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6 prose-a:text-[#8B5C9E] prose-a:no-underline hover:prose-a:underline prose-strong:text-gray-900 prose-strong:font-semibold prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:mb-2 prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4 prose-blockquote:border-l-4 prose-blockquote:border-[#8B5C9E] prose-blockquote:bg-[#8B5C9E]/5 prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:rounded-r-lg"
+                  dangerouslySetInnerHTML={{ __html: processedHtml }} 
+                />
+              </article>
+
+              {/* Expert Care CTA */}
+              <div className="bg-gradient-to-br from-[#8B5C9E] via-[#7A4F8C] to-[#6B3E7C] rounded-2xl p-8 md:p-12 text-center shadow-2xl">
+                <div className="max-w-3xl mx-auto">
+                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <User className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-3xl md:text-4xl font-bold mb-4 text-white">Need Expert Care?</h3>
+                  <p className="text-xl text-white mb-8 leading-relaxed">
+                    Our orthopedic specialists are here to help you with personalized treatment plans and expert guidance for your specific condition.
                   </p>
-                  <Link 
-                    href={`/bone-joint-school?category=${category}`}
-                    className="inline-flex items-center text-[#8B5C9E] font-medium hover:underline"
-                  >
-                    <span>View all {category} topics</span>
-                    <ArrowRight className="ml-1 w-4 h-4" />
-                  </Link>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <BookingButton 
+                      size="lg"
+                      variant="rounded"
+                    />
+                    <Link 
+                      href="/surgeons-staff" 
+                      className="inline-flex items-center justify-center bg-transparent border-2 border-white text-white hover:bg-white hover:text-[#8B5C9E] px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 min-w-[240px] shadow-lg hover:shadow-xl"
+                    >
+                      Meet Our Specialists
+                    </Link>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
-      </main>
+      </div>
+
+      {/* Enhanced Related Topics Section */}
+      {relatedTopics.length > 0 && (
+        <div className="bg-white py-16">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-12">
+                <div className="inline-block bg-[#8B5C9E]/10 text-[#8B5C9E] px-4 py-2 rounded-full text-sm font-medium mb-4">
+                  CONTINUE LEARNING
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                  Related Topics
+                </h2>
+                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                  Explore more educational content about orthopedic conditions and treatments
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {relatedTopics.slice(0, 3).map((topic) => (
+                  <RelatedTopicCard
+                    key={topic.slug}
+                    title={topic.title}
+                    slug={topic.slug}
+                    imageUrl={topic.featuredImageUrl}
+                    summary={topic.summary}
+                  />
+                ))}
+              </div>
+              <div className="text-center mt-12">
+                <Link 
+                  href="/bone-joint-school" 
+                  className="inline-flex items-center bg-[#8B5C9E] text-white px-8 py-4 rounded-full font-semibold hover:bg-[#7A4F8C] transition-all duration-300 hover:scale-105 shadow-lg"
+                >
+                  View All Topics
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <SiteFooter />
     </div>

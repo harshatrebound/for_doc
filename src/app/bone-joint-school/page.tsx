@@ -1,56 +1,46 @@
-'use client';
-
 import Link from 'next/link';
 import Image from 'next/image';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import { BoneJointSchoolCard } from './components/BoneJointSchoolCard';
-import { HeroImage } from './components/HeroImage';
-import { ChevronLeft, ChevronRight, Layers, BookOpen, ArrowRight } from 'lucide-react';
-import BookingButton from '@/components/BookingButton';
+import { ChevronLeft, ChevronRight, BookOpen, ArrowRight } from 'lucide-react';
 import HeroSection from '@/components/ui/HeroSection';
-import { useState, useEffect, useRef } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import BookingModal from '@/components/booking/BookingModal';
-import { getBoneJointTopics } from './actions'; // Import the Server Action
+import { getBoneJointContent, getBoneJointCategories, getImageUrl } from '@/lib/directus';
+import BookingModalWrapper from './components/BookingModalWrapper';
 
-// Metadata moved to layout.tsx
-// export const metadata: Metadata = {
-//   title: 'Bone & Joint School | Educational Resources',
-//   description: 'Explore comprehensive information on various orthopedic conditions, treatments, and recovery strategies in our bone and joint educational center.',
-//   openGraph: {
-//     title: 'Bone & Joint School | Sports Orthopedics',
-//     description: 'Learn about orthopedic conditions and treatments from expert medical professionals.',
-//     images: ['/images_bone_joint/analyzing-spine-structure.webp'],
-//   }
-// };
-
-// Define the structure for our topic data (can be shared or defined here)
-interface BoneJointTopic {
-  slug: string;
-  title: string;
-  imageUrl: string;
-  summary: string;
-  category?: string;
+// Convert EducationalContent to BoneJointTopic format
+function convertToBoneJointTopic(content: any) {
+  return {
+    slug: content.slug,
+    title: content.title,
+    imageUrl: getImageUrl(content.featured_image_url),
+    summary: content.content_text ? 
+      (content.content_text.length > 150 ? 
+        content.content_text.substring(0, 150) + '...' : 
+        content.content_text) : 
+      'No summary available.',
+    category: content.category || 'General'
+  };
 }
 
-// Helper functions (kept here as they are client-safe)
-function safeJsonParse<T>(jsonString: string | undefined | null): T | null {
-  if (!jsonString) return null;
-  try {
-    return JSON.parse(jsonString) as T;
-  } catch (e) {
-    console.warn("Failed to parse JSON string:", jsonString, e);
-    return null;
-  }
-}
-
+// Helper to strip HTML tags for a plain text summary
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>?/gm, '');
 }
 
-// MOVED: getBoneJointTopics is now a Server Action in actions.ts
+// Get summary from content_html or content_text
+function getSummary(content: any): string {
+  if (content.content_text) {
+    const plainText = stripHtml(content.content_text);
+    return plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
+  }
+  if (content.content_html) {
+    const plainText = stripHtml(content.content_html);
+    return plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
+  }
+  return 'No summary available.';
+}
 
 // Improved Pagination Component
 const PaginationControls = ({ 
@@ -169,30 +159,25 @@ const CategoryFilter = ({
   );
 };
 
-export default function BoneJointSchoolPage({
+export default async function BoneJointSchoolPage({
   searchParams,
 }: {
   searchParams?: { [key: string]: string | string[] | undefined };
 }) {
-  const [topics, setTopics] = useState<BoneJointTopic[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Fetch data from Directus
+  const [content, categories] = await Promise.all([
+    getBoneJointContent(),
+    getBoneJointCategories()
+  ]);
 
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      // Call the imported Server Action
-      const data = await getBoneJointTopics(); 
-      setTopics(data.topics);
-      setCategories(data.categories);
-      setIsLoading(false);
-    }
-    loadData();
-    setMounted(true);
-  }, []);
+  // Convert to BoneJointTopic format
+  const topics = content.map(item => ({
+    slug: item.slug,
+    title: item.title,
+    imageUrl: getImageUrl(item.featured_image_url),
+    summary: getSummary(item),
+    category: item.category || 'General'
+  }));
 
   const categoryParam = typeof searchParams?.category === 'string' ? searchParams.category : null;
   const filteredTopics = categoryParam 
@@ -238,17 +223,18 @@ export default function BoneJointSchoolPage({
         }
         actions={
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-8">
-            <Button
-              size="lg"
-              className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white rounded-md px-8 sm:px-10 py-6 sm:py-6 text-lg font-medium transition-all duration-300 hover:shadow-lg w-full sm:w-auto"
-              onClick={() => setIsBookingModalOpen(true)}
-              aria-label="Book an appointment with our specialists"
-            >
-              <span className="flex items-center justify-center">
-                Request a Consultation
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </span>
-            </Button>
+            <BookingModalWrapper>
+              <Button
+                size="lg"
+                className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white rounded-md px-8 sm:px-10 py-6 sm:py-6 text-lg font-medium transition-all duration-300 hover:shadow-lg w-full sm:w-auto"
+                aria-label="Book an appointment with our specialists"
+              >
+                <span className="flex items-center justify-center">
+                  Request a Consultation
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </span>
+              </Button>
+            </BookingModalWrapper>
             <Button
               size="lg"
               variant="outline"
@@ -266,75 +252,64 @@ export default function BoneJointSchoolPage({
       </HeroSection>
 
       <main id="topics" className="container mx-auto px-4 py-12 md:py-16">
-        {isLoading ? (
-          <div className="text-center py-16">Loading topics...</div>
-        ) : (
-          <>
-            <div className="mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Orthopedic Education Library</h2>
-              <p className="text-gray-600 max-w-3xl">
-                Learn about orthopedic conditions, treatments, recovery, and prevention strategies through our comprehensive educational resources.
-              </p>
-            </div>
-            
-            <CategoryFilter 
-              categories={categories}
-              activeCategory={categoryParam}
-              baseUrl="/bone-joint-school"
-            />
-            
-            <p className="text-sm text-gray-500 mb-6">
-              Showing {paginatedTopics.length} of {filteredTopics.length} topics
-              {categoryParam ? ` in "${categoryParam}"` : ''}
-            </p>
-            
-            {paginatedTopics.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-                {paginatedTopics.map((topic) => (
-                  <BoneJointSchoolCard
-                    key={topic.slug}
-                    slug={topic.slug}
-                    title={topic.title}
-                    summary={topic.summary}
-                    imageUrl={topic.imageUrl}
-                    category={topic.category}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white rounded-lg p-8 text-center shadow-sm">
-                <h3 className="text-xl font-medium text-gray-900 mb-2">No topics found</h3>
-                <p className="text-gray-600">
-                  {categoryParam 
-                    ? `No topics found in the "${categoryParam}" category.`
-                    : 'No topics found in the database.'}
-                </p>
-                {categoryParam && (
-                  <Link href="/bone-joint-school" className="mt-4 inline-block text-[#8B5C9E] hover:underline">
-                    View all topics
-                  </Link>
-                )}
-              </div>
-            )}
-
-            {filteredTopics.length > pageSize && (
-              <PaginationControls 
-                currentPage={currentPage} 
-                totalPages={totalPages} 
-                baseUrl="/bone-joint-school"
-                queryParams={queryParams}
+        <div className="mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Orthopedic Education Library</h2>
+          <p className="text-gray-600 max-w-3xl">
+            Learn about orthopedic conditions, treatments, recovery, and prevention strategies through our comprehensive educational resources.
+          </p>
+        </div>
+        
+        <CategoryFilter 
+          categories={categories}
+          activeCategory={categoryParam}
+          baseUrl="/bone-joint-school"
+        />
+        
+        <p className="text-sm text-gray-500 mb-6">
+          Showing {paginatedTopics.length} of {filteredTopics.length} topics
+          {categoryParam ? ` in "${categoryParam}"` : ''}
+        </p>
+        
+        {paginatedTopics.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+            {paginatedTopics.map((topic) => (
+              <BoneJointSchoolCard
+                key={topic.slug}
+                slug={topic.slug}
+                title={topic.title}
+                summary={topic.summary}
+                imageUrl={topic.imageUrl}
+                category={topic.category}
               />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg p-8 text-center shadow-sm">
+            <h3 className="text-xl font-medium text-gray-900 mb-2">No topics found</h3>
+            <p className="text-gray-600">
+              {categoryParam 
+                ? `No topics found in the "${categoryParam}" category.`
+                : 'No topics found in the database.'}
+            </p>
+            {categoryParam && (
+              <Link href="/bone-joint-school" className="mt-4 inline-block text-[#8B5C9E] hover:underline">
+                View all topics
+              </Link>
             )}
-          </>
+          </div>
+        )}
+
+        {filteredTopics.length > pageSize && (
+          <PaginationControls 
+            currentPage={currentPage} 
+            totalPages={totalPages} 
+            baseUrl="/bone-joint-school"
+            queryParams={queryParams}
+          />
         )}
       </main>
 
       <SiteFooter />
-
-      <BookingModal 
-        isOpen={isBookingModalOpen}
-        onClose={() => setIsBookingModalOpen(false)}
-      />
     </div>
   );
 } 

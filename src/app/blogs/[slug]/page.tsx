@@ -1,12 +1,14 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
-import { Metadata, ResolvingMetadata } from 'next';
 import { ChevronLeft, Calendar, Clock, Share2, Facebook, Twitter, Linkedin, Mail, ArrowLeft } from 'lucide-react';
-import { getPostBySlug, getRelatedPosts } from '@/lib/directus';
+import BookingModal from '@/components/BookingModal';
 import type { BlogPost } from '@/lib/directus';
-import BookingButton from './components/BookingButton';
+import React from 'react';
+import { Button } from '@/components/ui/button';
 
 // Define props for the dynamic page
 type Props = {
@@ -29,41 +31,9 @@ function formatDate(dateString: string): string {
   });
 }
 
-// Helper to strip HTML tags from text
-function stripHtml(html: string): string {
-  return html?.replace(/<[^>]*>?/gm, '') || '';
-}
-
-// Generate metadata for the page
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  const post = await getPostBySlug(params.slug);
-  
-  if (!post) {
-    return {
-      title: 'Post Not Found',
-      description: 'The requested post could not be found.'
-    };
-  }
-  
-  return {
-    title: `${post.title} | Medical Blog`,
-    description: post.excerpt,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      type: 'article',
-      images: [getImageUrl(post.featured_image_url)],
-    },
-  };
-}
-
 // Social share component
 const SocialShare = ({ url, title }: { url: string; title: string }) => {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://sportsorthopedics.in';
-  const encodedUrl = encodeURIComponent(`${baseUrl}${url}`);
+  const encodedUrl = encodeURIComponent(`${process.env.NEXT_PUBLIC_DOMAIN}${url}`);
   const encodedTitle = encodeURIComponent(title);
   
   return (
@@ -107,59 +77,10 @@ const SocialShare = ({ url, title }: { url: string; title: string }) => {
   );
 };
 
-// Table of Contents component
-const TableOfContents = ({ content }: { content: string }) => {
-  console.log('TableOfContents received content length:', content?.length);
-  
-  // Extract headings from HTML content
-  const headingRegex = /<h([1-6])[^>]*>(.*?)<\/h[1-6]>/gi;
-  const headings: { id: string; text: string; level: number }[] = [];
-  let match;
-
-  while ((match = headingRegex.exec(content)) !== null) {
-    const level = parseInt(match[1]);
-    const text = stripHtml(match[2]);
-    if (level <= 3 && text.trim()) {
-      headings.push({
-        id: `heading-${headings.length}`,
-        text: text.trim(),
-        level
-      });
-    }
-  }
-
-  console.log('TableOfContents found headings:', headings);
-
-  return (
-    <div className="bg-gray-50 p-4 rounded-lg mb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-3">Table of Contents</h3>
-      {headings.length > 0 ? (
-        <ul className="space-y-2">
-          {headings.map((heading) => (
-            <li 
-              key={heading.id} 
-              className={`${heading.level === 3 ? 'ml-4' : ''} text-sm`}
-            >
-              <a 
-                href={`#${heading.id}`}
-                className="text-[#8B5C9E] hover:underline inline-block"
-              >
-                {heading.text}
-              </a>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-sm text-gray-500">No headings found in content.</p>
-      )}
-    </div>
-  );
-};
-
 // Related post card component
 const RelatedPostCard = ({ post }: { post: BlogPost }) => {
   return (
-    <Link href={`/${post.slug}`} className="block">
+              <Link href={`/blogs/${post.slug}`} className="block">
       <div className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
         <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
           <Image
@@ -185,29 +106,60 @@ const RelatedPostCard = ({ post }: { post: BlogPost }) => {
 };
 
 // Main blog post page component
-export default async function PostPage({ params }: Props) {
+export default function PostPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
-  const post = await getPostBySlug(slug);
-  
-  // Debug: Log the actual post data from Directus
-  console.log('=== DIRECTUS POST DATA ===');
-  console.log('Post object:', post);
-  console.log('Available fields:', post ? Object.keys(post) : 'No post found');
-  console.log('Content HTML:', post?.content_html?.substring(0, 200) + '...');
-  console.log('===========================');
+  const [post, setPost] = React.useState<BlogPost | null>(null);
+  const [relatedPosts, setRelatedPosts] = React.useState<BlogPost[]>([]);
+  const [isBookingModalOpen, setIsBookingModalOpen] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function fetchData() {
+      setIsLoading(true);
+      
+      try {
+        // Fetch post data from API route
+        const postResponse = await fetch(`/api/blog/${slug}`);
+        if (postResponse.ok) {
+          const postData = await postResponse.json();
+          setPost(postData);
+          
+          // Fetch related posts if we have a valid post
+          if (postData) {
+            const relatedResponse = await fetch(`/api/blog/related?slug=${slug}&category=${postData.category}`);
+            if (relatedResponse.ok) {
+              const relatedData = await relatedResponse.json();
+              setRelatedPosts(relatedData);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching blog data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchData();
+  }, [slug]);
+
+  if (isLoading) {
+    // You can add a proper loading skeleton here
+    return <div>Loading...</div>;
+  }
   
   if (!post) {
     return (
       <div className="min-h-screen flex flex-col">
-        <SiteHeader theme="light" />
+        <SiteHeader />
         <main className="flex-grow container mx-auto px-4 py-20 text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Post Not Found</h1>
           <p className="text-gray-600 mb-6">The article you're looking for could not be found.</p>
           <Link 
-            href="/" 
-            className="inline-flex items-center text-[#8B5C9E] hover:underline"
+            href="/blogs" 
+            className="inline-flex items-center text-[#8B5C9E] hover:text-[#7a4f8a] transition-colors"
           >
-            <ChevronLeft className="w-4 h-4 mr-1" />
+            <ArrowLeft className="w-4 h-4 mr-1" />
             Back to all posts
           </Link>
         </main>
@@ -216,15 +168,9 @@ export default async function PostPage({ params }: Props) {
     );
   }
   
-  const relatedPosts = await getRelatedPosts(slug, post.category);
-  
-  // Create the full URL for sharing
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://sportsorthopedics.in';
-  const fullUrl = `${baseUrl}/${slug}`;
-  
   return (
     <div className="min-h-screen bg-white">
-      <SiteHeader theme="light" />
+      <SiteHeader />
       
       {/* Hero Section */}
       <section className="relative h-[40vh] md:h-[50vh] flex items-center justify-center text-white overflow-hidden">
@@ -237,7 +183,6 @@ export default async function PostPage({ params }: Props) {
             priority
             className="object-cover opacity-70"
           />
-          {/* Apply gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
         </div>
         
@@ -278,6 +223,17 @@ export default async function PostPage({ params }: Props) {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content Area */}
           <div className="lg:w-2/3">
+            {/* Back Button */}
+            <div className="mb-6">
+              <Link 
+                href="/blogs"
+                className="inline-flex items-center text-[#8B5C9E] hover:text-[#7a4f8a] transition-colors text-sm font-medium"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                Back to Blog
+              </Link>
+            </div>
+
             {/* Content */}
             <article className="bg-white rounded-xl shadow-sm p-6 md:p-8">
               {/* Article Content */}
@@ -290,14 +246,14 @@ export default async function PostPage({ params }: Props) {
               <div className="mt-12 pt-6 border-t border-gray-200 flex flex-wrap justify-between items-center gap-4">
                 <div className="flex flex-wrap gap-2">
                   <Link 
-                    href={`/?category=${post.category}`}
+                    href={`/blogs?category=${post.category}`}
                     className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full hover:bg-[#8B5C9E]/10 hover:text-[#8B5C9E] transition-colors"
                   >
                     {post.category}
                   </Link>
                 </div>
                 
-                <SocialShare url={`/${post.slug}`} title={post.title} />
+                <SocialShare url={`/blogs/${post.slug}`} title={post.title} />
               </div>
             </article>
             
@@ -305,7 +261,7 @@ export default async function PostPage({ params }: Props) {
             <div className="mt-8 lg:hidden">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Related Articles</h3>
               <div className="bg-white rounded-xl shadow-sm p-4">
-                {relatedPosts && relatedPosts.length > 0 ? (
+                {relatedPosts.length > 0 ? (
                   <div className="space-y-4">
                     {relatedPosts.map((relatedPost: BlogPost) => (
                       <RelatedPostCard key={relatedPost.id} post={relatedPost} />
@@ -325,19 +281,22 @@ export default async function PostPage({ params }: Props) {
               {/* Booking Widget */}
               <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Schedule an Appointment</h3>
-                <p className="text-gray-600 mb-4 text-sm">
-                  Consult with our specialists about {post.category.toLowerCase()} conditions and get personalized treatment.
-                </p>
-                <BookingButton category={post.category} />
+                 <p className="text-gray-600 mb-4 text-sm">
+                   Consult with our specialists about {post.category.toLowerCase()} conditions and get personalized treatment.
+                 </p>
+                <Button 
+                  onClick={() => setIsBookingModalOpen(true)}
+                  className="w-full bg-[#8B5C9E] text-white hover:bg-[#7a4f8a] transition-colors"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Book an Appointment
+                </Button>
               </div>
-              
-              {/* Table of Contents */}
-              {post.content_html && <TableOfContents content={post.content_html} />}
               
               {/* Related Articles - Desktop Only */}
               <div className="hidden lg:block bg-white rounded-xl shadow-sm p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Related Articles</h3>
-                {relatedPosts && relatedPosts.length > 0 ? (
+                {relatedPosts.length > 0 ? (
                   <div className="space-y-4">
                     {relatedPosts.map((relatedPost: BlogPost) => (
                       <RelatedPostCard key={relatedPost.id} post={relatedPost} />
@@ -348,12 +307,17 @@ export default async function PostPage({ params }: Props) {
                 )}
               </div>
               
-              {/* Doctor Info - Always Show */}
+              {/* Doctor Info */}
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-3">About the Doctor</h3>
                 <div className="flex items-center space-x-4 mb-3">
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center bg-[#8B5C9E] text-white font-bold text-xl">
-                    Dr
+                  <div className="w-16 h-16 rounded-full overflow-hidden relative flex-shrink-0 bg-gray-200">
+                    <Image 
+                      src="/images/doctor-profile.jpg" 
+                      alt="Dr. Naveen Kumar L.V"
+                      fill
+                      className="object-cover"
+                    />
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-900">Dr. Naveen Kumar L.V</h4>
@@ -369,6 +333,13 @@ export default async function PostPage({ params }: Props) {
         </div>
       </main>
       
+      {isBookingModalOpen && (
+        <BookingModal 
+          onClose={() => setIsBookingModalOpen(false)} 
+          procedureTitle={`${post.category} Consultation`} 
+        />
+      )}
+
       <SiteFooter />
     </div>
   );
