@@ -1,13 +1,14 @@
 'use server';
 
-import { notFound } from 'next/navigation';
+// import { notFound } from 'next/navigation'; // Removed due to import issue
 import Image from 'next/image';
 import Link from 'next/link';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
-import { getProcedureBySlug } from '../utils/csvParser';
-import { ContentBlockRenderer } from '../components/ContentBlockRenderer';
+import { getProcedureSurgeryBySlug, getRelatedProcedures, getImageUrl } from '@/lib/directus';
 import BookingSection from '../components/BookingSection';
+import { Calendar, CheckCircle } from 'lucide-react';
+import ContentRenderer from '@/components/shared/ContentRenderer';
 // Metadata is now handled in the separate metadata.ts file
 
 interface ProcedurePageProps {
@@ -15,11 +16,35 @@ interface ProcedurePageProps {
 }
 
 export default async function ProcedurePage({ params }: ProcedurePageProps) {
-  const procedure = await getProcedureBySlug(params.slug);
+  const procedure = await getProcedureSurgeryBySlug(params.slug);
   
   if (!procedure) {
-    notFound();
+    return (
+      <div className="min-h-screen bg-white">
+        <SiteHeader theme="light" />
+        <main className="container mx-auto px-4 py-16">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Procedure Not Found</h1>
+            <p className="text-gray-600 mb-8">The requested procedure could not be found.</p>
+            <Link 
+              href="/procedure-surgery" 
+              className="inline-block bg-[#8B5C9E] text-white px-6 py-3 rounded-lg hover:bg-[#7A4F8C] transition-colors"
+            >
+              Back to Procedures
+            </Link>
+          </div>
+        </main>
+        <SiteFooter />
+      </div>
+    );
   }
+
+  // Get related procedures
+  const relatedProcedures = await getRelatedProcedures(
+    procedure.id, 
+    procedure.category, 
+    3
+  );
 
   return (
     <div className="min-h-screen bg-white">
@@ -40,22 +65,34 @@ export default async function ProcedurePage({ params }: ProcedurePageProps) {
                   {procedure.title}
                 </h1>
                 
-                <p className="text-lg text-gray-600 mb-8">
-                  {procedure.summary}
-                </p>
+                {procedure.content_text && (
+                  <p className="text-lg text-gray-600 mb-8">
+                    {procedure.content_text.length > 200 
+                      ? procedure.content_text.substring(0, 200) + '...'
+                      : procedure.content_text
+                    }
+                  </p>
+                )}
                 
-                <div className="inline-flex items-center mb-2">
-                  <span className="px-3 py-1 bg-[#8B5C9E]/10 text-[#8B5C9E] rounded-full text-sm font-medium mr-2">
-                    {procedure.category}
-                  </span>
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {procedure.category && (
+                    <span className="px-3 py-1 bg-[#8B5C9E]/10 text-[#8B5C9E] rounded-full text-sm font-medium">
+                      {procedure.category}
+                    </span>
+                  )}
+                  {procedure.procedure_type && (
+                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                      {procedure.procedure_type}
+                    </span>
+                  )}
                 </div>
               </div>
               
               <div className="w-full md:w-2/5 order-1 md:order-2">
-                {procedure.imageUrl ? (
+                {procedure.featured_image_url ? (
                   <div className="relative h-60 md:h-80 w-full rounded-xl overflow-hidden shadow-lg">
                     <Image
-                      src={procedure.imageUrl}
+                      src={getImageUrl(procedure.featured_image_url) || '/images/default-procedure.jpg'}
                       alt={procedure.title}
                       fill
                       className="object-cover"
@@ -77,35 +114,93 @@ export default async function ProcedurePage({ params }: ProcedurePageProps) {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Main Content */}
             <div className="w-full lg:w-2/3">
-              {/* Details Box */}
+              {/* Procedure Details Box */}
               <div className="bg-blue-50 p-6 rounded-lg mb-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Procedure Details</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {procedure.procedureTime && (
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">Procedure Time</h3>
-                      <p className="text-base text-gray-900">{procedure.procedureTime}</p>
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Procedure Overview</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {procedure.recovery_time && (
+                    <div className="flex items-start gap-2">
+                      <Calendar className="w-5 h-5 text-[#8B5C9E] mt-0.5" />
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Recovery Time</h3>
+                        <p className="text-base text-gray-900">{procedure.recovery_time}</p>
+                      </div>
                     </div>
                   )}
                   
-                  {procedure.recoveryPeriod && (
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">Recovery Period</h3>
-                      <p className="text-base text-gray-900">{procedure.recoveryPeriod}</p>
+                  {procedure.difficulty_level && (
+                    <div className="flex items-start gap-2">
+                      <CheckCircle className="w-5 h-5 text-[#8B5C9E] mt-0.5" />
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Complexity Level</h3>
+                        <p className="text-base text-gray-900">{procedure.difficulty_level}</p>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
               
-              {/* Content Blocks */}
-              <div className="prose prose-lg max-w-none">
-                <ContentBlockRenderer blocks={procedure.contentBlocks || []} />
-              </div>
+              {/* Main Content */}
+              {procedure.content_html && (
+                <ContentRenderer html={procedure.content_html} />
+              )}
+
+              {/* Additional Information Sections */}
+              {procedure.source_url && (
+                <div className="bg-blue-50 p-6 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Source Information</h3>
+                  <p className="text-gray-600">
+                    This procedure information was sourced from: 
+                    <a 
+                      href={procedure.source_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-[#8B5C9E] hover:underline ml-1"
+                    >
+                      View Original Source
+                    </a>
+                  </p>
+                </div>
+              )}
             </div>
             
             {/* Sidebar */}
             <div className="w-full lg:w-1/3">
               <BookingSection />
+              
+              {/* Related Procedures */}
+              {relatedProcedures.length > 0 && (
+                <div className="mt-8 bg-gray-50 p-6 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Related Procedures</h3>
+                  <div className="space-y-4">
+                    {relatedProcedures.map((related) => (
+                      <Link
+                        key={related.slug}
+                        href={`/procedure-surgery/${related.slug}`}
+                        className="block p-4 bg-white rounded-lg hover:shadow-md transition-shadow"
+                      >
+                        <h4 className="font-medium text-gray-900 mb-2">{related.title}</h4>
+                        {related.content_text && (
+                          <p className="text-sm text-gray-600 line-clamp-2">
+                            {related.content_text.length > 100 
+                              ? related.content_text.substring(0, 100) + '...'
+                              : related.content_text
+                            }
+                          </p>
+                        )}
+                        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                          {related.recovery_time && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              {related.recovery_time}
+                            </span>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

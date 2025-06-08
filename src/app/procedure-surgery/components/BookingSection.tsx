@@ -9,7 +9,7 @@ export default function BookingSection() {
 
   return (
     <>
-      <div className="bg-gray-50 rounded-lg p-6 sticky top-24">
+      <div className="bg-gray-50 rounded-lg p-6">
         <h3 className="text-xl font-semibold text-gray-900 mb-4">Schedule a Consultation</h3>
         <p className="text-gray-600 mb-6">
           Would you like to learn more about this procedure or schedule a consultation with our specialists?
@@ -29,10 +29,7 @@ export default function BookingSection() {
           </Link>
         </div>
         
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <h4 className="font-medium text-gray-900 mb-3">Related Procedures</h4>
-          <p className="text-gray-500 text-sm italic mb-2">Coming soon</p>
-        </div>
+
       </div>
 
       {/* Booking Modal */}

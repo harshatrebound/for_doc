@@ -1,608 +1,312 @@
-'use client';
-
-// import { Metadata } from 'next';
-import path from 'path';
-import { promises as fs } from 'fs';
-import csv from 'csv-parser';
+import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import { StaffCard } from '@/app/surgeons-staff/components/StaffCard';
-import { UserPlus, Users, Award, Phone, ArrowRight } from 'lucide-react';
+import { UserPlus, Users, Award, Phone, ArrowRight, Filter, Calendar } from 'lucide-react';
 import BookingButton from '@/components/BookingButton';
-import { Readable } from 'stream';
 import HeroSection from '@/components/ui/HeroSection';
 import React from 'react'; 
 import { Button } from '@/components/ui/button';
-import BookingModal from '@/components/booking/BookingModal';
 import { cn } from '@/lib/utils';
+import { getStaffWithFilters, getFeaturedStaffAction, getStaffCategoriesAction } from './actions';
+import { StaffMember } from '@/types/staff';
+import { Container } from '@/components/ui/container';
 
-// Define an interface for staff members
-interface StaffMember {
-  slug: string;
-  name: string;
-  title: string;
-  qualifications?: string; // Optional as not all staff have it
-  imageUrl: string;
-  role: string;
-}
+export const metadata: Metadata = {
+  title: 'Our Expert Team | Sports Orthopedics Institute',
+  description: 'Meet our world-class team of orthopedic surgeons, sports medicine specialists, physiotherapists, and healthcare professionals dedicated to your recovery.',
+};
 
-// Hardcoded staff data based on surgeons.html
-const allStaff: StaffMember[] = [
-  // Director
-  {
-    slug: 'dr-naveen-kumar-l-v',
-    name: 'Dr. Naveen Kumar LV',
-    title: 'Director & Chief Orthopedic Surgeon',
-    qualifications: 'MBBS, MS Orth (India), FRCS Orth (Eng), MCh Hip & Knee (UK), MSc Orth (UK), Dip SICOT (Italy), FEBOT (Portugal), MRCGP (UK), Dip FIFA SM (Switzerland) (FSEM (UK))',
-    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/313414809_424129516595915_5712394841841282653_n-500x500.jpg',
-    role: 'Director',
-  },
-  // Associate Consultant
-  {
-    slug: 'dr-sameer-km',
-    name: 'Dr. Sameer KM',
-    title: 'Associate Consultant – Sports Orthopedics Institute & Manipal Hospitals, Sarjapur Road',
-    qualifications: 'MBBS, MS(Ortho), DNB (Ortho), Dip.FIFA(SM)(Switzerland), Dip SICOT(Belgium), Fellowship in Arthroscopy & Arthroplasty (SOI)',
-    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/Sameer-Photo-500x500.webp',
-    role: 'Consultant',
-  },
-  // Sports Psychologist
-  {
-    slug: 'shama-kellogg',
-    name: 'Shama Kellogg',
-    title: 'Sports Psychologist',
-    qualifications: 'MSc (Sports Psychology), MA (Clinical Psychology) Sterling University, Scotland, UK',
-    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/Shama-Kellog-500x500.webp',
-    role: 'Psychologist',
-  },
-  // Fellows
-  {
-    slug: 'dr-aravind-naik',
-    name: 'Dr. Aravind Naik',
-    title: 'MBBS, MS Orth',
-    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/IMG-20240923-WA0008-500x500.jpg',
-    role: 'Fellow',
-  },
-  {
-    slug: 'dr-akash-rathod',
-    name: 'Dr. Akash Rathod',
-    title: 'MBBS, MS Orth',
-    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/IMG-20241013-WA0023-500x500.jpg',
-    role: 'Fellow',
-  },
-  // Physiotherapists
-  {
-    slug: 'atharva-mishra',
-    name: 'Atharva Mishra',
-    title: 'MPT (Sports), CDNT (HPE, London), KCAT',
-    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/Dr-Atharva-Mishra-500x500.webp',
-    role: 'Physiotherapist',
-  },
-  {
-    slug: 'anjali-khandelwal',
-    name: 'Anjali Khandelwal',
-    title: 'MPT (Orthopedics), CDNT (HPE, London)',
-    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/Dr.-Anjali-Khandelwal-500x500.webp',
-    role: 'Physiotherapist',
-  },
-  // Staff
-  {
-    slug: 'nihal-jayaram',
-    name: 'Nihal Jayaram',
-    title: 'Manager',
-    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
-    role: 'Staff',
-  },
-  {
-    slug: 'archana',
-    name: 'Archana',
-    title: 'Front Desk Executive & Secretary',
-    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
-    role: 'Staff',
-  },
-  {
-    slug: 'jenifer',
-    name: 'Jenifer',
-    title: 'Front Desk Executive',
-    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
-    role: 'Staff',
-  },
-  {
-    slug: 'amala',
-    name: 'Amala',
-    title: 'Qualified Nurse',
-    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
-    role: 'Staff',
-  },
-   {
-    slug: 'soumen-staff', // Differentiating slug
-    name: 'Soumen',
-    title: 'Qualified Nurse',
-    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
-    role: 'Staff',
-  },
-  {
-    slug: 'laljith',
-    name: 'Laljith',
-    title: 'Front Desk Executive',
-    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
-    role: 'Staff',
-  },
-  // Manipal Hospital Staff
-  {
-    slug: 'arjun-mannattil',
-    name: 'Arjun Mannattil',
-    title: 'BCom with CA, (MBA) Financial Coordinator & Admission Facilitator Phone: 9916113224',
-    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/IMG-20241013-WA0027-500x500.jpg',
-    role: 'ManipalStaff',
-  },
-  {
-    slug: 'soumen-parikshit',
-    name: 'Soumen Parikshit',
-    title: 'Front Desk Executive & Qualified Nursing Support',
-    imageUrl: 'https://73n.0c8.myftpupload.com/wp-content/uploads/2025/01/qfweg-500x500.webp', // Placeholder
-    role: 'ManipalStaff',
-  },
-];
-
-// Helper function to group staff by role
-function groupStaffByRole(staffList: StaffMember[]) {
+// Helper function to group staff by category
+function groupStaffByCategory(staffList: StaffMember[]) {
   return staffList.reduce((acc, staff) => {
-    const role = staff.role;
-    if (!acc[role]) {
-      acc[role] = [];
+    const category = staff.category || 'Other';
+    if (!acc[category]) {
+      acc[category] = [];
     }
-    acc[role].push(staff);
+    acc[category].push(staff);
     return acc;
   }, {} as Record<string, StaffMember[]>);
 }
 
-// Define roles eligible for filtering
-const filterableRoles = ['Psychologist', 'Fellow', 'Physiotherapist', 'Staff', 'ManipalStaff'];
+interface StaffPageProps {
+  searchParams: { [key: string]: string | string[] | undefined };
+}
 
-export default function SurgeonsStaffPage() {
-  // Using React.useState to avoid TypeScript errors
-  const [isBookingModalOpen, setIsBookingModalOpen] = React.useState(false); 
-  const [activeFilter, setActiveFilter] = React.useState<string | null>(null); 
-  const groupedStaff = groupStaffByRole(allStaff);
+export default async function SurgeonsStaffPage({ searchParams }: StaffPageProps) {
+  const category = typeof searchParams.category === 'string' ? searchParams.category : undefined;
+  const page = typeof searchParams.page === 'string' ? parseInt(searchParams.page) : 1;
 
-  // Define roles that are already displayed in dedicated sections at the top
-  const topDisplayedRoles = ['Director', 'Consultant', 'Psychologist'];
+  // Fetch staff data from Directus
+  const staffResponse = await getStaffWithFilters({
+    category,
+    page,
+    limit: 50 // Get all staff for grouping
+  });
 
-  // Filter staff for the filterable section
-  const filteredStaff = React.useMemo(() => { 
-    // Exclude staff who are already in top-displayed sections
-    const staffForFiltering = allStaff.filter(staff => !topDisplayedRoles.includes(staff.role));
+  const featuredStaff = await getFeaturedStaffAction(6);
+  const allStaff = staffResponse.staff;
+  const categories = staffResponse.categories;
 
-    if (!activeFilter) {
-      // If 'All Team Members' is selected, show remaining staff whose roles are in filterableRoles
-      // (Note: This implicitly means 'Psychologist' from filterableRoles won't match here if they were a topDisplayedRole)
-      return staffForFiltering.filter(staff => filterableRoles.includes(staff.role));
-    }
-    // Show staff matching the activeFilter role from the remaining staff
-    return staffForFiltering.filter(staff => staff.role === activeFilter);
-  }, [activeFilter]);
+  // Group staff by category for organized display
+  const groupedStaff = groupStaffByCategory(allStaff);
 
-  // Define section titles and icons based on role
-  const sections = [
-    { role: 'Director', title: 'Director', icon: Award },
-    { role: 'Consultant', title: 'Associate Consultant', icon: Award },
-    { role: 'Psychologist', title: 'Sports Psychologist', icon: UserPlus },
-    { role: 'Fellow', title: 'Sports Orthopedics Fellows', icon: Users },
-    { role: 'Physiotherapist', title: 'Physiotherapists', icon: UserPlus },
-    { role: 'Staff', title: 'Clinic Staff', icon: Users },
-    { role: 'ManipalStaff', title: 'Manipal Hospital Staff', icon: Users },
-  ];
+  // Define category mapping with icons
+  const categoryConfig: Record<string, { title: string; icon: any; priority: number }> = {
+    'Director': { title: 'Director', icon: Award, priority: 1 },
+    'Consultant': { title: 'Associate Consultant', icon: Award, priority: 2 },
+    'Psychologist': { title: 'Sports Psychologist', icon: UserPlus, priority: 3 },
+    'Fellow': { title: 'Sports Orthopedics Fellows', icon: Users, priority: 4 },
+    'Physiotherapist': { title: 'Physiotherapists', icon: UserPlus, priority: 5 },
+    'Staff': { title: 'Clinic Staff', icon: Users, priority: 6 },
+    'ManipalStaff': { title: 'Manipal Hospital Staff', icon: Users, priority: 7 },
+    'Other': { title: 'Other Team Members', icon: Users, priority: 8 },
+  };
 
-  // Get staff eligible for filtering
-  const filterableStaff = allStaff.filter(staff => filterableRoles.includes(staff.role));
+  // Sort categories by priority
+  const sortedCategories = Object.keys(groupedStaff).sort((a, b) => {
+    const priorityA = categoryConfig[a]?.priority || 999;
+    const priorityB = categoryConfig[b]?.priority || 999;
+    return priorityA - priorityB;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
       <SiteHeader theme="transparent" />
       
-      {/* Hero Section - Replaced with HeroSection component */}
-      <HeroSection
-        variant="image"
-        height="large"
-        bgColor="#2E3A59"
-        bgImage="/images/team-hero.jpg" // Using the original team image
-        title={ // Static title matching homepage style
-          <div className="max-w-5xl mx-auto text-center">
-            <div className="inline-block bg-[#8B5C9E]/20 text-white px-4 py-1 rounded-lg text-sm font-medium mb-6 backdrop-blur-sm border border-[#8B5C9E]/30">
-              OUR DEDICATED TEAM
+      <main>
+        {/* Hero Section - More subtle and refined */}
+        <section className="relative bg-gradient-to-br from-[#2E3A59] via-[#2a3450] to-[#1f2937] pt-20 pb-12">
+          <Container>
+            {/* Breadcrumb */}
+            <nav className="flex items-center space-x-2 text-sm text-white/60 mb-6">
+              <Link href="/" className="hover:text-white transition-colors">Home</Link>
+              <span>/</span>
+              <span className="text-white/80">Our Team</span>
+            </nav>
+
+            <div className="max-w-4xl mx-auto text-center">
+              <div className="inline-block bg-[#8B5C9E]/15 text-white px-3 py-1 rounded-md text-xs font-medium mb-4 border border-[#8B5C9E]/20">
+                EXPERT MEDICAL TEAM
             </div>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] mb-4">
-              <span className="block">Our Expert</span>
-              <span className="block mt-2">Medical Team</span>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
+                Meet Our Expert Team
             </h1>
-            <p className="mt-6 text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed font-light">
-              Meet the dedicated surgeons and healthcare professionals who provide exceptional orthopedic care.
+              <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto leading-relaxed">
+                World-class orthopedic surgeons, sports medicine specialists, and healthcare professionals dedicated to your recovery.
             </p>
-          </div>
-        }
-        actions={ // Actions matching homepage style
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-8">
-            <Button
-              size="lg"
-              className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white rounded-md px-8 sm:px-10 py-6 sm:py-6 text-lg font-medium transition-all duration-300 hover:shadow-lg w-full sm:w-auto"
-              onClick={() => setIsBookingModalOpen(true)}
-              aria-label="Book an appointment with our specialists"
-            >
-              <span className="flex items-center justify-center">
-                Request a Consultation
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </span>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-2 border-white text-white bg-transparent hover:bg-white/10 rounded-md px-8 sm:px-10 py-6 sm:py-6 text-lg font-medium transition-all duration-300 w-full sm:w-auto"
-              aria-label="Meet Our Surgeons" 
-            >
-              <Link href="#director" className="flex items-center"> {/* Link to first section */}
-                Meet Our Director
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
-            </Button>
-          </div>
-        }
-      >
-        {/* No children needed here */}
-      </HeroSection>
-      
-      {/* Main Content Area */}
-      <main className="container mx-auto px-4 py-12 md:py-16">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 px-4">
+                <BookingButton 
+                  className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white px-6 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 hover:shadow-lg w-full sm:w-auto"
+                  icon={null}
+                  text="Book Consultation"
+                />
+                <a 
+                  href="#team-members"
+                  className="inline-flex items-center px-6 py-2.5 border border-white/25 text-white text-sm font-medium rounded-lg hover:bg-white/5 transition-all duration-300 w-full sm:w-auto justify-center"
+                >
+                  View Team
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </a>
+                                      </div>
+                                  </div>
+          </Container>
+        </section>
 
-          {/* --- Featured Personnel Section (Three Columns) --- */}
-          <section className="mb-16">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {/* Render Director Card */}
-                  {groupedStaff['Director']?.map((staff: StaffMember) => { 
-                      const sectionInfo = sections.find(s => s.role === staff.role);
-                      const SectionIcon = sectionInfo?.icon || Users;
-                      return (
-                          <div 
-                              key={staff.slug} 
-                              id={staff.role.toLowerCase()} 
-                              className="relative overflow-hidden rounded-xl shadow-xl border border-gray-200 group h-full flex flex-col"
-                          >
-                              <div className="absolute inset-0 bg-gradient-to-br from-[#8B5C9E]/5 via-white to-white group-hover:from-[#8B5C9E]/10 transition-all duration-500"></div>
-                              <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] group-hover:opacity-[0.04] transition-opacity duration-500"></div>
-                              <div className="relative p-8 flex-grow flex flex-col md:flex-row items-center gap-6">
-                                  <div className="flex-shrink-0 w-36 h-36 md:w-40 md:h-40 relative" style={{position: 'relative'}}>
-                                      <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-[#8B5C9E]/20 to-transparent animate-pulse-slow opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
-                                      <div style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0}}>
-                                          <Image
-                                              src={staff.imageUrl}
-                                              alt={staff.name}
-                                              fill
-                                              className="rounded-full object-cover object-center shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-500"
-                                              sizes="(max-width: 768px) 144px, 160px"
-                                              priority
-                                          />
-                                      </div>
-                                  </div>
-                                  <div className="flex-grow text-center md:text-left">
-                                      <div className="mb-3">
-                                          <span className="inline-flex items-center bg-[#8B5C9E]/10 text-[#8B5C9E] px-3 py-1 rounded-full text-sm font-medium">
-                                              <SectionIcon className="w-4 h-4 mr-1.5" />
-                                              {sectionInfo?.title || staff.role}
-                                          </span>
-                                      </div>
-                                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                                          {staff.name}
-                                      </h2>
-                                      <p className="text-[#8B5C9E] font-medium text-lg mb-2 flex items-center justify-center md:justify-start">
-                                          <SectionIcon className="w-5 h-5 mr-2" /> {sectionInfo?.title}
-                                      </p>
-                                      <p className="text-sm text-gray-700 mb-1 line-clamp-2">
-                                          {staff.title}
-                                      </p>
-                                      {staff.qualifications && (
-                                          <p className="text-xs text-gray-500 mb-4 line-clamp-3 italic">
-                                              {staff.qualifications}
-                                          </p>
-                                      )}
-                                      
-                                      {/* Add View Profile Button for Dr. Naveen */}
-                                      {staff.slug === 'dr-naveen-kumar-l-v' && (
+        {/* Filter Section - More compact */}
+        <section className="py-8 px-4 md:px-8 lg:px-12 bg-white border-b border-gray-100">
+          <Container>
+            <div className="max-w-4xl mx-auto">
+              {/* Category Filter */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Filter by Department</h3>
+                <div className="flex flex-wrap gap-2">
                                         <Link 
-                                          href="/surgeons-staff/naveen"
-                                          className="inline-flex items-center px-4 py-2 bg-[#8B5C9E] text-white rounded-md hover:bg-[#7A4F8C] transition-colors"
-                                        >
-                                          View Full Profile <ArrowRight className="ml-2 w-4 h-4" />
-                                        </Link>
-                                      )}
-                                  </div>
-                              </div>
-                          </div>
-                      );
-                  })}
-
-                  {/* Render Consultant Card */}
-                  {groupedStaff['Consultant']?.map((staff: StaffMember) => { 
-                     const sectionInfo = sections.find(s => s.role === staff.role);
-                     const SectionIcon = sectionInfo?.icon || Users;
-                     return (
-                          <div 
-                              key={staff.slug} 
-                              id={staff.role.toLowerCase()} 
-                              className="relative overflow-hidden rounded-xl shadow-xl border border-gray-200 group h-full flex flex-col"
-                          >
-                              <div className="absolute inset-0 bg-gradient-to-br from-[#8B5C9E]/5 via-white to-white group-hover:from-[#8B5C9E]/10 transition-all duration-500"></div>
-                              <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] group-hover:opacity-[0.04] transition-opacity duration-500"></div>
-                              <div className="relative p-8 flex-grow flex flex-col md:flex-row items-center gap-6">
-                                  <div className="flex-shrink-0 w-36 h-36 md:w-40 md:h-40 relative" style={{position: 'relative'}}>
-                                       <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-[#8B5C9E]/15 to-transparent animate-pulse-slow opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
-                                      <div style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0}}>
-                                          <Image
-                                              src={staff.imageUrl}
-                                              alt={staff.name}
-                                              fill
-                                              className="rounded-full object-cover object-center shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-500"
-                                              sizes="(max-width: 768px) 144px, 160px"
-                                          />
-                                      </div>
-                                  </div>
-                                  <div className="flex-grow text-center md:text-left">
-                                      <div className="mb-3">
-                                          <span className="inline-flex items-center bg-[#8B5C9E]/10 text-[#8B5C9E] px-3 py-1 rounded-full text-sm font-medium">
-                                              <SectionIcon className="w-4 h-4 mr-1.5" />
-                                              {sectionInfo?.title || staff.role}
-                                          </span>
-                                      </div>
-                                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                                          {staff.name}
-                                      </h2>
-                                      <p className="text-[#8B5C9E] font-medium text-lg mb-2 flex items-center justify-center md:justify-start">
-                                          <SectionIcon className="w-5 h-5 mr-2" /> {sectionInfo?.title}
-                                      </p>
-                                      <p className="text-sm text-gray-700 mb-1 line-clamp-2">
-                                          {staff.title}
-                                      </p>
-                                      {staff.qualifications && (
-                                          <p className="text-xs text-gray-500 mb-4 line-clamp-3 italic">
-                                              {staff.qualifications}
-                                          </p>
-                                      )}
-                                      
-                                      {/* Add View Profile Button for Dr. Sameer */}
-                                      {staff.slug === 'dr-sameer-km' && (
-                                        <Link 
-                                          href="/surgeons-staff/sameer"
-                                          className="inline-flex items-center px-4 py-2 bg-[#8B5C9E] text-white rounded-md hover:bg-[#7A4F8C] transition-colors"
-                                        >
-                                          View Full Profile <ArrowRight className="ml-2 w-4 h-4" />
-                                        </Link>
-                                      )}
-                                  </div>
-                              </div>
-                          </div>
-                     );
-                  })}
-                  
-                  {/* Render Psychologist Card */}
-                  {groupedStaff['Psychologist']?.map((staff: StaffMember) => { 
-                     const sectionInfo = sections.find(s => s.role === staff.role);
-                     const SectionIcon = sectionInfo?.icon || Users;
-                     return (
-                          <div 
-                              key={staff.slug} 
-                              id={staff.role.toLowerCase()} 
-                              className="relative overflow-hidden rounded-xl shadow-xl border border-gray-200 group h-full flex flex-col"
-                          >
-                              <div className="absolute inset-0 bg-gradient-to-br from-[#8B5C9E]/5 via-white to-white group-hover:from-[#8B5C9E]/10 transition-all duration-500"></div>
-                              <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] group-hover:opacity-[0.04] transition-opacity duration-500"></div>
-                              <div className="relative p-8 flex-grow flex flex-col md:flex-row items-center gap-6">
-                                  <div className="flex-shrink-0 w-36 h-36 md:w-40 md:h-40 relative" style={{position: 'relative'}}>
-                                       <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-[#8B5C9E]/15 to-transparent animate-pulse-slow opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
-                                      <div style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0}}>
-                                        <Image
-                                          src={staff.imageUrl}
-                                          alt={staff.name}
-                                          fill
-                                          className="rounded-full object-cover object-center shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-500"
-                                          sizes="(max-width: 768px) 144px, 160px"
-                                        />
-                                      </div>
-                                  </div>
-                                  <div className="flex-grow text-center md:text-left">
-                                      <div className="mb-3">
-                                          <span className="inline-flex items-center bg-[#8B5C9E]/10 text-[#8B5C9E] px-3 py-1 rounded-full text-sm font-medium">
-                                              <SectionIcon className="w-4 h-4 mr-1.5" />
-                                              {sectionInfo?.title || staff.role}
-                                          </span>
-                                      </div>
-                                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                                          {staff.name}
-                                      </h2>
-                                      <p className="text-[#8B5C9E] font-medium text-lg mb-2 flex items-center justify-center md:justify-start">
-                                          <SectionIcon className="w-5 h-5 mr-2" /> {sectionInfo?.title}
-                                      </p>
-                                      <p className="text-sm text-gray-700 mb-1 line-clamp-2">
-                                          {staff.title}
-                                      </p>
-                                      {staff.qualifications && (
-                                          <p className="text-xs text-gray-500 mb-4 line-clamp-3 italic">
-                                              {staff.qualifications}
-                                          </p>
-                                      )}
-                                      {/* Add View Profile Button for Shama */}
-                                      {staff.slug === 'shama-kellogg' && (
-                                        <Link 
-                                          href="/surgeons-staff/shama-kellogg"
-                                          className="inline-flex items-center px-4 py-2 bg-[#8B5C9E] text-white rounded-md hover:bg-[#7A4F8C] transition-colors"
-                                        >
-                                          View Full Profile <ArrowRight className="ml-2 w-4 h-4" />
-                                        </Link>
-                                      )}
-                                  </div>
-                              </div>
-                          </div>
-                     );
-                  })}
-              </div>
-          </section>
-
-          {/* --- Filterable Staff Section --- */}
-          <section className="mb-16">
-              {/* Filter Tags */}
-              <div className="flex flex-wrap justify-center gap-3 mb-10 pt-8 border-t border-gray-200">
-                  <Button
-                      variant={activeFilter === null ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setActiveFilter(null)}
-                      className={cn(
-                          "rounded-full transition-all",
-                          activeFilter === null ? 'bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]' : 'border-gray-300 hover:bg-gray-100'
-                      )}
+                    href="/surgeons-staff"
+                    className={cn(
+                      "px-3 py-1.5 text-sm rounded-md border transition-all duration-200",
+                      !category
+                        ? "bg-[#8B5C9E] text-white border-[#8B5C9E]"
+                        : "bg-white text-gray-600 border-gray-200 hover:border-[#8B5C9E]/50 hover:text-[#8B5C9E]"
+                    )}
                   >
-                      All Team Members
-                  </Button>
-                  {filterableRoles.map(role => {
-                      const sectionInfo = sections.find(s => s.role === role);
-                      const count = filterableStaff.filter(s => s.role === role).length;
-                      if (count === 0) return null; // Don't show filter if no staff have this role
-                      
-                      return (
-                          <Button
-                              key={role}
-                              variant={activeFilter === role ? 'default' : 'outline'}
-                              size="sm"
-                              onClick={() => setActiveFilter(role)}
-                               className={cn(
-                                  "rounded-full transition-all",
-                                  activeFilter === role ? 'bg-[#8B5C9E] text-white hover:bg-[#7a4f8a]' : 'border-gray-300 hover:bg-gray-100'
-                              )}
-                          >
-                              {sectionInfo?.title || role.replace('ManipalStaff', 'Manipal Staff')} ({count})
-                          </Button>
-                      );
-                  })}
+                    All ({allStaff.length})
+                                        </Link>
+                  
+                  {categories.filter(cat => cat !== 'All').map((cat) => (
+                    <Link
+                      key={cat}
+                      href={`/surgeons-staff?category=${encodeURIComponent(cat)}`}
+                      className={cn(
+                        "px-3 py-1.5 text-sm rounded-md border transition-all duration-200",
+                        category === cat
+                          ? "bg-[#8B5C9E] text-white border-[#8B5C9E]"
+                          : "bg-white text-gray-600 border-gray-200 hover:border-[#8B5C9E]/50 hover:text-[#8B5C9E]"
+                      )}
+                    >
+                      {categoryConfig[cat]?.title || cat} ({groupedStaff[cat]?.length || 0})
+                                        </Link>
+                  ))}
+                                  </div>
+                              </div>
+                          </div>
+          </Container>
+        </section>
+
+        {/* Featured Staff Section - More refined */}
+        {featuredStaff.length > 0 && !category && (
+          <section className="py-12 px-4 md:px-8 lg:px-12 bg-gradient-to-br from-gray-50 to-white">
+            <Container>
+              <div className="text-center mb-10">
+                <div className="inline-block bg-[#8B5C9E]/10 text-[#8B5C9E] px-3 py-1 rounded-md text-xs font-medium mb-3">
+                  FEATURED SPECIALISTS
+                                      </div>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Our Leading Experts</h2>
+                <p className="text-gray-600 max-w-2xl mx-auto">
+                  Meet our key specialists and department leaders who bring decades of experience to patient care.
+                </p>
+                                  </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {featuredStaff.map((staff) => (
+                  <Link key={staff.id} href={`/surgeons-staff/${staff.slug}`}>
+                    <StaffCard
+                      staff={{
+                        slug: staff.slug,
+                        name: staff.title,
+                        title: staff.category || '',
+                        qualifications: staff.excerpt || '',
+                        imageUrl: staff.featured_image_url || '/placeholder-staff.jpg'
+                      }}
+                    />
+                                        </Link>
+                ))}
+              </div>
+            </Container>
+          </section>
+        )}
+
+        {/* Team Members Section - Better spacing */}
+        <section id="team-members" className="py-12 px-4 md:px-8 lg:px-12">
+          <Container>
+            {category ? (
+              // Show filtered category
+              <>
+                <div className="text-center mb-10">
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                    {categoryConfig[category]?.title || category}
+                  </h2>
+                  <p className="text-gray-600">
+                    {groupedStaff[category]?.length || 0} team member{(groupedStaff[category]?.length || 0) !== 1 ? 's' : ''} in this department
+                  </p>
               </div>
 
-              {/* Filtered Staff Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {filteredStaff.map((staff: StaffMember, index: number) => { 
-                      // Role badge styling
-                      const roleBadgeStyle = {
-                        Psychologist: 'bg-blue-100 text-blue-800',
-                        Fellow: 'bg-green-100 text-green-800',
-                        Physiotherapist: 'bg-purple-100 text-purple-800',
-                        Staff: 'bg-yellow-100 text-yellow-800',
-                        ManipalStaff: 'bg-indigo-100 text-indigo-800'
-                      }[staff.role] || 'bg-gray-100 text-gray-800';
-                      
-                      return (
-                        // Smaller Staff Card
-                        <div 
-                          key={staff.slug} 
-                          className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden text-center transform hover:-translate-y-1 flex flex-col"
-                        >
-                            <div className="relative aspect-square w-full overflow-hidden flex-shrink-0" style={{position: 'relative', minHeight: '250px'}}>
-                                <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold z-10 ${roleBadgeStyle}`}>
-                                  {staff.role.replace('ManipalStaff','Manipal Staff')} 
+                {groupedStaff[category] && groupedStaff[category].length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {groupedStaff[category].map((staff) => (
+                      <Link key={staff.id} href={`/surgeons-staff/${staff.slug}`}>
+                        <StaffCard
+                          staff={{
+                            slug: staff.slug,
+                            name: staff.title,
+                            title: staff.category || '',
+                            qualifications: staff.excerpt || '',
+                            imageUrl: staff.featured_image_url || '/placeholder-staff.jpg'
+                          }}
+                        />
+                      </Link>
+                    ))}
                                 </div>
-                                <div style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0}}>
-                                    <Image
-                                        src={staff.imageUrl}
-                                        alt={staff.name}
-                                        fill
-                                        className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
-                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                                        loading="lazy"
-                                    />
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="max-w-sm mx-auto">
+                      <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                      <h3 className="text-lg font-medium text-gray-700 mb-2">No team members found</h3>
+                      <p className="text-gray-500 text-sm">No team members found in this category.</p>
                                 </div>
                             </div>
-                            <div className="p-3 flex-grow flex flex-col justify-between">
-                                <div> {/* Wrapper for text content */} 
-                                    <h3 className="text-base font-semibold text-gray-900 mb-0.5 leading-tight">
-                                        {staff.name}
-                                    </h3>
-                                    <p className="text-xs text-gray-600 line-clamp-2 leading-snug mb-1">
-                                        {staff.title}
+                )}
+              </>
+            ) : (
+              // Show all categories
+              <>
+                <div className="text-center mb-10">
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Our Complete Team</h2>
+                  <p className="text-gray-600 max-w-2xl mx-auto">
+                    Our multidisciplinary team provides comprehensive care across all aspects of orthopedic and sports medicine.
                                     </p>
                                 </div>
-                                {staff.qualifications && (
-                                  <p className="text-[10px] text-gray-500 mt-1 line-clamp-2 italic leading-tight">
-                                    {staff.qualifications}
-                                  </p>
-                                )}
-                                
-                                {/* Add Profile Link for Naveen and Sameer in filterable staff cards */}
-                                {staff.slug === 'dr-naveen-kumar-l-v' && (
-                                  <Link 
-                                    href="/surgeons-staff/naveen"
-                                    className="mt-3 inline-flex items-center text-[#8B5C9E] text-sm font-medium hover:text-[#7A4F8C]"
-                                  >
-                                    View Full Profile <ArrowRight className="ml-1 w-4 h-4" />
+
+                {sortedCategories.map((categoryKey) => {
+                  const categoryStaff = groupedStaff[categoryKey];
+                  const config = categoryConfig[categoryKey] || { title: categoryKey, icon: Users, priority: 999 };
+                  const IconComponent = config.icon;
+
+                  return (
+                    <div key={categoryKey} className="mb-12">
+                      <div className="flex items-center mb-6 pb-3 border-b border-gray-100">
+                        <IconComponent className="h-6 w-6 text-[#8B5C9E] mr-3" />
+                        <h3 className="text-xl md:text-2xl font-bold text-gray-900">{config.title}</h3>
+                        <span className="ml-3 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                          {categoryStaff.length}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {categoryStaff.map((staff) => (
+                          <Link key={staff.id} href={`/surgeons-staff/${staff.slug}`}>
+                            <StaffCard
+                              staff={{
+                                slug: staff.slug,
+                                name: staff.title,
+                                title: staff.category || '',
+                                qualifications: staff.excerpt || '',
+                                imageUrl: staff.featured_image_url || '/placeholder-staff.jpg'
+                              }}
+                            />
                                   </Link>
-                                )}
-                                
-                                {staff.slug === 'dr-sameer-km' && (
-                                  <Link 
-                                    href="/surgeons-staff/sameer"
-                                    className="mt-3 inline-flex items-center text-[#8B5C9E] text-sm font-medium hover:text-[#7A4F8C]"
-                                  >
-                                    View Full Profile <ArrowRight className="ml-1 w-4 h-4" />
-                                  </Link>
-                                )}
-                                
-                                {staff.slug === 'shama-kellogg' && (
-                                  <Link 
-                                    href="/surgeons-staff/shama-kellogg"
-                                    className="mt-3 inline-flex items-center text-[#8B5C9E] text-sm font-medium hover:text-[#7A4F8C]"
-                                  >
-                                    View Full Profile <ArrowRight className="ml-1 w-4 h-4" />
-                                  </Link>
-                                )}
+                        ))}
                             </div>
                        </div>
                       );
                     })}
-                </div>
-
-                {/* Message if no staff match filter */}
-                {filteredStaff.length === 0 && activeFilter && (
-                    <div className="text-center text-gray-500 py-10 col-span-full">
-                        No team members found for the "{sections.find(s => s.role === activeFilter)?.title || activeFilter}" category.
-                    </div>
-                )}
+              </>
+            )}
+          </Container>
           </section>
 
-          {/* Additional Info Section */}
-          <section className="bg-white rounded-xl p-8 shadow-md mt-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Work With the Best in Orthopedic Care</h2>
-            <div className="prose max-w-none">
-              <p>
-                At Sports Orthopedics Institute, our medical team comprises internationally trained and experienced 
-                specialists who have achieved excellence in their respective fields. Our surgeons have been 
-                recognized with prestigious awards and have pioneered advanced techniques in orthopedic care.
+        {/* Call to Action - More subtle */}
+        <section className="py-12 px-4 md:px-8 lg:px-12 bg-[#2E3A59]">
+          <Container>
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                Ready to Meet Our Team?
+              </h2>
+              <p className="text-white/80 mb-6 max-w-xl mx-auto">
+                Schedule a consultation with our expert team to discuss your treatment options.
               </p>
-              <p>
-                We believe in a collaborative approach to patient care, bringing together surgeons, specialists, 
-                and support staff to develop comprehensive treatment plans tailored to each patient's unique needs.
-              </p>
-              <p>
-                To schedule a consultation with any of our medical professionals, please 
-                <a href="/contact" className="text-[#8B5C9E] hover:text-[#7a4f8a] mx-1">contact us</a>
-                or call us directly at <strong>+91-6364538660</strong>.
-              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <BookingButton 
+                  className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white px-6 py-3 font-medium rounded-lg transition-all duration-300 hover:shadow-lg w-full sm:w-auto"
+                  icon={null}
+                  text="Book Consultation"
+                />
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center px-6 py-3 border border-white/25 text-white font-medium rounded-lg hover:bg-white/5 transition-all duration-300 w-full sm:w-auto justify-center"
+                >
+                  Contact Us
+                  <Phone className="ml-2 h-4 w-4" />
+                </Link>
+              </div>
             </div>
+          </Container>
           </section>
-
       </main>
       
       <SiteFooter />
-
-      {/* Booking Modal Added */}
-      <BookingModal 
-        isOpen={isBookingModalOpen}
-        onClose={() => setIsBookingModalOpen(false)}
-      />
     </div>
   );
 } 

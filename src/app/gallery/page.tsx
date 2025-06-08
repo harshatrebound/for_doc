@@ -1,20 +1,24 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X, Loader2 } from 'lucide-react';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
-import galleryImages from '@/data/galleryImages';
-
-// Get unique categories
-const categories = ['All', ...Array.from(new Set(galleryImages.map(img => img.category)))];
+import { GalleryImage } from '@/types/gallery';
+import { getGalleryImagesAction, getGalleryCategoriesAction } from './actions';
 
 export default function GalleryPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [images, setImages] = useState<GalleryImage[]>([]);
+  const [categories, setCategories] = useState<string[]>(['All']);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -24,12 +28,53 @@ export default function GalleryPage() {
 
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
   
-  // Filter images based on category and search
-  const filteredImages = galleryImages.filter(image => {
-    const matchesCategory = selectedCategory === 'All' || image.category === selectedCategory;
-    const matchesSearch = image.alt.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  // Load initial data
+  useEffect(() => {
+    loadGalleryData();
+    loadCategories();
+  }, []);
+
+  // Load data when filters change
+  useEffect(() => {
+    loadGalleryData();
+  }, [selectedCategory, searchQuery, page]);
+
+  const loadGalleryData = async () => {
+    setLoading(true);
+    try {
+      const result = await getGalleryImagesAction(
+        page,
+        selectedCategory === 'All' ? undefined : selectedCategory,
+        searchQuery || undefined
+      );
+      setImages(result.data);
+      setTotalPages(result.totalPages);
+      setTotal(result.total);
+    } catch (error) {
+      console.error('Error loading gallery images:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const cats = await getGalleryCategoriesAction();
+      setCategories(cats);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setPage(1);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setPage(1);
+  };
 
   return (
     <div ref={containerRef} className="min-h-screen bg-white">
@@ -84,10 +129,10 @@ export default function GalleryPage() {
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
               {/* Category Filters */}
               <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                {categories.map((category) => (
+                {categories.map((category: string) => (
                   <button
                     key={category}
-                    onClick={() => setSelectedCategory(category)}
+                    onClick={() => handleCategoryChange(category)}
                     className={`
                       px-4 py-2 rounded-full text-sm font-medium transition-all
                       ${selectedCategory === category
@@ -107,7 +152,7 @@ export default function GalleryPage() {
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder="Search gallery..."
                   className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:border-[#8B5C9E] focus:ring-2 focus:ring-[#8B5C9E]/20 transition-all"
                 />
@@ -123,11 +168,29 @@ export default function GalleryPage() {
             </div>
           </div>
           
+          {/* Loading State */}
+          {loading && (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-[#8B5C9E]" />
+            </div>
+          )}
+
+          {/* Results Info */}
+          {!loading && (
+            <div className="max-w-7xl mx-auto mb-6">
+              <p className="text-sm text-gray-500">
+                Showing {images.length} of {total} images
+                {selectedCategory !== 'All' && ` in "${selectedCategory}"`}
+                {searchQuery && ` matching "${searchQuery}"`}
+              </p>
+            </div>
+          )}
+          
           {/* Gallery Grid */}
           <div className="max-w-7xl mx-auto">
-            {filteredImages.length > 0 ? (
+            {!loading && images.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredImages.map((image) => (
+                {images.map((image: GalleryImage) => (
                   <motion.div
                     key={image.id}
                     layout
@@ -141,8 +204,8 @@ export default function GalleryPage() {
                   >
                     <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
                       <Image
-                        src={image.src}
-                        alt={image.alt}
+                        src={(image as any).imageUrl || `/images/gallery/${image.image}`}
+                        alt={image.title}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
@@ -150,13 +213,13 @@ export default function GalleryPage() {
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                      <p className="text-white font-medium text-sm md:text-base">{image.alt}</p>
+                      <p className="text-white font-medium text-sm md:text-base">{image.title}</p>
                       <p className="text-white/80 text-xs md:text-sm">{image.category}</p>
                     </div>
                   </motion.div>
                 ))}
               </div>
-            ) : (
+            ) : !loading ? (
               <div className="text-center py-12">
                 <p className="text-gray-600 mb-4">No images found matching your search criteria.</p>
                 <button
@@ -167,6 +230,44 @@ export default function GalleryPage() {
                   className="px-4 py-2 bg-[#8B5C9E] text-white rounded-full text-sm hover:bg-[#7A4B8D] transition-colors"
                 >
                   Reset Filters
+                </button>
+              </div>
+            ) : null}
+
+            {/* Pagination */}
+            {!loading && images.length > 0 && totalPages > 1 && (
+              <div className="flex justify-center mt-12 gap-2">
+                <button
+                  onClick={() => setPage(Math.max(1, page - 1))}
+                  disabled={page === 1}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pageNum = i + 1;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setPage(pageNum)}
+                      className={`px-4 py-2 rounded-lg border ${
+                        page === pageNum
+                          ? 'bg-[#8B5C9E] text-white border-[#8B5C9E]'
+                          : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                
+                <button
+                  onClick={() => setPage(Math.min(totalPages, page + 1))}
+                  disabled={page === totalPages}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
                 </button>
               </div>
             )}
@@ -191,25 +292,33 @@ export default function GalleryPage() {
             className="relative max-w-4xl w-full h-[80vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            {galleryImages.find(img => img.id === selectedImage) && (
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-                <Image
-                  src={galleryImages.find(img => img.id === selectedImage)!.src}
-                  alt={galleryImages.find(img => img.id === selectedImage)!.alt}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 80vw"
-                  className="object-contain"
-                />
-              </div>
-            )}
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-black/40 backdrop-blur-sm">
-              <p className="text-white font-medium">
-                {galleryImages.find(img => img.id === selectedImage)?.alt}
-              </p>
-              <p className="text-white/80 text-sm">
-                {galleryImages.find(img => img.id === selectedImage)?.category}
-              </p>
-            </div>
+            {(() => {
+                             const selectedImageData = images.find((img: GalleryImage) => img.id === selectedImage);
+              if (selectedImageData) {
+                return (
+                  <>
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+                      <Image
+                        src={(selectedImageData as any).imageUrl || `/images/gallery/${selectedImageData.image}`}
+                        alt={selectedImageData.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 80vw"
+                        className="object-contain"
+                      />
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-black/40 backdrop-blur-sm">
+                      <p className="text-white font-medium">
+                        {selectedImageData.title}
+                      </p>
+                      <p className="text-white/80 text-sm">
+                        {selectedImageData.category}
+                      </p>
+                    </div>
+                  </>
+                );
+              }
+              return null;
+            })()}
           </div>
         </div>
       )}

@@ -4,10 +4,13 @@ import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import { HeroSection } from './components/HeroSection';
 import { VideoCard } from './components/VideoCard';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
+import { ClinicalVideo } from '@/types/clinical-videos';
+import { getClinicalVideosAction, getVideoCategoriesAction } from './actions';
 
-// Clinical videos data with categories
-const videos = [
+// Fallback videos data for development
+const fallbackVideos = [
   {
     id: 'qVDqcy8wwUg',
     title: 'Rotator Cuff Tear I Dr. Naveen Kumar L V I Manipal Hospital Sarjapur Road',
@@ -140,67 +143,174 @@ const videos = [
   }
 ];
 
-// Get all unique categories
-const categories = Array.from(new Set(videos.map(video => video.category)));
-
 // Video grid component with filtering
 function VideoGrid() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  
-  // Filter videos by category if one is selected
-  const filteredVideos = activeCategory 
-    ? videos.filter(video => video.category === activeCategory)
-    : videos;
+  const [videos, setVideos] = useState<ClinicalVideo[]>([]);
+  const [categories, setCategories] = useState<string[]>(['All Videos']);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+
+  // Load initial data
+  useEffect(() => {
+    loadVideosData();
+    loadCategories();
+  }, []);
+
+  // Load data when filters change
+  useEffect(() => {
+    loadVideosData();
+  }, [activeCategory, page]);
+
+  const loadVideosData = async () => {
+    setLoading(true);
+    try {
+      const result = await getClinicalVideosAction(
+        page,
+        activeCategory || undefined
+      );
+      setVideos(result.data);
+      setTotalPages(result.totalPages);
+      setTotal(result.total);
+    } catch (error) {
+      console.error('Error loading clinical videos:', error);
+      // Fallback to static data
+      setVideos(fallbackVideos as any);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const cats = await getVideoCategoriesAction();
+      setCategories(cats);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  };
+
+  const handleCategoryChange = (category: string | null) => {
+    setActiveCategory(category);
+    setPage(1);
+  };
     
-  return (
-    <>
-      {/* Category filter buttons */}
-      <div className="mb-8 flex flex-wrap gap-2">
-        <button 
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors 
-            ${!activeCategory 
-              ? 'bg-[#8B5C9E] text-white' 
-              : 'bg-gray-100 text-gray-700 hover:bg-[#8B5C9E]/10 hover:text-[#8B5C9E]'
-            }`}
-          onClick={() => setActiveCategory(null)}
-        >
-          All Videos
-        </button>
+      return (
+      <>
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-[#8B5C9E]" />
+          </div>
+        )}
+
+        {/* Category filter buttons */}
+        {!loading && (
+          <div className="mb-8 flex flex-wrap gap-2">
+            <button 
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors 
+                ${!activeCategory 
+                  ? 'bg-[#8B5C9E] text-white' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-[#8B5C9E]/10 hover:text-[#8B5C9E]'
+                }`}
+              onClick={() => handleCategoryChange(null)}
+            >
+              All Videos
+            </button>
+            
+            {(categories || []).filter((cat: string) => cat !== 'All Videos').map((category: string) => (
+              <button 
+                key={category} 
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors 
+                  ${activeCategory === category 
+                    ? 'bg-[#8B5C9E] text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-[#8B5C9E]/10 hover:text-[#8B5C9E]'
+                  }`}
+                onClick={() => handleCategoryChange(category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        )}
         
-        {categories.map(category => (
-          <button 
-            key={category} 
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors 
-              ${activeCategory === category 
-                ? 'bg-[#8B5C9E] text-white' 
-                : 'bg-gray-100 text-gray-700 hover:bg-[#8B5C9E]/10 hover:text-[#8B5C9E]'
-              }`}
-            onClick={() => setActiveCategory(category)}
-          >
-            {category}
-          </button>
-        ))}
-      </div>
-      
-      {/* Video count */}
-      <p className="text-sm text-gray-500 mb-6">
-        Showing {filteredVideos.length} of {videos.length} videos
-        {activeCategory ? ` in "${activeCategory}"` : ''}
-      </p>
-      
-      {/* Video Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-        {filteredVideos.map((video) => (
-          <VideoCard
-            key={video.id}
-            youtubeId={video.id}
-            title={video.title}
-            category={video.category}
-          />
-        ))}
-      </div>
-    </>
-  );
+        {/* Video count */}
+        {!loading && (
+          <p className="text-sm text-gray-500 mb-6">
+            Showing {videos.length} of {total} videos
+            {activeCategory ? ` in "${activeCategory}"` : ''}
+          </p>
+        )}
+        
+        {/* Video Grid */}
+        {!loading && videos.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+            {videos.map((video: ClinicalVideo) => (
+              <VideoCard
+                key={video.id}
+                youtubeId={video.video_id || video.id}
+                title={video.title}
+                category={video.category}
+                thumbnailUrl={(video as any).thumbnailUrl || video.thumbnail_url}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* No Results */}
+        {!loading && videos.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-600 mb-4">No videos found.</p>
+            <button
+              onClick={() => handleCategoryChange(null)}
+              className="px-4 py-2 bg-[#8B5C9E] text-white rounded-full text-sm hover:bg-[#7A4B8D] transition-colors"
+            >
+              Show All Videos
+            </button>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && videos.length > 0 && totalPages > 1 && (
+          <div className="flex justify-center mt-12 gap-2">
+            <button
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              const pageNum = i + 1;
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setPage(pageNum)}
+                  className={`px-4 py-2 rounded-lg border ${
+                    page === pageNum
+                      ? 'bg-[#8B5C9E] text-white border-[#8B5C9E]'
+                      : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            
+            <button
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page === totalPages}
+              className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </>
+    );
 }
 
 // Main page component

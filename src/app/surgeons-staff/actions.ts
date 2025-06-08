@@ -1,12 +1,122 @@
 'use server';
 
+import { 
+  getStaffMembers, 
+  getStaffCategories, 
+  searchStaffMembers, 
+  getFeaturedStaffMembers,
+  debugStaffData
+} from '@/lib/directus';
+import { StaffMember, StaffFilters, StaffActionResponse } from '@/types/staff';
+
+export async function getStaffWithFilters(
+  filters: StaffFilters = {}
+): Promise<StaffActionResponse> {
+  const { category, search, page = 1, limit = 12 } = filters;
+  const offset = (page - 1) * limit;
+
+  try {
+    // Fetch staff and categories in parallel
+    const [staffResponse, categories] = await Promise.all([
+      getStaffMembers(limit, offset, category, search),
+      getStaffCategories()
+    ]);
+
+    return {
+      staff: staffResponse.data,
+      total: staffResponse.total,
+      page: staffResponse.page,
+      totalPages: staffResponse.totalPages,
+      categories
+    };
+  } catch (error) {
+    console.error('Error in getStaffWithFilters:', error);
+    return {
+      staff: [],
+      total: 0,
+      page: 1,
+      totalPages: 0,
+      categories: ['All']
+    };
+  }
+}
+
+export async function searchStaffAction(
+  searchTerm: string,
+  limit = 10
+): Promise<StaffMember[]> {
+  try {
+    return await searchStaffMembers(searchTerm, limit);
+  } catch (error) {
+    console.error('Error in searchStaffAction:', error);
+    return [];
+  }
+}
+
+export async function getFeaturedStaffAction(
+  limit = 6
+): Promise<StaffMember[]> {
+  try {
+    return await getFeaturedStaffMembers(limit);
+  } catch (error) {
+    console.error('Error in getFeaturedStaffAction:', error);
+    return [];
+  }
+}
+
+export async function getStaffCategoriesAction(): Promise<string[]> {
+  try {
+    return await getStaffCategories();
+  } catch (error) {
+    console.error('Error in getStaffCategoriesAction:', error);
+    return ['All'];
+  }
+}
+
+// Get individual staff member by slug
+export async function getStaffMemberBySlugAction(slug: string): Promise<StaffMember | null> {
+  try {
+    const { getStaffMemberBySlug } = await import('@/lib/directus');
+    return await getStaffMemberBySlug(slug);
+  } catch (error) {
+    console.error('Error in getStaffMemberBySlugAction:', error);
+    return null;
+  }
+}
+
+// Get related staff members for a staff member page
+export async function getRelatedStaffAction(
+  currentId: string, 
+  category?: string, 
+  limit = 3
+): Promise<StaffMember[]> {
+  try {
+    const { getRelatedStaffMembers } = await import('@/lib/directus');
+    return await getRelatedStaffMembers(currentId, category, limit);
+  } catch (error) {
+    console.error('Error in getRelatedStaffAction:', error);
+    return [];
+  }
+}
+
+// Debug action for testing Directus integration
+export async function debugStaffAction(): Promise<any> {
+  try {
+    return await debugStaffData();
+  } catch (error) {
+    console.error('Error in debugStaffAction:', error);
+    return { error: 'Failed to debug staff data' };
+  }
+}
+
+// Legacy CSV function - kept as fallback
 import path from 'path';
 import { promises as fs } from 'fs';
 import csv from 'csv-parser';
 import { Readable } from 'stream';
 
-// Interface moved from page.tsx
-interface StaffMember {
+// Legacy interface for CSV data
+interface LegacyStaffMember {
   Slug: string;
   PageType: string;
   Title: string;
@@ -21,8 +131,8 @@ interface StaffMember {
   ContentBlocksJSON: string;
 }
 
-// Function moved from page.tsx
-export async function getStaffData(): Promise<StaffMember[]> {
+// Legacy function for CSV fallback
+export async function getStaffDataLegacy(): Promise<LegacyStaffMember[]> {
   try {
     const filePath = path.join(process.cwd(), 'docs', 'surgeons_staff_cms.csv');
     
@@ -38,12 +148,12 @@ export async function getStaffData(): Promise<StaffMember[]> {
     console.log('CSV file content preview:', fileContent.slice(0, 200) + '...');
 
     return new Promise((resolve, reject) => {
-      const results: StaffMember[] = [];
+      const results: LegacyStaffMember[] = [];
       const stream = Readable.from(fileContent);
       
       stream
         .pipe(csv())
-        .on('data', (data: StaffMember) => {
+        .on('data', (data: LegacyStaffMember) => {
           if (data.Slug && data.Title) {
             results.push(data);
           } else {

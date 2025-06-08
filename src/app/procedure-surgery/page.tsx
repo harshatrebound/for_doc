@@ -7,10 +7,11 @@ import { CategoryFilter } from './components/CategoryFilter';
 import { InteractiveBodyMap } from './components/InteractiveBodyMap';
 import { PaginationControls } from './components/PaginationControls';
 import { ScrollToProceduresButton } from './components/ScrollToProceduresButton';
-import { getProceduresData, getProceduresByCategory } from './utils/csvParser';
+import { getProceduresWithFilters } from './actions';
+import { getImageUrl } from '@/lib/directus';
 import { Metadata } from 'next';
 import HeroSection from '@/components/ui/HeroSection';
-import { ArrowDown, ArrowRight, Calendar } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import BookingButton from '@/components/BookingButton';
 
 // Replace static metadata with a function
@@ -32,28 +33,37 @@ export default async function ProcedureSurgeryPage({
     ? parseInt(searchParams.page, 10) 
     : 1;
   
-  const categoryId = typeof searchParams?.category === 'string'
+  const category = typeof searchParams?.category === 'string'
     ? searchParams.category
-    : null;
+    : undefined;
   
-  // Fetch data
-  const { categories } = await getProceduresData();
-  const procedures = await getProceduresByCategory(categoryId);
+  const search = typeof searchParams?.search === 'string'
+    ? searchParams.search
+    : undefined;
   
-  // Pagination logic
-  const pageSize = 9; // Items per page
-  const totalPages = Math.ceil(procedures.length / pageSize);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1)); // Ensure page is within bounds
-  
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const paginatedProcedures = procedures.slice(startIndex, endIndex);
+  // Fetch data using Directus
+  const { procedures, total, totalPages, categories } = await getProceduresWithFilters({
+    category,
+    search,
+    page,
+    limit: 18 // Increased to show more items per page
+  });
   
   // Get query parameters for pagination links (without page param)
   const queryParams: Record<string, string> = {};
-  if (categoryId) {
-    queryParams.category = categoryId;
+  if (category) {
+    queryParams.category = category;
   }
+  if (search) {
+    queryParams.search = search;
+  }
+
+  // Convert categories to the format expected by InteractiveBodyMap and CategoryFilter
+  const categoryOptions = categories.map(cat => ({
+    id: cat === 'All' ? '' : cat,
+    name: cat,
+    count: 0 // TODO: Add proper count when available from API
+  }));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -98,16 +108,33 @@ export default async function ProcedureSurgeryPage({
           }
         >
           {/* Use default color for body map */}
-          <InteractiveBodyMap categories={categories} /> 
+          <InteractiveBodyMap categories={categoryOptions} /> 
         </HeroSection>
         
-        {/* Category Filter */}
+        {/* Search and Filter Section */}
         <section className="py-12 px-4 md:px-8 lg:px-12">
           <div className="max-w-7xl mx-auto">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Filter by Body Area</h2>
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Find Your Procedure</h2>
+              {search && (
+                <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    Showing results for: <strong>"{search}"</strong>
+                    {' '}
+                    <a 
+                      href="/procedure-surgery" 
+                      className="text-blue-600 hover:text-blue-800 underline ml-2"
+                    >
+                      Clear search
+                    </a>
+                  </p>
+                </div>
+              )}
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Filter by Category</h3>
             <CategoryFilter 
-              categories={categories} 
-              activeCategory={categoryId} 
+              categories={categoryOptions} 
+              activeCategory={category || ''} 
             />
           </div>
         </section>
@@ -117,30 +144,30 @@ export default async function ProcedureSurgeryPage({
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-gray-900">
-                {categoryId 
-                  ? `${categories.find(c => c.id === categoryId)?.name || 'Category'} Procedures`
+                {category && category !== 'All'
+                  ? `${category} Procedures`
                   : 'All Procedures'
                 }
               </h2>
               <p className="text-gray-500">
-                Showing {paginatedProcedures.length} of {procedures.length} procedures
+                Showing {procedures.length} of {total} procedures
               </p>
             </div>
             
-            {paginatedProcedures.length > 0 ? (
+            {procedures.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {paginatedProcedures.map((procedure) => (
+                {procedures.map((procedure) => (
                   <ProcedureCard 
                     key={procedure.slug}
                     slug={procedure.slug}
                     title={procedure.title}
-                    category={procedure.category}
-                    categoryId={procedure.categoryId}
-                    summary={procedure.summary}
-                    imageUrl={procedure.imageUrl}
-                    procedureTime={procedure.procedureTime}
-                    recoveryPeriod={procedure.recoveryPeriod}
-                    inpatient={procedure.inpatient}
+                    category={procedure.category || 'General'}
+                    categoryId={procedure.category || ''}
+                    summary={procedure.content_text || procedure.meta_description || ''}
+                    imageUrl={getImageUrl(procedure.featured_image_url || null) || '/images/default-procedure.jpg'}
+                    procedureTime={procedure.difficulty_level}
+                    recoveryPeriod={procedure.recovery_time}
+                    inpatient={false}
                   />
                 ))}
               </div>
@@ -148,7 +175,7 @@ export default async function ProcedureSurgeryPage({
               <div className="text-center py-12">
                 <h3 className="text-xl font-medium text-gray-700 mb-2">No procedures found</h3>
                 <p className="text-gray-500">
-                  {categoryId 
+                  {category && category !== 'All'
                     ? 'No procedures found in this category. Please try another category.'
                     : 'No procedures found. Please check back later.'}
                 </p>
@@ -156,12 +183,14 @@ export default async function ProcedureSurgeryPage({
             )}
             
             {/* Pagination */}
-            <PaginationControls
-              currentPage={currentPage}
-              totalPages={totalPages}
-              baseUrl="/procedure-surgery"
-              queryParams={queryParams}
-            />
+            {totalPages > 1 && (
+              <PaginationControls
+                currentPage={page}
+                totalPages={totalPages}
+                baseUrl="/procedure-surgery"
+                queryParams={queryParams}
+              />
+            )}
           </div>
         </section>
         

@@ -187,8 +187,8 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
     { name: 'Home', href: '/' },
     { name: 'Surgeons & Staff', href: '/surgeons-staff' },
     { name: 'Procedures', href: '/procedure-surgery' },
-    // Add Education section for mobile
-    { section: 'Education' },
+    // Add Bone Joint School section for mobile
+    { section: 'Bone Joint School' },
     { name: 'Bone & Joint School', href: '/bone-joint-school' },
     ...(boneJointCategories.map((category: string) => ({
       name: `  ${category}`, // Indent to show hierarchy
@@ -224,7 +224,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
       const timeout = setTimeout(() => {
         setActiveDropdown(null);
         setActiveCategory(null);
-      }, 300); // 300ms delay gives enough time to move to submenu
+      }, 500); // Increased to 500ms for better UX
       
       setLeaveTimeout(timeout);
     }
@@ -386,9 +386,9 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                     </li>
                   ))}
                   
-                  {/* Education Dropdown */}
+                  {/* Bone Joint School Dropdown */}
                   <div 
-                    className="relative"
+                    className="relative group"
                     onMouseEnter={() => handleMouseEnter('education')}
                     onMouseLeave={handleMouseLeave}
                   >
@@ -397,131 +397,93 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                         ? 'text-white hover:text-white/80' 
                         : 'text-gray-800 hover:text-[#8B5C9E]'
                     }`}>
-                      Education
+                      Bone Joint School
                       <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${
                         activeDropdown === 'education' ? 'rotate-180' : ''
                       }`} />
                     </button>
                     
-                    <AnimatePresence>
-                      {activeDropdown === 'education' && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.2, ease: 'easeInOut' }}
-                          className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-100/80 z-[60] overflow-visible"
+                    {/* Level 1: Main dropdown */}
+                    {activeDropdown === 'education' && (
+                      <div className="absolute top-full left-0 pt-2 z-[60]">
+                        <div 
+                          className="bg-white rounded-xl shadow-2xl border border-gray-100/80 w-80 overflow-visible"
                           onMouseEnter={handleMenuContainerMouseEnter}
                         >
-                          <div className="p-4">
-                            {/* Bone & Joint School with submenu */}
-                            <div 
-                              className="relative group"
-                              onMouseEnter={() => handleCategoryMouseEnter('boneJointSchool')}
-                            >
-                              <Link
-                                href="/bone-joint-school"
-                                className="flex items-center justify-between w-full px-3 py-3 rounded-lg hover:bg-[#8B5C9E]/10 transition-colors group"
-                                onClick={() => setActiveDropdown(null)}
-                              >
-                                <div className="flex items-center">
-                                  <BookOpen className="w-5 h-5 mr-3 text-[#8B5C9E]" />
-                                  <div>
-                                    <div className="font-semibold text-gray-900">Bone & Joint School</div>
-                                    <div className="text-xs text-gray-500">Educational topics</div>
-                                  </div>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[#8B5C9E]" />
-                              </Link>
-
-                              {/* Categories submenu - Level 2 */}
-                              {activeCategory === 'boneJointSchool' && (
-                                <div
-                                  className="fixed bg-white rounded-xl shadow-2xl border border-gray-100/80 z-[70] overflow-visible w-72"
-                                  style={{
-                                    left: '100%',
-                                    top: '0',
-                                    marginLeft: '8px'
-                                  }}
-                                  onMouseEnter={handleMenuContainerMouseEnter}
-                                >
-                                  <div className="p-4">
-                                    <h4 className="font-bold text-gray-900 mb-3 px-2">Categories</h4>
-                                    {categoriesLoading ? (
-                                      <div className="text-center py-4 text-gray-500">Loading...</div>
-                                    ) : displayCategories.length === 0 ? (
-                                      <div className="text-center py-4 text-gray-500">No categories found</div>
-                                    ) : (
-                                      <div className="space-y-1">
-                                        <div className="text-xs text-gray-400 mb-2">
-                                          Found {displayCategories.length} categories
+                          {/* Categories directly in main dropdown */}
+                          <div className="p-4 pr-8">
+                            <h4 className="font-bold text-gray-900 mb-3 px-2">Categories</h4>
+                            {categoriesLoading ? (
+                              <div className="text-center py-4 text-gray-500">Loading...</div>
+                            ) : displayCategories.length === 0 ? (
+                              <div className="text-center py-4 text-gray-500">No categories found</div>
+                            ) : (
+                              <div className="space-y-1">
+                                {displayCategories
+                                  .filter(category => category !== 'All')
+                                  .map(category => {
+                                    const categoryTopics = getTopicsForCategory(category);
+                                    
+                                    return (
+                                      <div 
+                                        key={category}
+                                        className="relative group"
+                                      >
+                                        <div
+                                          className="flex items-center justify-between w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                                          onMouseEnter={() => handleCategoryMouseEnter(category)}
+                                        >
+                                          <Link
+                                            href={`/bone-joint-school?category=${category}`}
+                                            className="flex items-center flex-1"
+                                            onClick={() => setActiveDropdown(null)}
+                                          >
+                                            {getCategoryIcon(category)}
+                                            <span className="font-medium text-gray-900">{category}</span>
+                                            <span className="ml-2 text-xs text-gray-500">({categoryTopics.length})</span>
+                                          </Link>
+                                          {categoryTopics.length > 0 && (
+                                            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[#8B5C9E]" />
+                                          )}
                                         </div>
-                                        {displayCategories
-                                          .filter(category => category !== 'All')
-                                          .map(category => {
-                                            const categoryTopics = getTopicsForCategory(category);
-                                            
-                                            return (
-                                              <div 
-                                                key={category}
-                                                className="relative group"
-                                                onMouseEnter={() => handleCategoryMouseEnter(category)}
-                                              >
-                                                <Link
-                                                  href={`/bone-joint-school?category=${category}`}
-                                                  className="flex items-center justify-between w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group"
-                                                  onClick={() => setActiveDropdown(null)}
-                                                >
-                                                  <div className="flex items-center">
-                                                    {getCategoryIcon(category)}
-                                                    <span className="font-medium text-gray-900">{category}</span>
-                                                    <span className="ml-2 text-xs text-gray-500">({categoryTopics.length})</span>
-                                                  </div>
-                                                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[#8B5C9E]" />
-                                                </Link>
 
-                                                {/* Topics submenu - Level 3 */}
-                                                {activeCategory === category && categoryTopics.length > 0 && (
-                                                  <div
-                                                    className="fixed bg-white rounded-xl shadow-2xl border border-gray-100/80 z-[80] overflow-hidden w-80 max-h-[400px] overflow-y-auto"
-                                                    style={{
-                                                      left: '100%',
-                                                      top: '0',
-                                                      marginLeft: '8px'
-                                                    }}
-                                                    onMouseEnter={handleMenuContainerMouseEnter}
-                                                  >
-                                                    <div className="p-4">
-                                                      <h5 className="font-bold text-gray-900 mb-3 px-2 capitalize">{category} Topics</h5>
-                                                      <ul className="space-y-1">
-                                                        {categoryTopics.map((topic: BoneJointTopic) => (
-                                                          <li key={topic.slug}>
-                                                            <Link
-                                                              href={`/bone-joint-school/${topic.slug}`}
-                                                              className="block px-3 py-2 text-sm text-gray-700 hover:bg-[#8B5C9E]/10 hover:text-[#8B5C9E] rounded-lg transition-colors"
-                                                              onClick={() => setActiveDropdown(null)}
-                                                            >
-                                                              {topic.title}
-                                                            </Link>
-                                                          </li>
-                                                        ))}
-                                                      </ul>
-                                                    </div>
-                                                  </div>
-                                                )}
+                                        {/* Topics submenu - Properly positioned next to category */}
+                                        {categoryTopics.length > 0 && activeCategory === category && (
+                                          <div 
+                                            className="absolute left-full top-0 ml-2 z-[80] transition-all duration-200"
+                                          >
+                                            <div
+                                              className="bg-white rounded-xl shadow-2xl border border-gray-100/80 w-80 max-h-[400px] overflow-y-auto"
+                                              onMouseEnter={handleMenuContainerMouseEnter}
+                                            >
+                                              <div className="p-4">
+                                                <h5 className="font-bold text-gray-900 mb-3 px-2 capitalize">{category} Topics</h5>
+                                                <ul className="space-y-1">
+                                                  {categoryTopics.map((topic: BoneJointTopic) => (
+                                                    <li key={topic.slug}>
+                                                      <Link
+                                                        href={`/bone-joint-school/${topic.slug}`}
+                                                        className="block px-3 py-2 text-sm text-gray-700 hover:bg-[#8B5C9E]/10 hover:text-[#8B5C9E] rounded-lg transition-colors"
+                                                        onClick={() => setActiveDropdown(null)}
+                                                      >
+                                                        {topic.title}
+                                                      </Link>
+                                                    </li>
+                                                  ))}
+                                                </ul>
                                               </div>
-                                            );
-                                          })}
+                                            </div>
+                                          </div>
+                                        )}
                                       </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
+                                    );
+                                  })}
+                              </div>
+                            )}
                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Resources Dropdown - Using hover with delay */}
@@ -744,7 +706,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                   {!categoriesLoading && boneJointCategories.length > 0 && (
                     <div className="mt-4">
                       <div className="px-4 pt-2 pb-2 text-sm font-medium text-gray-500 uppercase tracking-wider">
-                        Education
+                                                  Bone Joint School
                       </div>
 
                       {/* "All" category */}
