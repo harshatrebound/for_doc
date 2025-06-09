@@ -4,7 +4,7 @@ import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import { Metadata, ResolvingMetadata } from 'next';
 import { ChevronLeft, Calendar, Clock, Share2, Facebook, Twitter, Linkedin, Mail, ArrowLeft } from 'lucide-react';
-import { getPostBySlug, getRelatedPosts } from '@/lib/directus';
+import { getPostBySlug, getRelatedPosts, getImageUrl } from '@/lib/directus';
 import type { BlogPost } from '@/lib/directus';
 import BookingButton from './components/BookingButton';
 
@@ -13,11 +13,7 @@ type Props = {
   params: { slug: string };
 };
 
-// Helper function to get image URL with proper handling
-function getImageUrl(imageId: string | null): string {
-  if (!imageId) return '/images/default-blog.jpg';
-  return `${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${imageId}?access_token=${process.env.DIRECTUS_ADMIN_TOKEN}`;
-}
+// Using centralized image URL function from directus.ts
 
 // Helper function to format date
 function formatDate(dateString: string): string {
@@ -163,7 +159,7 @@ const RelatedPostCard = ({ post }: { post: BlogPost }) => {
       <div className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
         <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
           <Image
-            src={getImageUrl(post.featured_image_url)}
+            src={getPublicImageUrl(post.featured_image_url)}
             alt={post.title}
             fill
             sizes="64px"
@@ -230,7 +226,7 @@ export default async function PostPage({ params }: Props) {
       <section className="relative h-[40vh] md:h-[50vh] flex items-center justify-center text-white overflow-hidden">
         <div className="absolute inset-0 z-0 bg-gray-800">
           <Image
-            src={getImageUrl(post.featured_image_url)}
+            src={getPublicImageUrl(post.featured_image_url)}
             alt={post.title}
             fill
             sizes="100vw"

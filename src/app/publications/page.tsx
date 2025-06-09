@@ -11,6 +11,7 @@ import BookingButton from '@/components/BookingButton';
 import { ScrollToContentButton } from './components/ScrollToContentButton';
 import { getPublicationsAction } from '@/app/actions/publications';
 import type { Publication } from '@/types/publications';
+import { getImageUrl } from '@/lib/directus';
 
 // Add metadata for SEO
 export const metadata: Metadata = {
@@ -30,8 +31,8 @@ const DEFAULT_IMAGE = '/images/default-procedure.jpg';
 function PublicationCard({ publication }: { publication: Publication }) {
   const { title, featured_image_url, source_url, authors, publication_date, slug, content_html, publication_type, category } = publication;
   
-  // Use featured_image_url from Directus or fallback to default
-  const imageUrl = featured_image_url || DEFAULT_IMAGE;
+  // Use centralized image URL function with proper fallback
+  const imageUrl = getImageUrl(featured_image_url || null);
   
   // Always link to individual publication page - let that page handle content vs external link
   // const hasContent = Boolean(content_html && content_html.trim().length > 0);
@@ -65,29 +66,29 @@ function PublicationCard({ publication }: { publication: Publication }) {
       </div>
       
       <div className="p-5">
-        <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-[#8B5C9E] transition-colors">
+        <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-[#8B5C9E] transition-colors leading-tight">
           {displayTitle}
         </h3>
         
         <div className="flex flex-col space-y-2 text-sm text-gray-600 mb-4">
           {authors && (
-            <div className="flex items-center">
-              <User className="w-4 h-4 mr-1" />
-              <span className="line-clamp-1">{authors}</span>
+            <div className="flex items-center min-w-0">
+              <User className="w-4 h-4 mr-1 flex-shrink-0" />
+              <span className="line-clamp-1 truncate">{authors}</span>
             </div>
           )}
           
           {publication_type && (
-            <div className="flex items-center">
-              <BookOpen className="w-4 h-4 mr-1" />
-              <span className="line-clamp-1">{publication_type}</span>
+            <div className="flex items-center min-w-0">
+              <BookOpen className="w-4 h-4 mr-1 flex-shrink-0" />
+              <span className="line-clamp-1 truncate">{publication_type}</span>
             </div>
           )}
           
           {formattedDate && (
-            <div className="flex items-center">
-              <Calendar className="w-4 h-4 mr-1" />
-              <span>{formattedDate}</span>
+            <div className="flex items-center min-w-0">
+              <Calendar className="w-4 h-4 mr-1 flex-shrink-0" />
+              <span className="truncate">{formattedDate}</span>
             </div>
           )}
         </div>
@@ -107,8 +108,8 @@ function PublicationCard({ publication }: { publication: Publication }) {
 function PublicationHighlight({ publication }: { publication: Publication }) {
   const { title, featured_image_url, source_url, authors, publication_date, slug, content_html, publication_type } = publication;
   
-  // Use featured_image_url from Directus or fallback to default
-  const imageUrl = featured_image_url || DEFAULT_IMAGE;
+  // Use centralized image URL function with proper fallback
+  const imageUrl = getImageUrl(featured_image_url || null);
   
   // Always link to individual publication page - let that page handle content vs external link
   // const hasContent = Boolean(content_html && content_html.trim().length > 0);
@@ -117,9 +118,9 @@ function PublicationHighlight({ publication }: { publication: Publication }) {
   const displayTitle = title.replace(' | Sports Orthopedics', '').trim();
   
   return (
-    <div className="mb-10">
-      <div className="bg-white rounded-xl overflow-hidden shadow-lg flex flex-col md:flex-row">
-        <div className="md:w-2/5 relative h-64 md:h-auto">
+    <div className="mb-10 w-full">
+      <div className="bg-white rounded-xl overflow-hidden shadow-lg flex flex-col md:flex-row w-full">
+        <div className="md:w-2/5 relative h-64 md:h-auto flex-shrink-0">
           <div className="absolute inset-0 bg-gray-200">
             <ClientImage
               src={imageUrl}
@@ -130,31 +131,31 @@ function PublicationHighlight({ publication }: { publication: Publication }) {
             />
           </div>
         </div>
-        <div className="md:w-3/5 p-6 md:p-8 flex flex-col justify-between">
-          <div>
+        <div className="md:w-3/5 p-6 md:p-8 flex flex-col justify-between min-w-0">
+          <div className="min-w-0">
             <div className="flex items-center mb-3">
               <div className="flex items-center text-sm text-[#8B5C9E] bg-[#8B5C9E]/10 px-3 py-1 rounded-full">
-                <BookOpen className="w-4 h-4 mr-1.5" />
+                <BookOpen className="w-4 h-4 mr-1.5 flex-shrink-0" />
                 <span className="font-medium">Featured Publication</span>
               </div>
             </div>
             
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+            <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 leading-tight break-words">
               {displayTitle}
             </h2>
             
-            <div className="flex items-center mb-4 text-gray-600">
-              <User className="w-4 h-4 mr-1.5" />
-              <span>{authors}</span>
+            <div className="flex items-center mb-4 text-gray-600 min-w-0">
+              <User className="w-4 h-4 mr-1.5 flex-shrink-0" />
+              <span className="truncate text-sm md:text-base">{authors}</span>
             </div>
           </div>
           
           <Link 
             href={`/publications/${slug}`}
-            className="inline-flex items-center text-[#8B5C9E] font-medium hover:underline"
+            className="inline-flex items-center text-[#8B5C9E] font-medium hover:underline mt-4 self-start"
           >
-            Read full publication
-            <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-0.5" />
+            <span className="break-words">Read full publication</span>
+            <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-0.5 flex-shrink-0" />
           </Link>
         </div>
       </div>
@@ -175,7 +176,7 @@ export default async function PublicationsPage() {
   const regularPublications = publications.length > 0 ? publications.slice(1) : [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Use transparent header for image background */}
       <SiteHeader theme="transparent" /> 
       
@@ -186,7 +187,7 @@ export default async function PublicationsPage() {
         height="medium"
         bgColor="#2E3A59" // Dark background color
         title={
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto px-4">
             {/* Badge */}
             <div className="inline-block bg-[#8B5C9E]/20 text-white px-4 py-1 rounded-lg text-sm font-medium mb-6 backdrop-blur-sm border border-[#8B5C9E]/30">
               ACADEMIC RESEARCH
@@ -212,26 +213,30 @@ export default async function PublicationsPage() {
       />
 
       {/* Main Content Area */}
-      <main id="publications-content" className="container mx-auto px-4 py-12 md:py-16">
+      <main id="publications-content" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         
         {/* Publications Count */}
-        <div className="mb-10">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+        <div className="mb-10 w-full">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 gap-4 w-full">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 break-words">
               Research Publications
             </h2>
             
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 flex-shrink-0">
               {total} publication{total !== 1 ? 's' : ''}
             </div>
           </div>
           
           {/* Highlight Publication (if exists) */}
-          {highlightPublication && <PublicationHighlight publication={highlightPublication} />}
+          {highlightPublication && (
+            <div className="w-full overflow-hidden">
+              <PublicationHighlight publication={highlightPublication} />
+            </div>
+          )}
         
           {/* Publications Grid */}
           {regularPublications.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {regularPublications.map((publication) => (
                 <PublicationCard key={publication.slug} publication={publication} />
               ))}

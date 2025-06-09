@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import URL breaking styles */
+@import '../styles/url-break.css';
+
 @layer base {
   :root {
     --background: 0 0% 100%;

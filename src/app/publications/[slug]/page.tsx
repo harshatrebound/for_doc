@@ -184,8 +184,8 @@ export default async function PublicationDetail({ params }: Props) {
       </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 pb-12">
-        <div className="max-w-4xl mx-auto">
+      <main className="container mx-auto px-4 pb-12 overflow-hidden">
+        <div className="max-w-4xl mx-auto w-full">
           {/* Header */}
           <div className="bg-white rounded-lg shadow-sm p-6 md:p-8 mb-8">
             {/* Publication Category Badge */}
@@ -199,16 +199,16 @@ export default async function PublicationDetail({ params }: Props) {
             )}
 
             {/* Title */}
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 break-words">
               {cleanTitle}
             </h1>
 
             {/* Meta Information */}
             <div className="flex flex-wrap items-center gap-6 text-gray-600 mb-6">
               {publication.authors && (
-                <div className="flex items-center">
-                  <User className="w-5 h-5 mr-2" />
-                  <span>{publication.authors}</span>
+                <div className="flex items-center min-w-0">
+                  <User className="w-5 h-5 mr-2 flex-shrink-0" />
+                  <span className="break-words">{publication.authors}</span>
                 </div>
               )}
               
@@ -256,9 +256,10 @@ export default async function PublicationDetail({ params }: Props) {
 
               {/* Content */}
               {hasContent ? (
-                <div className="bg-white rounded-lg shadow-sm p-6 md:p-8">
+                <div className="bg-white rounded-lg shadow-sm p-6 md:p-8 overflow-hidden">
                   <div 
-                    className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-[#8B5C9E] prose-a:no-underline hover:prose-a:underline prose-strong:text-gray-900 prose-ul:text-gray-700 prose-ol:text-gray-700"
+                    className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-[#8B5C9E] prose-a:no-underline hover:prose-a:underline prose-strong:text-gray-900 prose-ul:text-gray-700 prose-ol:text-gray-700 [&_a]:break-all [&_a]:hyphens-auto [&_*]:break-words [&_*]:overflow-wrap-anywhere"
+                    style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
                     dangerouslySetInnerHTML={{ __html: publication.content_html || '' }}
                   />
                 </div>

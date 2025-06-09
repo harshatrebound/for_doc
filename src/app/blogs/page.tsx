@@ -1,4 +1,4 @@
-import { getBlogPosts } from '@/lib/directus';
+import { getBlogPosts, getImageUrl } from '@/lib/directus';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import Image from 'next/image';
@@ -32,13 +32,7 @@ function getCategoryColor(category: string) {
   return colors[hash % colors.length];
 }
 
-// Helper function to get image URL with proper handling
-function getImageUrl(imageId: string | null): string {
-  if (!imageId) return '/images/default-blog.jpg';
-  
-  // Use authenticated URL with admin token
-  return `${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${imageId}?access_token=${process.env.DIRECTUS_ADMIN_TOKEN}`;
-}
+// Using centralized image URL function from directus.ts
 
 // Blog Card Component
 function BlogCard({ post, featured = false }: { post: any; featured?: boolean }) {

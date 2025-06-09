@@ -7,6 +7,7 @@ import SiteFooter from '@/components/layout/SiteFooter';
 import { ChevronLeft, Calendar, Clock, Share2, Facebook, Twitter, Linkedin, Mail, ArrowLeft } from 'lucide-react';
 import BookingModal from '@/components/BookingModal';
 import type { BlogPost } from '@/lib/directus';
+import { getPublicImageUrl } from '@/lib/directus';
 import React from 'react';
 import { Button } from '@/components/ui/button';
 

@@ -84,15 +84,40 @@ interface DirectusSchema {
 
 function toAssetUrl(fileId: string): string {
   if (!fileId) return '/images/default-blog-image.webp';
+  
+  // Check if fileId is already a full URL (starts with http)
+  if (fileId.startsWith('http')) {
+    return fileId; // Return as-is if it's already a full URL
+  }
+  
   return `${directusUrl}/assets/${fileId}`;
 }
 
-// Function to get image URL with proper handling
-function getImageUrl(imageId: string | null): string {
+// Function to get image URL with proper handling - EXPORTED for use in components
+export function getImageUrl(imageId: string | null): string {
   if (!imageId) return '/images/default-blog.jpg';
   
-  // Use authenticated URL with admin token
+  // Check if imageId is already a full URL (starts with http)
+  if (imageId.startsWith('http')) {
+    return imageId; // Return as-is if it's already a full URL
+  }
+  
+  // For server-side usage only - don't expose admin token to client
+  // In production, consider using public assets or server-side image optimization
   return `${directusUrl}/assets/${imageId}?access_token=${directusToken}`;
+}
+
+// Function to get public image URL (without admin token) - safer for client-side
+export function getPublicImageUrl(imageId: string | null): string {
+  if (!imageId) return '/images/default-blog.jpg';
+  
+  // Check if imageId is already a full URL (starts with http)
+  if (imageId.startsWith('http')) {
+    return imageId; // Return as-is if it's already a full URL
+  }
+  
+  // Public URL without admin token - works in client and server
+  return `${directusUrl}/assets/${imageId}`;
 }
 
 // Function to get all blog posts
@@ -750,8 +775,7 @@ export async function debugGalleryData(): Promise<any> {
   }
 }
 
-// Export the getImageUrl function for use in components
-export { getImageUrl };
+// getImageUrl function is already exported above (line 91)
 
 // ========== GALLERY API FUNCTIONS ==========
 

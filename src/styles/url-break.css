@@ -1,0 +1,51 @@
+/* URL Breaking Styles - Prevents long URLs from overflowing containers */
+
+/* Apply to all links and URL-like content */
+a[href*="http"],
+a[href*="www"],
+.url-break,
+.prose a,
+.publication-content a {
+  word-break: break-all !important;
+  overflow-wrap: anywhere !important;
+  hyphens: auto !important;
+  line-break: anywhere !important;
+}
+
+/* For general text content that might contain URLs */
+.prose,
+.publication-content,
+.content-container {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+/* Specific handling for code blocks and pre-formatted text containing URLs */
+.prose pre,
+.prose code,
+.publication-content pre,
+.publication-content code {
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+/* Container-level overflow prevention */
+.publication-container,
+.content-wrapper {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Mobile-specific URL breaking */
+@media (max-width: 768px) {
+  a[href*="http"],
+  a[href*="www"],
+  .url-text {
+    word-break: break-all !important;
+    font-size: 0.9em;
+    line-height: 1.4;
+  }
+} 
