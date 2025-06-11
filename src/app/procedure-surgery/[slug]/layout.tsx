@@ -1,5 +1,5 @@
 import { Metadata, ResolvingMetadata } from 'next';
-import { getProcedureBySlug } from '../utils/csvParser';
+import { getProcedureSurgeryBySlug } from '@/lib/directus';
 
 interface ProcedureLayoutProps {
   children: React.ReactNode;
@@ -10,7 +10,7 @@ export async function generateMetadata(
   { params }: ProcedureLayoutProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const procedure = await getProcedureBySlug(params.slug);
+  const procedure = await getProcedureSurgeryBySlug(params.slug);
   
   if (!procedure) {
     return {
@@ -19,9 +19,12 @@ export async function generateMetadata(
     };
   }
   
+  const title = procedure.meta_title || `${procedure.title} | Surgical Procedure`;
+  const description = procedure.meta_description || procedure.description || 'Learn about this surgical procedure from our expert orthopedic team.';
+  
   return {
-    title: `${procedure.title} | Surgical Procedure`,
-    description: procedure.summary
+    title,
+    description
   };
 }
 

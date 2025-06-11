@@ -144,24 +144,6 @@ export default async function ProcedurePage({ params }: ProcedurePageProps) {
               {procedure.content_html && (
                 <ContentRenderer html={procedure.content_html} />
               )}
-
-              {/* Additional Information Sections */}
-              {procedure.source_url && (
-                <div className="bg-blue-50 p-6 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Source Information</h3>
-                  <p className="text-gray-600">
-                    This procedure information was sourced from: 
-                    <a 
-                      href={procedure.source_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-[#8B5C9E] hover:underline ml-1"
-                    >
-                      View Original Source
-                    </a>
-                  </p>
-                </div>
-              )}
             </div>
             
             {/* Sidebar */}

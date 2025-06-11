@@ -395,37 +395,55 @@ export default async function BoneJointTopicPage({ params }: Props) {
                 {topicData.title}
               </h1>
               
-              <div className="flex flex-wrap items-center gap-6 text-white/90 mb-8">
+              {/* Compact Meta Information */}
+              <div className="flex flex-wrap items-center gap-4 text-white/80 text-sm mb-8">
                 {topicData.category && (
-                  <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                    <Tag className="w-4 h-4 mr-2" />
-                    <span className="font-medium">{topicData.category}</span>
-                  </div>
+                  <span className="flex items-center">
+                    <Tag className="w-4 h-4 mr-1" />
+                    {topicData.category}
+                  </span>
                 )}
                 {topicData.readingTime && (
-                  <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                    <Clock className="w-4 h-4 mr-2" />
-                    <span>{topicData.readingTime}</span>
-                  </div>
+                  <span className="flex items-center">
+                    <Clock className="w-4 h-4 mr-1" />
+                    {topicData.readingTime}
+                  </span>
                 )}
                 {topicData.publishDate && (
-                  <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    <span>{new Date(topicData.publishDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                  </div>
+                  <span className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-1" />
+                    {new Date(topicData.publishDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  </span>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-                             <div className="flex flex-wrap gap-4">
-                 <BookingButton 
-                   size="lg" 
-                   variant="rounded"
-                 />
-                 <ShareButton 
-                   url={`${process.env.NEXT_PUBLIC_BASE_URL || 'https://sportsorthopedics.in'}/bone-joint-school/${params.slug}`}
-                   title={topicData.title}
-                 />
-               </div>
+      {/* Action Bar */}
+      <div className="container mx-auto px-4 -mt-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <span className="font-medium text-gray-900">{topicData.title}</span>
+                <span className="text-gray-300">•</span>
+                <span className="flex items-center">
+                  <Clock className="w-4 h-4 mr-1" />
+                  {topicData.readingTime}
+                </span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <ShareButton 
+                  url={`${process.env.NEXT_PUBLIC_BASE_URL || 'https://sportsorthopedics.in'}/bone-joint-school/${params.slug}`}
+                  title={topicData.title}
+                />
+                <BookingButton 
+                  size="sm" 
+                  variant="rounded"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -472,7 +490,7 @@ export default async function BoneJointTopicPage({ params }: Props) {
               <article className="bg-white rounded-2xl shadow-lg p-8 md:p-12 border border-gray-100 mb-8">
                 {/* Content Renderer */}
                 <div 
-                  className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-headings:leading-tight prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6 prose-a:text-[#8B5C9E] prose-a:no-underline hover:prose-a:underline prose-strong:text-gray-900 prose-strong:font-semibold prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:mb-2 prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4 prose-blockquote:border-l-4 prose-blockquote:border-[#8B5C9E] prose-blockquote:bg-[#8B5C9E]/5 prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:rounded-r-lg"
+                  className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-headings:leading-tight prose-headings:scroll-mt-32 prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6 prose-a:text-[#8B5C9E] prose-a:no-underline hover:prose-a:underline prose-strong:text-gray-900 prose-strong:font-semibold prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:mb-2 prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4 prose-blockquote:border-l-4 prose-blockquote:border-[#8B5C9E] prose-blockquote:bg-[#8B5C9E]/5 prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:rounded-r-lg"
                   dangerouslySetInnerHTML={{ __html: processedHtml }} 
                 />
               </article>

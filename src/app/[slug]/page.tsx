@@ -4,7 +4,7 @@ import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import { Metadata, ResolvingMetadata } from 'next';
 import { ChevronLeft, Calendar, Clock, Share2, Facebook, Twitter, Linkedin, Mail, ArrowLeft } from 'lucide-react';
-import { getPostBySlug, getRelatedPosts, getImageUrl } from '@/lib/directus';
+import { getPostBySlug, getRelatedPosts, getImageUrl, getPublicImageUrl } from '@/lib/directus';
 import type { BlogPost } from '@/lib/directus';
 import BookingButton from './components/BookingButton';
 
@@ -103,29 +103,35 @@ const SocialShare = ({ url, title }: { url: string; title: string }) => {
   );
 };
 
-// Table of Contents component
-const TableOfContents = ({ content }: { content: string }) => {
-  console.log('TableOfContents received content length:', content?.length);
-  
-  // Extract headings from HTML content
-  const headingRegex = /<h([1-6])[^>]*>(.*?)<\/h[1-6]>/gi;
+// Helper function to add IDs to headings in HTML content
+function addIdsToHeadings(content: string): { processedContent: string; headings: { id: string; text: string; level: number }[] } {
   const headings: { id: string; text: string; level: number }[] = [];
-  let match;
-
-  while ((match = headingRegex.exec(content)) !== null) {
-    const level = parseInt(match[1]);
-    const text = stripHtml(match[2]);
-    if (level <= 3 && text.trim()) {
+  
+  // Replace headings with ID-added versions
+  const processedContent = content.replace(/<h([1-6])([^>]*)>(.*?)<\/h[1-6]>/gi, (match, level, attributes, text) => {
+    const levelNum = parseInt(level);
+    const cleanText = stripHtml(text);
+    
+    if (levelNum <= 3 && cleanText.trim()) {
+      const id = `heading-${headings.length}`;
       headings.push({
-        id: `heading-${headings.length}`,
-        text: text.trim(),
-        level
+        id,
+        text: cleanText.trim(),
+        level: levelNum
       });
+      
+      // Add id attribute to the heading (preserve existing attributes if any)
+      return `<h${level}${attributes} id="${id}">${text}</h${level}>`;
     }
-  }
+    
+    return match; // Return unchanged if not a valid heading
+  });
+  
+  return { processedContent, headings };
+}
 
-  console.log('TableOfContents found headings:', headings);
-
+// Table of Contents component
+const TableOfContents = ({ headings }: { headings: { id: string; text: string; level: number }[] }) => {
   return (
     <div className="bg-gray-50 p-4 rounded-lg mb-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-3">Table of Contents</h3>
@@ -214,6 +220,9 @@ export default async function PostPage({ params }: Props) {
   
   const relatedPosts = await getRelatedPosts(slug, post.category);
   
+  // Process content to add IDs to headings for Table of Contents
+  const { processedContent, headings } = addIdsToHeadings(post.content_html || '');
+  
   // Create the full URL for sharing
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://sportsorthopedics.in';
   const fullUrl = `${baseUrl}/${slug}`;
@@ -279,7 +288,7 @@ export default async function PostPage({ params }: Props) {
               {/* Article Content */}
               <div 
                 className="prose prose-lg max-w-none"
-                dangerouslySetInnerHTML={{ __html: post.content_html }}
+                dangerouslySetInnerHTML={{ __html: processedContent }}
               />
               
               {/* Tags and Social Share */}
@@ -328,7 +337,7 @@ export default async function PostPage({ params }: Props) {
               </div>
               
               {/* Table of Contents */}
-              {post.content_html && <TableOfContents content={post.content_html} />}
+              {headings.length > 0 && <TableOfContents headings={headings} />}
               
               {/* Related Articles - Desktop Only */}
               <div className="hidden lg:block bg-white rounded-xl shadow-sm p-6">

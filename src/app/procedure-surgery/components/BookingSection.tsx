@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import * as React from 'react';
 import Link from 'next/link';
 import BookingModal from '@/components/booking/BookingModal';
 
 export default function BookingSection() {
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = React.useState(false);
 
   return (
     <>
@@ -19,7 +19,7 @@ export default function BookingSection() {
             onClick={() => setIsBookingModalOpen(true)}
             className="block w-full py-3 px-4 bg-[#8B5C9E] hover:bg-[#7a4f8a] text-white font-medium rounded-lg text-center transition-colors"
           >
-            Request Consultation
+            Book an Appointment
           </button>
           <Link
             href="/contact"
