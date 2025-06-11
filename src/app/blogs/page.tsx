@@ -137,7 +137,8 @@ function BlogCard({ post, featured = false }: { post: any; featured?: boolean })
 }
 
 export default async function BlogPage() {
-  const { posts: blogPosts } = await getBlogPostsAction();
+  const { posts: blogPosts, total } = await getBlogPostsAction();
+
   const featuredPost = blogPosts[0]; // First post as featured
   const regularPosts = blogPosts.slice(1); // Rest as regular cards
 

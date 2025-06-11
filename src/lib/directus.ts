@@ -174,9 +174,8 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
       })
     );
 
-    // When meta: 'total_count' is used, the response is { data: [], meta: { total_count: N } }
-    // We need to access the .data property.
-    const posts = response.data || [];
+    // The response is actually just an array, not { data: [], meta: {} }
+    const posts = (response as BlogPost[]) || [];
     console.log(`Successfully fetched ${posts.length} blog posts.`);
     
     // Process image URLs on server-side like other content types
@@ -1713,9 +1712,9 @@ export async function getPublications(
       })
     );
 
-    // When meta: 'total_count' is used, the response is { data: [], meta: { total_count: N } }
-    const data = response.data || [];
-    const total = response.meta?.total_count || data.length;
+    // The response is actually just an array, not { data: [], meta: {} }
+    const data = (response as Publication[]) || [];
+    const total = data.length; // We don't get meta from the response, so use array length
     console.log(`Successfully fetched ${data.length} publications. Total count: ${total}`);
     
     const page = Math.floor(offset / limit) + 1;
