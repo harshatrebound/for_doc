@@ -19,15 +19,6 @@ const directusPublicToken = process.env.NEXT_PUBLIC_DIRECTUS_TOKEN;
 // image URLs when necessary.
 const directusToken = directusAdminToken || directusPublicToken || '';
 
-// Debug logging for production troubleshooting
-console.log('=== DIRECTUS CONFIG DEBUG ===', {
-  url: directusUrl,
-  hasAdminToken: !!directusAdminToken,
-  hasPublicToken: !!directusPublicToken,
-  finalToken: directusToken ? 'SET' : 'MISSING',
-  environment: process.env.NODE_ENV
-});
-
 // Ensure the public Directus URL is provided (required for both client and server)
 if (!directusUrl) {
   throw new Error('Directus configuration required: NEXT_PUBLIC_DIRECTUS_URL is not set.');
@@ -181,22 +172,12 @@ export function getPublicImageUrl(imageId: string | null): string {
 // Function to get all blog posts
 export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
-    console.log('=== DEBUG: getBlogPosts START ===');
-    console.log('Directus client config:', {
-      url: directusUrl,
-      hasAdminToken: !!directusAdminToken,
-      hasPublicToken: !!directusPublicToken,
-      hasToken: !!directusToken,
-      isServer: typeof window === 'undefined'
-    });
-    
     const activeClient = client || createPublicClient();
     if (!activeClient) {
       console.error('Failed to create Directus client');
       return [];
     }
     
-    console.log('=== TESTING: Fetching ALL blog items without filters ===');
     const response = await activeClient.request(
       readItems('blog_content', {
         fields: [
@@ -216,32 +197,19 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
           'source_url',
           'is_featured'
         ]
-        // Removed all filters and sorting for testing
       })
     );
 
-    console.log('Raw Directus response:', response);
     const data = handleDirectusResponse<BlogPost>(response);
-    console.log(`Successfully fetched ${data.length} blog posts.`);
     
     const processedPosts = data.map(post => ({
       ...post,
       featured_image_url: post.featured_image_url ? getImageUrl(post.featured_image_url) : '/images/default-blog.jpg'
     }));
     
-    console.log('=== DEBUG: getBlogPosts END ===');
     return processedPosts;
   } catch (error) {
-    console.error('=== BLOG POSTS FETCH ERROR ===');
     console.error('Error in getBlogPosts:', error);
-    console.error('Error details:', {
-      name: error instanceof Error ? error.name : 'Unknown',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      directusUrl,
-      hasToken: !!directusToken
-    });
-    console.error('=== END BLOG POSTS ERROR ===');
     return [];
   }
 }
@@ -1732,10 +1700,6 @@ export async function getPublications(
   totalPages: number;
 }> {
   try {
-    console.log('Attempting to fetch publications from Directus...');
-    console.log('URL:', process.env.NEXT_PUBLIC_DIRECTUS_URL);
-    console.log('=== TESTING: Ignoring all filters and parameters for debugging ===');
-    
     const activeClient = client || createPublicClient();
     if (!activeClient) {
       console.error('Failed to create Directus client');
@@ -1746,8 +1710,6 @@ export async function getPublications(
         totalPages: 0
       };
     }
-    
-    console.log('=== TESTING: Fetching ALL publications without any filters ===');
 
     const response = await activeClient.request(
       readItems('publications', {
@@ -1764,13 +1726,11 @@ export async function getPublications(
           'status',
           'date_created'
         ]
-        // Removed all filters and sorting for testing
       })
     );
 
     const data = handleDirectusResponse<Publication>(response);
     const total = data.length;
-    console.log(`Successfully fetched ${data.length} publications. Total count: ${total}`);
     
     const page = Math.floor(offset / limit) + 1;
     const totalPages = Math.ceil(total / limit);
@@ -1786,8 +1746,6 @@ export async function getPublications(
       featured_image_url: publication.featured_image_url ? getImageUrl(publication.featured_image_url) : undefined
     }));
 
-    console.log('Final publications result:', { dataCount: paginatedData.length, total, page, totalPages });
-
     return {
       data: processedData,
       total,
@@ -1795,16 +1753,7 @@ export async function getPublications(
       totalPages
     };
   } catch (error) {
-    console.error('=== PUBLICATIONS FETCH ERROR ===');
     console.error('Error fetching publications:', error);
-    console.error('Error details:', {
-      name: error instanceof Error ? error.name : 'Unknown',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      directusUrl,
-      hasToken: !!directusToken
-    });
-    console.error('=== END PUBLICATIONS ERROR ===');
     return {
       data: [],
       total: 0,
