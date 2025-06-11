@@ -116,8 +116,7 @@ export default function RootLayout({
             },
           }}
         />
-        {/* Temporarily disabled GA for debugging */}
-        {/* {gaMeasurementId && <GoogleAnalytics gaId={gaMeasurementId} />} */}
+        {gaMeasurementId && <GoogleAnalytics gaId={gaMeasurementId} />}
       </body>
     </html>
   );

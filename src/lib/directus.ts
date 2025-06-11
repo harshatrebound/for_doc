@@ -19,6 +19,15 @@ const directusPublicToken = process.env.NEXT_PUBLIC_DIRECTUS_TOKEN;
 // image URLs when necessary.
 const directusToken = directusAdminToken || directusPublicToken || '';
 
+// Debug logging for production troubleshooting
+console.log('=== DIRECTUS CONFIG DEBUG ===', {
+  url: directusUrl,
+  hasAdminToken: !!directusAdminToken,
+  hasPublicToken: !!directusPublicToken,
+  finalToken: directusToken ? 'SET' : 'MISSING',
+  environment: process.env.NODE_ENV
+});
+
 // Ensure the public Directus URL is provided (required for both client and server)
 if (!directusUrl) {
   throw new Error('Directus configuration required: NEXT_PUBLIC_DIRECTUS_URL is not set.');
@@ -35,12 +44,18 @@ const client: any = (typeof window === 'undefined') ? (() => {
   const restMiddleware = directusToken ? {
     onRequest: (options: any) => ({
       ...options,
+      cache: 'no-store', // CRITICAL: Disable caching for production
       headers: {
         ...options.headers,
         Authorization: `Bearer ${directusToken}`,
       },
     }),
-  } : undefined;
+  } : {
+    onRequest: (options: any) => ({
+      ...options,
+      cache: 'no-store', // CRITICAL: Disable caching for production
+    }),
+  };
 
   return createDirectus(directusUrl).with(rest(restMiddleware));
 })() : null;
@@ -50,6 +65,7 @@ function createPublicClient() {
   return createDirectus(directusUrl).with(rest({
     onRequest: (options: any) => ({
       ...options,
+      cache: 'no-store', // CRITICAL: Disable caching for production
       headers: {
         ...options.headers,
         Authorization: `Bearer ${directusPublicToken}`,
@@ -216,12 +232,16 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     console.log('=== DEBUG: getBlogPosts END ===');
     return processedPosts;
   } catch (error) {
+    console.error('=== BLOG POSTS FETCH ERROR ===');
     console.error('Error in getBlogPosts:', error);
     console.error('Error details:', {
       name: error instanceof Error ? error.name : 'Unknown',
       message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
+      directusUrl,
+      hasToken: !!directusToken
     });
+    console.error('=== END BLOG POSTS ERROR ===');
     return [];
   }
 }
@@ -1775,7 +1795,16 @@ export async function getPublications(
       totalPages
     };
   } catch (error) {
+    console.error('=== PUBLICATIONS FETCH ERROR ===');
     console.error('Error fetching publications:', error);
+    console.error('Error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      directusUrl,
+      hasToken: !!directusToken
+    });
+    console.error('=== END PUBLICATIONS ERROR ===');
     return {
       data: [],
       total: 0,

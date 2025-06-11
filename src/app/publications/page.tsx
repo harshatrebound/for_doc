@@ -162,6 +162,10 @@ function PublicationHighlight({ publication }: { publication: Publication }) {
   );
 }
 
+// Force no caching for this page
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // Main Publications Page Component
 export default async function PublicationsPage() {
   // Fetch publications from Directus
