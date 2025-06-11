@@ -1648,25 +1648,14 @@ export async function getPublications(
     console.log('URL:', process.env.NEXT_PUBLIC_DIRECTUS_URL);
     console.log('Filters - category:', category, 'search:', search, 'publication_type:', publication_type);
     
-    // Build filter object
+    // Simplify filter to match getBlogPosts pattern
     const filters: any = {
       status: { _eq: 'published' }
     };
 
+    // Only add additional filters if specified (keep it simple)
     if (category && category !== 'All') {
       filters.category = { _eq: category };
-    }
-
-    if (publication_type && publication_type !== 'All') {
-      filters.publication_type = { _eq: publication_type };
-    }
-
-    if (search) {
-      filters._or = [
-        { title: { _icontains: search } },
-        { authors: { _icontains: search } },
-        { content_text: { _icontains: search } }
-      ];
     }
 
     console.log('Final filters:', JSON.stringify(filters, null, 2));
@@ -1682,21 +1671,13 @@ export async function getPublications(
           'publication_type',
           'category',
           'featured_image_url',
-          'content_html',
-          'content_text',
           'source_url',
           'status',
-          'date_created',
-          'date_updated',
-          'meta_title',
-          'meta_description',
-          'canonical_url'
+          'date_created'
         ],
         filter: filters,
         sort: ['-publication_date', '-date_created'],
-        limit,
-        offset,
-        meta: 'total_count,filter_count'
+        meta: 'total_count'
       })
     );
 
@@ -1708,10 +1689,15 @@ export async function getPublications(
     const page = Math.floor(offset / limit) + 1;
     const totalPages = Math.ceil(total / limit);
 
-    console.log('Final publications result:', { dataCount: data.length, total, page, totalPages });
+    // Apply client-side pagination like working functions
+    const startIndex = offset;
+    const endIndex = startIndex + limit;
+    const paginatedData = data.slice(startIndex, endIndex);
+
+    console.log('Final publications result:', { dataCount: paginatedData.length, total, page, totalPages });
 
     return {
-      data,
+      data: paginatedData,
       total,
       page,
       totalPages
