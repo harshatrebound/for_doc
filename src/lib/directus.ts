@@ -155,16 +155,64 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     
     if (!client) {
       console.error('Directus client is not initialized!');
-      return [];
+      // Try to create a new client with public token
+      const publicClient = createDirectus(directusUrl).with(rest({
+        onRequest: (options: any) => ({
+          ...options,
+          headers: {
+            ...options.headers,
+            Authorization: `Bearer ${directusPublicToken}`,
+          },
+        }),
+      }));
+      
+      if (!publicClient) {
+        console.error('Failed to create public client as fallback');
+        return [];
+      }
+      
+      console.log('Created fallback public client');
+      
+      const response = await publicClient.request(
+        readItems('blog_content', {
+          fields: [
+            'id',
+            'title',
+            'slug',
+            'featured_image_url',
+            'excerpt',
+            'date_created',
+            'content_html',
+            'content_text',
+            'category',
+            'reading_time',
+            'status',
+            'meta_title',
+            'meta_description',
+            'source_url',
+            'is_featured'
+          ],
+          filter: {
+            status: { _eq: 'published' }
+          },
+          sort: ['-date_created'],
+          meta: 'total_count'
+        })
+      );
+      
+      console.log('Raw Directus response from public client:', response);
+      const data = Array.isArray(response) ? response : (response as any)?.data || [];
+      console.log(`Successfully fetched ${data.length} blog posts with public client.`);
+      
+      const processedPosts = data.map(post => ({
+        ...post,
+        featured_image_url: post.featured_image_url ? getPublicImageUrl(post.featured_image_url) : '/images/default-blog.jpg'
+      }));
+      
+      return processedPosts;
     }
     
-    // Simplify filter to match working pattern
-    const filters: any = {
-      status: { _eq: 'published' }
-    };
-
-    console.log('Using filters:', JSON.stringify(filters, null, 2));
-    
+    // If we have the main client, use it
     const response = await client.request(
       readItems('blog_content', {
         fields: [
@@ -184,38 +232,27 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
           'source_url',
           'is_featured'
         ],
-        filter: filters,
+        filter: {
+          status: { _eq: 'published' }
+        },
         sort: ['-date_created'],
         meta: 'total_count'
       })
     );
 
-    console.log('Raw Directus response:', response);
-    
-    // Handle response like publications - handle both array and data property
+    console.log('Raw Directus response from main client:', response);
     const data = Array.isArray(response) ? response : (response as any)?.data || [];
-    console.log(`Successfully fetched ${data.length} blog posts.`);
+    console.log(`Successfully fetched ${data.length} blog posts with main client.`);
     
-    // Process image URLs on server-side like other content types
     const processedPosts = data.map(post => ({
       ...post,
       featured_image_url: post.featured_image_url ? getImageUrl(post.featured_image_url) : '/images/default-blog.jpg'
     }));
     
     console.log('=== DEBUG: getBlogPosts END ===');
-    console.log('Processed posts:', {
-      count: processedPosts.length,
-      firstPost: processedPosts[0] ? {
-        id: processedPosts[0].id,
-        title: processedPosts[0].title,
-        status: processedPosts[0].status,
-        hasImage: !!processedPosts[0].featured_image_url
-      } : null
-    });
-    
     return processedPosts;
   } catch (error) {
-    console.error('Error fetching blog posts:', error);
+    console.error('Error in getBlogPosts:', error);
     console.error('Error details:', {
       name: error instanceof Error ? error.name : 'Unknown',
       message: error instanceof Error ? error.message : 'Unknown error',
