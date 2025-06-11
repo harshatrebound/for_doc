@@ -180,6 +180,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
       return [];
     }
     
+    console.log('=== TESTING: Fetching ALL blog items without filters ===');
     const response = await activeClient.request(
       readItems('blog_content', {
         fields: [
@@ -198,11 +199,8 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
           'meta_description',
           'source_url',
           'is_featured'
-        ],
-        filter: {
-          status: { _eq: 'published' }
-        },
-        sort: ['-date_created']
+        ]
+        // Removed all filters and sorting for testing
       })
     );
 
@@ -1716,7 +1714,7 @@ export async function getPublications(
   try {
     console.log('Attempting to fetch publications from Directus...');
     console.log('URL:', process.env.NEXT_PUBLIC_DIRECTUS_URL);
-    console.log('Filters - category:', category, 'search:', search, 'publication_type:', publication_type);
+    console.log('=== TESTING: Ignoring all filters and parameters for debugging ===');
     
     const activeClient = client || createPublicClient();
     if (!activeClient) {
@@ -1729,15 +1727,7 @@ export async function getPublications(
       };
     }
     
-    const filters: any = {
-      status: { _eq: 'published' }
-    };
-
-    if (category && category !== 'All') {
-      filters.category = { _eq: category };
-    }
-
-    console.log('Final filters:', JSON.stringify(filters, null, 2));
+    console.log('=== TESTING: Fetching ALL publications without any filters ===');
 
     const response = await activeClient.request(
       readItems('publications', {
@@ -1753,9 +1743,8 @@ export async function getPublications(
           'source_url',
           'status',
           'date_created'
-        ],
-        filter: filters,
-        sort: ['-publication_date', '-date_created']
+        ]
+        // Removed all filters and sorting for testing
       })
     );
 
