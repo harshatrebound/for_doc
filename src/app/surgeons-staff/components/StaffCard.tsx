@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { UserCircle2, Award } from 'lucide-react';
+import { getPublicImageUrl } from '@/lib/directus';
 
 interface StaffCardProps {
   staff: {
@@ -44,7 +45,7 @@ export function StaffCard({ staff }: StaffCardProps) {
         <div className="relative overflow-hidden">
           {staff.imageUrl ? (
             <Image
-              src={staff.imageUrl}
+              src={getPublicImageUrl(staff.imageUrl) || '/placeholder-staff.jpg'}
               alt={staff.name}
               width={200}
               height={0}

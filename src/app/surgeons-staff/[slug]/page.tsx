@@ -147,7 +147,7 @@ export default async function StaffMemberPage({ params }: { params: { slug: stri
                   <BookingButton 
                     className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white px-6 py-2.5 text-sm rounded-lg font-medium transition-all duration-300 hover:shadow-lg"
                     icon={null}
-                    text="Book Consultation"
+                    text="Book an Appointment"
                   />
                   <Link
                     href="/contact"
@@ -246,7 +246,7 @@ export default async function StaffMemberPage({ params }: { params: { slug: stri
                     <BookingButton 
                       className="w-full bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white py-2.5 text-sm rounded-md font-medium transition-all duration-300 shadow-sm"
                       icon={null}
-                      text="Book Appointment"
+                      text="Book an Appointment"
                     />
                     <Link
                       href="/contact"
@@ -369,7 +369,7 @@ export default async function StaffMemberPage({ params }: { params: { slug: stri
                 <BookingButton 
                   className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white px-6 py-3 font-medium rounded-lg transition-all duration-300 hover:shadow-lg w-full sm:w-auto"
                   icon={null}
-                  text="Book Consultation"
+                  text="Book an Appointment"
                 />
                 <Link
                   href="/contact"

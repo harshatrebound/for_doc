@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { getStaffWithFilters, getFeaturedStaffAction, getStaffCategoriesAction } from './actions';
 import { StaffMember } from '@/types/staff';
 import { Container } from '@/components/ui/container';
+import { getPublicImageUrl } from '@/lib/directus';
 
 export const metadata: Metadata = {
   title: 'Our Expert Team | Sports Orthopedics Institute',
@@ -101,7 +102,7 @@ export default async function SurgeonsStaffPage({ searchParams }: StaffPageProps
                 <BookingButton 
                   className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white px-6 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 hover:shadow-lg w-full sm:w-auto"
                   icon={null}
-                  text="Book Consultation"
+                  text="Book an Appointment"
                 />
                 <a 
                   href="#team-members"
@@ -170,7 +171,7 @@ export default async function SurgeonsStaffPage({ searchParams }: StaffPageProps
                                   </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {featuredStaff.map((staff) => (
+                                {featuredStaff.map((staff) => (
                   <Link key={staff.id} href={`/surgeons-staff/${staff.slug}`}>
                     <StaffCard
                       staff={{
@@ -178,10 +179,10 @@ export default async function SurgeonsStaffPage({ searchParams }: StaffPageProps
                         name: staff.title,
                         title: staff.category || '',
                         qualifications: staff.excerpt || '',
-                        imageUrl: staff.featured_image_url || '/placeholder-staff.jpg'
+                        imageUrl: staff.featured_image_url || ''
                       }}
                     />
-                                        </Link>
+                  </Link>
                 ))}
               </div>
             </Container>
@@ -213,7 +214,7 @@ export default async function SurgeonsStaffPage({ searchParams }: StaffPageProps
                             name: staff.title,
                             title: staff.category || '',
                             qualifications: staff.excerpt || '',
-                            imageUrl: staff.featured_image_url || '/placeholder-staff.jpg'
+                            imageUrl: staff.featured_image_url || ''
                           }}
                         />
                       </Link>
@@ -255,7 +256,7 @@ export default async function SurgeonsStaffPage({ searchParams }: StaffPageProps
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {categoryStaff.map((staff) => (
+                                                {categoryStaff.map((staff) => (
                           <Link key={staff.id} href={`/surgeons-staff/${staff.slug}`}>
                             <StaffCard
                               staff={{
@@ -263,10 +264,10 @@ export default async function SurgeonsStaffPage({ searchParams }: StaffPageProps
                                 name: staff.title,
                                 title: staff.category || '',
                                 qualifications: staff.excerpt || '',
-                                imageUrl: staff.featured_image_url || '/placeholder-staff.jpg'
+                                imageUrl: staff.featured_image_url || ''
                               }}
                             />
-                                  </Link>
+                          </Link>
                         ))}
                             </div>
                        </div>
@@ -291,7 +292,7 @@ export default async function SurgeonsStaffPage({ searchParams }: StaffPageProps
                 <BookingButton 
                   className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white px-6 py-3 font-medium rounded-lg transition-all duration-300 hover:shadow-lg w-full sm:w-auto"
                   icon={null}
-                  text="Book Consultation"
+                  text="Book an Appointment"
                 />
                 <Link
                   href="/contact"
