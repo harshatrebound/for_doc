@@ -38,7 +38,7 @@ function BlogCard({ post, featured = false }: { post: any; featured?: boolean })
   
   if (featured) {
     return (
-                    <Link href={`/${post.slug}`} className="block">
+                    <Link href={`/blogs/${post.slug}`} className="block">
         <div className="group relative overflow-hidden bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all duration-500 hover:-translate-y-2">
           <div className="flex flex-col lg:flex-row">
             {/* Featured Image */}
@@ -92,7 +92,7 @@ function BlogCard({ post, featured = false }: { post: any; featured?: boolean })
   }
 
   return (
-              <Link href={`/${post.slug}`} className="block h-full">
+              <Link href={`/blogs/${post.slug}`} className="block h-full">
       <div className="group bg-white rounded-xl overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_25px_rgba(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
         {/* Image */}
         <div className="relative h-48 overflow-hidden">
@@ -135,6 +135,10 @@ function BlogCard({ post, featured = false }: { post: any; featured?: boolean })
     </Link>
   );
 }
+
+// Force no caching for this page
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function BlogPage() {
   const { posts: blogPosts, total } = await getBlogPostsAction();

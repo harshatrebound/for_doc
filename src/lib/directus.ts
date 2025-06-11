@@ -35,15 +35,43 @@ const client: any = (typeof window === 'undefined') ? (() => {
   const restMiddleware = directusToken ? {
     onRequest: (options: any) => ({
       ...options,
+      cache: 'no-store', // CRITICAL: Disable caching for production
       headers: {
         ...options.headers,
         Authorization: `Bearer ${directusToken}`,
       },
     }),
-  } : undefined;
+  } : {
+    onRequest: (options: any) => ({
+      ...options,
+      cache: 'no-store', // CRITICAL: Disable caching for production
+    }),
+  };
 
   return createDirectus(directusUrl).with(rest(restMiddleware));
 })() : null;
+
+// Helper function to create a public client
+function createPublicClient() {
+  return createDirectus(directusUrl).with(rest({
+    onRequest: (options: any) => ({
+      ...options,
+      cache: 'no-store', // CRITICAL: Disable caching for production
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${directusPublicToken}`,
+      },
+    }),
+  }));
+}
+
+// Helper function to handle Directus response
+function handleDirectusResponse<T>(response: any): T[] {
+  if (!response) return [];
+  if (Array.isArray(response)) return response;
+  if (response.data && Array.isArray(response.data)) return response.data;
+  return [];
+}
 
 export interface DirectusFile {
   id: string;
@@ -144,10 +172,13 @@ export function getPublicImageUrl(imageId: string | null): string {
 // Function to get all blog posts
 export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
-    console.log('Attempting to fetch from Directus...');
-    console.log('URL:', process.env.NEXT_PUBLIC_DIRECTUS_URL);
+    const activeClient = client || createPublicClient();
+    if (!activeClient) {
+      console.error('Failed to create Directus client');
+      return [];
+    }
     
-    const response = await client.request(
+    const response = await activeClient.request(
       readItems('blog_content', {
         fields: [
           'id',
@@ -165,26 +196,20 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
           'meta_description',
           'source_url',
           'is_featured'
-        ],
-        filter: {
-          status: { _eq: 'published' }
-        },
-        sort: ['-date_created'],
-        meta: 'total_count'
+        ]
       })
     );
 
-    // The response is actually just an array, not { data: [], meta: {} }
-    const posts = (response as BlogPost[]) || [];
-    console.log(`Successfully fetched ${posts.length} blog posts.`);
+    const data = handleDirectusResponse<BlogPost>(response);
     
-    // Process image URLs on server-side like other content types
-    return posts.map(post => ({
+    const processedPosts = data.map(post => ({
       ...post,
       featured_image_url: post.featured_image_url ? getImageUrl(post.featured_image_url) : '/images/default-blog.jpg'
     }));
+    
+    return processedPosts;
   } catch (error) {
-    console.error('Error fetching blog posts:', error);
+    console.error('Error in getBlogPosts:', error);
     return [];
   }
 }
@@ -1675,23 +1700,18 @@ export async function getPublications(
   totalPages: number;
 }> {
   try {
-    console.log('Attempting to fetch publications from Directus...');
-    console.log('URL:', process.env.NEXT_PUBLIC_DIRECTUS_URL);
-    console.log('Filters - category:', category, 'search:', search, 'publication_type:', publication_type);
-    
-    // Simplify filter to match getBlogPosts pattern
-    const filters: any = {
-      status: { _eq: 'published' }
-    };
-
-    // Only add additional filters if specified (keep it simple)
-    if (category && category !== 'All') {
-      filters.category = { _eq: category };
+    const activeClient = client || createPublicClient();
+    if (!activeClient) {
+      console.error('Failed to create Directus client');
+      return {
+        data: [],
+        total: 0,
+        page: 1,
+        totalPages: 0
+      };
     }
 
-    console.log('Final filters:', JSON.stringify(filters, null, 2));
-
-    const response = await client.request(
+    const response = await activeClient.request(
       readItems('publications', {
         fields: [
           'id',
@@ -1705,33 +1725,26 @@ export async function getPublications(
           'source_url',
           'status',
           'date_created'
-        ],
-        filter: filters,
-        sort: ['-publication_date', '-date_created'],
-        meta: 'total_count'
+        ]
       })
     );
 
-    // The response is actually just an array, not { data: [], meta: {} }
-    const data = (response as Publication[]) || [];
-    const total = data.length; // We don't get meta from the response, so use array length
-    console.log(`Successfully fetched ${data.length} publications. Total count: ${total}`);
+    const data = handleDirectusResponse<Publication>(response);
+    const total = data.length;
     
     const page = Math.floor(offset / limit) + 1;
     const totalPages = Math.ceil(total / limit);
 
-    // Apply client-side pagination like working functions
+    // Apply client-side pagination
     const startIndex = offset;
     const endIndex = startIndex + limit;
     const paginatedData = data.slice(startIndex, endIndex);
     
-    // Process image URLs on server-side like other content types
+    // Process image URLs
     const processedData = paginatedData.map(publication => ({
       ...publication,
       featured_image_url: publication.featured_image_url ? getImageUrl(publication.featured_image_url) : undefined
     }));
-
-    console.log('Final publications result:', { dataCount: paginatedData.length, total, page, totalPages });
 
     return {
       data: processedData,

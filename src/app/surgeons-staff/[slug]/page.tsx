@@ -291,18 +291,7 @@ export default async function StaffMemberPage({ params }: { params: { slug: stri
                       </div>
                     )}
                     
-                    {/* Show member since date if we can derive it from date_created */}
-                    {staffMember.date_created && (
-                      <div className="flex items-start">
-                        <Users className="h-4 w-4 text-[#8B5C9E] mr-2 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="text-xs font-medium text-gray-700">Team Member Since</p>
-                          <p className="text-sm text-gray-600">
-                            {new Date(staffMember.date_created).getFullYear()}
-                          </p>
-                        </div>
-                      </div>
-                    )}
+
                   </div>
                 </div>
 

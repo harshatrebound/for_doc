@@ -114,32 +114,6 @@ export default async function ProcedurePage({ params }: ProcedurePageProps) {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Main Content */}
             <div className="w-full lg:w-2/3">
-              {/* Procedure Details Box */}
-              <div className="bg-blue-50 p-6 rounded-lg mb-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Procedure Overview</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {procedure.recovery_time && (
-                    <div className="flex items-start gap-2">
-                      <Calendar className="w-5 h-5 text-[#8B5C9E] mt-0.5" />
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500">Recovery Time</h3>
-                        <p className="text-base text-gray-900">{procedure.recovery_time}</p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {procedure.difficulty_level && (
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-5 h-5 text-[#8B5C9E] mt-0.5" />
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500">Complexity Level</h3>
-                        <p className="text-base text-gray-900">{procedure.difficulty_level}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
               {/* Main Content */}
               {procedure.content_html && (
                 <ContentRenderer html={procedure.content_html} />
