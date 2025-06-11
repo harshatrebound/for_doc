@@ -1645,8 +1645,10 @@ export async function getPublications(
 }> {
   try {
     console.log('Attempting to fetch publications from Directus...');
+    console.log('URL:', process.env.NEXT_PUBLIC_DIRECTUS_URL);
+    console.log('Filters - category:', category, 'search:', search, 'publication_type:', publication_type);
     
-    // Build filters
+    // Build filter object
     const filters: any = {
       status: { _eq: 'published' }
     };
@@ -1662,58 +1664,56 @@ export async function getPublications(
     if (search) {
       filters._or = [
         { title: { _icontains: search } },
-        { content_text: { _icontains: search } },
-        { authors: { _icontains: search } }
+        { authors: { _icontains: search } },
+        { content_text: { _icontains: search } }
       ];
     }
 
-    // Fetch ALL publications to avoid Directus pagination issues
+    console.log('Final filters:', JSON.stringify(filters, null, 2));
+
     const response = await client.request(
       readItems('publications', {
         fields: [
           'id',
           'title',
           'slug',
-          'status',
-          'featured_image_url',
           'authors',
           'publication_date',
           'publication_type',
           'category',
+          'featured_image_url',
+          'content_html',
+          'content_text',
+          'source_url',
+          'status',
+          'date_created',
+          'date_updated',
           'meta_title',
           'meta_description',
-          'content_text',
-          'date_created',
-          'date_updated'
+          'canonical_url'
         ],
         filter: filters,
         sort: ['-publication_date', '-date_created'],
-        limit: -1 // Get all items
+        limit,
+        offset,
+        meta: 'total_count,filter_count'
       })
     );
 
-    const allPublications = (response as Publication[]) || [];
-    
-    // Process image URLs
-    const processedPublications = allPublications.map(publication => ({
-      ...publication,
-      featured_image_url: publication.featured_image_url ? getImageUrl(publication.featured_image_url) : undefined
-    }));
+    console.log('Publications Directus response:', response);
+    console.log('Publications count:', Array.isArray(response) ? response.length : 'Not an array');
 
-    // Client-side pagination for accuracy
-    const total = processedPublications.length;
+    const data = (response as Publication[]) || [];
+    const total = (response as any)?.meta?.total_count || data.length;
+    const page = Math.floor(offset / limit) + 1;
     const totalPages = Math.ceil(total / limit);
-    const currentPage = Math.floor(offset / limit) + 1;
-    const startIndex = offset;
-    const endIndex = startIndex + limit;
-    const paginatedPublications = processedPublications.slice(startIndex, endIndex);
 
-    console.log(`Publications: ${paginatedPublications.length}/${total} total, page ${currentPage}/${totalPages}`);
+    console.log('Final publications result:', { dataCount: data.length, total, page, totalPages });
 
     return {
-      data: paginatedPublications,
+      data,
       total,
-      page: currentPage,
+      page,
       totalPages
     };
   } catch (error) {
