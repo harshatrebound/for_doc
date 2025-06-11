@@ -1,4 +1,4 @@
-import { getBlogPosts, getImageUrl } from '@/lib/directus';
+import { getBlogPosts } from '@/lib/directus';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import Image from 'next/image';
@@ -32,8 +32,6 @@ function getCategoryColor(category: string) {
   return colors[hash % colors.length];
 }
 
-// Using centralized image URL function from directus.ts
-
 // Blog Card Component
 function BlogCard({ post, featured = false }: { post: any; featured?: boolean }) {
   const categoryColor = getCategoryColor(post.category);
@@ -46,7 +44,7 @@ function BlogCard({ post, featured = false }: { post: any; featured?: boolean })
             {/* Featured Image */}
             <div className="relative h-80 lg:h-96 lg:w-1/2 overflow-hidden">
                              <Image
-                 src={getImageUrl(post.featured_image_url)}
+                 src={post.featured_image_url}
                  alt={post.title}
                  fill
                  sizes="(max-width: 768px) 100vw, 50vw"
@@ -99,7 +97,7 @@ function BlogCard({ post, featured = false }: { post: any; featured?: boolean })
         {/* Image */}
         <div className="relative h-48 overflow-hidden">
                      <Image
-             src={getImageUrl(post.featured_image_url)}
+             src={post.featured_image_url}
              alt={post.title}
              fill
              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"

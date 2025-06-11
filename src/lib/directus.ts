@@ -7,32 +7,42 @@ import { StaffMember } from '@/types/staff';
 import { Publication } from '@/types/publications';
 
 const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL;
-const directusToken = process.env.DIRECTUS_ADMIN_TOKEN;
+
+// Prefer dedicated admin token on the server, but gracefully fall back to the
+// public token (read-only) if that is all we have. This makes local/dev
+// setups easier because we often only configure a public token.
+const directusAdminToken = process.env.DIRECTUS_ADMIN_TOKEN;
+const directusPublicToken = process.env.NEXT_PUBLIC_DIRECTUS_TOKEN;
+
+// Use whichever token is available.  This value is used for **server-side only**
+// requests (never exposed to the browser bundle) and for generating signed
+// image URLs when necessary.
+const directusToken = directusAdminToken || directusPublicToken || '';
 
 // Ensure the public Directus URL is provided (required for both client and server)
 if (!directusUrl) {
   throw new Error('Directus configuration required: NEXT_PUBLIC_DIRECTUS_URL is not set.');
 }
 
-// We only initialize the authenticated Directus client on the server to avoid
-// exposing the admin token in the browser bundle. The client variable is left
-// undefined on the client, which is fine because the SDK functions using it
-// are intended for server-side calls only.
+// We only initialise the authenticated Directus client on the **server** to
+// avoid exposing any secret tokens in the browser bundle.  If we don't have an
+// admin token we still try to create the client with the public one so that
+// read-only queries succeed.
 
 const client: any = (typeof window === 'undefined') ? (() => {
-  // Server-side: the admin token must be present to authenticate requests.
-  if (!directusToken) {
-    throw new Error('Directus configuration required for server-side operations: DIRECTUS_ADMIN_TOKEN is not set.');
-  }
-  return createDirectus(directusUrl).with(rest({
-    onRequest: (options) => ({
+  // Build the Directus REST client.  If a token is available we attach it for
+  // authenticated requests; otherwise we fall back to anonymous (public) access.
+  const restMiddleware = directusToken ? {
+    onRequest: (options: any) => ({
       ...options,
       headers: {
         ...options.headers,
         Authorization: `Bearer ${directusToken}`,
       },
     }),
-  }));
+  } : undefined;
+
+  return createDirectus(directusUrl).with(rest(restMiddleware));
 })() : null;
 
 export interface DirectusFile {
@@ -112,9 +122,10 @@ export function getImageUrl(imageId: string | null): string {
     return imageId; // Return as-is if it's already a full URL
   }
   
-  // For server-side usage only - don't expose admin token to client
-  // In production, consider using public assets or server-side image optimization
-  return `${directusUrl}/assets/${imageId}?access_token=${directusToken}`;
+  // If we have a token (admin or public), append it. Otherwise rely on the asset
+  // being publicly readable.
+  const tokenQuery = directusToken ? `?access_token=${directusToken}` : '';
+  return `${directusUrl}/assets/${imageId}${tokenQuery}`;
 }
 
 // Function to get public image URL (without admin token) - safer for client-side
@@ -164,7 +175,13 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     );
 
     console.log('Directus response:', response);
-    return (response as BlogPost[]) || [];
+    const posts = (response as BlogPost[]) || [];
+    
+    // Process image URLs on server-side like other content types
+    return posts.map(post => ({
+      ...post,
+      featured_image_url: post.featured_image_url ? getImageUrl(post.featured_image_url) : '/images/default-blog.jpg'
+    }));
   } catch (error) {
     console.error('Error fetching blog posts:', error);
     return [];
@@ -201,7 +218,14 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
       })
     );
 
-    return (response as BlogPost[])?.[0] || null;
+    const post = (response as BlogPost[])?.[0] || null;
+    
+    // Process image URL on server-side like other content types
+    if (post && post.featured_image_url) {
+      post.featured_image_url = getImageUrl(post.featured_image_url);
+    }
+    
+    return post;
   } catch (error) {
     console.error('Error fetching post by slug:', error);
     return null;
@@ -238,7 +262,13 @@ export async function getRelatedPosts(currentSlug: string, category?: string): P
       })
     );
 
-    return (response as BlogPost[]) || [];
+    const posts = (response as BlogPost[]) || [];
+    
+    // Process image URLs on server-side like other content types
+    return posts.map(post => ({
+      ...post,
+      featured_image_url: post.featured_image_url ? getImageUrl(post.featured_image_url) : '/images/default-blog.jpg'
+    }));
   } catch (error) {
     console.error('Error fetching related posts:', error);
     return [];
@@ -1693,11 +1723,17 @@ export async function getPublications(
     const startIndex = offset;
     const endIndex = startIndex + limit;
     const paginatedData = data.slice(startIndex, endIndex);
+    
+    // Process image URLs on server-side like other content types
+    const processedData = paginatedData.map(publication => ({
+      ...publication,
+      featured_image_url: publication.featured_image_url ? getImageUrl(publication.featured_image_url) : undefined
+    }));
 
     console.log('Final publications result:', { dataCount: paginatedData.length, total, page, totalPages });
 
     return {
-      data: paginatedData,
+      data: processedData,
       total,
       page,
       totalPages
@@ -1747,18 +1783,14 @@ export async function getPublicationBySlug(slug: string): Promise<Publication | 
       })
     );
 
-    const publications = response as Publication[];
-    if (!publications || publications.length === 0) {
-      return null;
-    }
-
-    const publication = publications[0];
+    const publication = (response as Publication[])?.[0] || null;
     
-    // Process image URL
-    return {
-      ...publication,
-      featured_image_url: publication.featured_image_url ? getImageUrl(publication.featured_image_url) : undefined
-    };
+    // Process image URL on server-side like other content types
+    if (publication && publication.featured_image_url) {
+      publication.featured_image_url = getImageUrl(publication.featured_image_url);
+    }
+    
+    return publication;
   } catch (error) {
     console.error('Error fetching publication by slug:', error);
     return null;

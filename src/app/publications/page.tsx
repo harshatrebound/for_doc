@@ -11,7 +11,6 @@ import BookingButton from '@/components/BookingButton';
 import { ScrollToContentButton } from './components/ScrollToContentButton';
 import { getPublicationsAction } from '@/app/actions/publications';
 import type { Publication } from '@/types/publications';
-import { getImageUrl } from '@/lib/directus';
 
 // Add metadata for SEO
 export const metadata: Metadata = {
@@ -31,8 +30,8 @@ const DEFAULT_IMAGE = '/images/default-procedure.jpg';
 function PublicationCard({ publication }: { publication: Publication }) {
   const { title, featured_image_url, source_url, authors, publication_date, slug, content_html, publication_type, category } = publication;
   
-  // Use centralized image URL function with proper fallback
-  const imageUrl = getImageUrl(featured_image_url || null);
+  // Use already processed image URL with fallback
+  const imageUrl = featured_image_url || DEFAULT_IMAGE;
   
   // Always link to individual publication page - let that page handle content vs external link
   // const hasContent = Boolean(content_html && content_html.trim().length > 0);
@@ -108,8 +107,8 @@ function PublicationCard({ publication }: { publication: Publication }) {
 function PublicationHighlight({ publication }: { publication: Publication }) {
   const { title, featured_image_url, source_url, authors, publication_date, slug, content_html, publication_type } = publication;
   
-  // Use centralized image URL function with proper fallback
-  const imageUrl = getImageUrl(featured_image_url || null);
+  // Use already processed image URL with fallback
+  const imageUrl = featured_image_url || DEFAULT_IMAGE;
   
   // Always link to individual publication page - let that page handle content vs external link
   // const hasContent = Boolean(content_html && content_html.trim().length > 0);
