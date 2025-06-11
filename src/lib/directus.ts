@@ -144,8 +144,26 @@ export function getPublicImageUrl(imageId: string | null): string {
 // Function to get all blog posts
 export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
-    console.log('Attempting to fetch from Directus...');
-    console.log('URL:', process.env.NEXT_PUBLIC_DIRECTUS_URL);
+    console.log('=== DEBUG: getBlogPosts START ===');
+    console.log('Directus client config:', {
+      url: directusUrl,
+      hasAdminToken: !!directusAdminToken,
+      hasPublicToken: !!directusPublicToken,
+      hasToken: !!directusToken,
+      isServer: typeof window === 'undefined'
+    });
+    
+    if (!client) {
+      console.error('Directus client is not initialized!');
+      return [];
+    }
+    
+    // Simplify filter to match working pattern
+    const filters: any = {
+      status: { _eq: 'published' }
+    };
+
+    console.log('Using filters:', JSON.stringify(filters, null, 2));
     
     const response = await client.request(
       readItems('blog_content', {
@@ -166,25 +184,43 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
           'source_url',
           'is_featured'
         ],
-        filter: {
-          status: { _eq: 'published' }
-        },
+        filter: filters,
         sort: ['-date_created'],
         meta: 'total_count'
       })
     );
 
-    // The response is actually just an array, not { data: [], meta: {} }
-    const posts = (response as BlogPost[]) || [];
-    console.log(`Successfully fetched ${posts.length} blog posts.`);
+    console.log('Raw Directus response:', response);
+    
+    // Handle response like publications - handle both array and data property
+    const data = Array.isArray(response) ? response : (response as any)?.data || [];
+    console.log(`Successfully fetched ${data.length} blog posts.`);
     
     // Process image URLs on server-side like other content types
-    return posts.map(post => ({
+    const processedPosts = data.map(post => ({
       ...post,
       featured_image_url: post.featured_image_url ? getImageUrl(post.featured_image_url) : '/images/default-blog.jpg'
     }));
+    
+    console.log('=== DEBUG: getBlogPosts END ===');
+    console.log('Processed posts:', {
+      count: processedPosts.length,
+      firstPost: processedPosts[0] ? {
+        id: processedPosts[0].id,
+        title: processedPosts[0].title,
+        status: processedPosts[0].status,
+        hasImage: !!processedPosts[0].featured_image_url
+      } : null
+    });
+    
+    return processedPosts;
   } catch (error) {
     console.error('Error fetching blog posts:', error);
+    console.error('Error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return [];
   }
 }

@@ -14,14 +14,38 @@ export interface BlogActionResponse {
 
 export async function getBlogPostsAction(): Promise<BlogActionResponse> {
   try {
-    const posts = await getBlogPosts();
+    console.log('=== DEBUG: getBlogPostsAction START ===');
+    console.log('Calling getBlogPosts from Directus...');
     
-    return {
+    const posts = await getBlogPosts();
+    console.log('Posts received:', {
+      count: posts.length,
+      firstPost: posts[0] ? {
+        id: posts[0].id,
+        title: posts[0].title,
+        status: posts[0].status
+      } : null
+    });
+    
+    const result = {
       posts,
       total: posts.length
     };
+    
+    console.log('=== DEBUG: getBlogPostsAction END ===');
+    console.log('Returning result:', {
+      totalPosts: result.total,
+      hasPosts: result.posts.length > 0
+    });
+    
+    return result;
   } catch (error) {
     console.error('Error in getBlogPostsAction:', error);
+    console.error('Error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return {
       posts: [],
       total: 0
