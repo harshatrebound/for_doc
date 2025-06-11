@@ -4,7 +4,7 @@ import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import { ChevronLeft, Calendar, Clock, Share2, Facebook, Twitter, Linkedin, Mail, ArrowLeft } from 'lucide-react';
 import type { BlogPost } from '@/lib/directus';
-import { getPostBySlug, getRelatedPosts, getPublicImageUrl } from '@/lib/directus';
+import { getPostBySlug, getRelatedPosts, getImageUrl } from '@/lib/directus';
 import { Button } from '@/components/ui/button';
 import { Metadata } from 'next';
 
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      images: post.featured_image_url ? [getPublicImageUrl(post.featured_image_url)] : [],
+      images: post.featured_image_url ? [getImageUrl(post.featured_image_url)] : [],
     },
   };
 }
@@ -99,7 +99,7 @@ const RelatedPostCard = ({ post }: { post: BlogPost }) => {
       <div className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
         <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
           <Image
-            src={getPublicImageUrl(post.featured_image_url)}
+            src={getImageUrl(post.featured_image_url)}
             alt={post.title}
             fill
             sizes="64px"
@@ -159,7 +159,7 @@ export default async function PostPage({ params }: Props) {
       <section className="relative h-[40vh] md:h-[50vh] flex items-center justify-center text-white overflow-hidden">
         <div className="absolute inset-0 z-0 bg-gray-800">
           <Image
-            src={getPublicImageUrl(post.featured_image_url)}
+            src={getImageUrl(post.featured_image_url)}
             alt={post.title}
             fill
             sizes="100vw"
