@@ -174,8 +174,10 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
       })
     );
 
-    console.log('Directus response:', response);
-    const posts = (response as BlogPost[]) || [];
+    // When meta: 'total_count' is used, the response is { data: [], meta: { total_count: N } }
+    // We need to access the .data property.
+    const posts = response.data || [];
+    console.log(`Successfully fetched ${posts.length} blog posts.`);
     
     // Process image URLs on server-side like other content types
     return posts.map(post => ({
@@ -1711,11 +1713,11 @@ export async function getPublications(
       })
     );
 
-    console.log('Publications Directus response:', response);
-    console.log('Publications count:', Array.isArray(response) ? response.length : 'Not an array');
-
-    const data = (response as Publication[]) || [];
-    const total = (response as any)?.meta?.total_count || data.length;
+    // When meta: 'total_count' is used, the response is { data: [], meta: { total_count: N } }
+    const data = response.data || [];
+    const total = response.meta?.total_count || data.length;
+    console.log(`Successfully fetched ${data.length} publications. Total count: ${total}`);
+    
     const page = Math.floor(offset / limit) + 1;
     const totalPages = Math.ceil(total / limit);
 
