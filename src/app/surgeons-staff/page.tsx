@@ -10,7 +10,7 @@ import HeroSection from '@/components/ui/HeroSection';
 import React from 'react'; 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { getStaffWithFilters, getFeaturedStaffAction, getStaffCategoriesAction } from './actions';
+import { getStaffWithFilters, getStaffCategoriesAction } from './actions';
 import { StaffMember } from '@/types/staff';
 import { Container } from '@/components/ui/container';
 import { getPublicImageUrl } from '@/lib/directus';
@@ -47,7 +47,6 @@ export default async function SurgeonsStaffPage({ searchParams }: StaffPageProps
     limit: 50 // Get all staff for grouping
   });
 
-  const featuredStaff = await getFeaturedStaffAction(6);
   const allStaff = staffResponse.staff;
   const categories = staffResponse.categories;
 
@@ -155,39 +154,6 @@ export default async function SurgeonsStaffPage({ searchParams }: StaffPageProps
                           </div>
           </Container>
         </section>
-
-        {/* Featured Staff Section - More refined */}
-        {featuredStaff.length > 0 && !category && (
-          <section className="py-12 px-4 md:px-8 lg:px-12 bg-gradient-to-br from-gray-50 to-white">
-            <Container>
-              <div className="text-center mb-10">
-                <div className="inline-block bg-[#8B5C9E]/10 text-[#8B5C9E] px-3 py-1 rounded-md text-xs font-medium mb-3">
-                  FEATURED SPECIALISTS
-                                      </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Our Leading Experts</h2>
-                <p className="text-gray-600 max-w-2xl mx-auto">
-                  Meet our key specialists and department leaders who bring decades of experience to patient care.
-                </p>
-                                  </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {featuredStaff.map((staff) => (
-                  <Link key={staff.id} href={`/surgeons-staff/${staff.slug}`}>
-                    <StaffCard
-                      staff={{
-                        slug: staff.slug,
-                        name: staff.title,
-                        title: staff.category || '',
-                        qualifications: staff.excerpt || '',
-                        imageUrl: staff.featured_image_url || ''
-                      }}
-                    />
-                  </Link>
-                ))}
-              </div>
-            </Container>
-          </section>
-        )}
 
         {/* Team Members Section - Better spacing */}
         <section id="team-members" className="py-12 px-4 md:px-8 lg:px-12">
