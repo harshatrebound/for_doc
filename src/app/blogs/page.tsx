@@ -1,4 +1,4 @@
-import { getBlogPosts } from '@/lib/directus';
+import { getBlogPostsAction } from '@/app/actions/blog';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import Image from 'next/image';
@@ -137,7 +137,7 @@ function BlogCard({ post, featured = false }: { post: any; featured?: boolean })
 }
 
 export default async function BlogPage() {
-  const blogPosts = await getBlogPosts();
+  const { posts: blogPosts } = await getBlogPostsAction();
   const featuredPost = blogPosts[0]; // First post as featured
   const regularPosts = blogPosts.slice(1); // Rest as regular cards
 
