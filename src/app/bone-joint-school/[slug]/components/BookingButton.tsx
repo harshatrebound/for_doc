@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import BookingModal from '@/components/booking/BookingModal';
 import { ArrowRight } from 'lucide-react';
@@ -19,7 +19,7 @@ export default function BookingButton({
   variant = 'default',
   className = '',
 }: BookingButtonProps) {
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = React.useState(false);
 
   return (
     <>
@@ -27,7 +27,7 @@ export default function BookingButton({
         onClick={() => setIsBookingModalOpen(true)}
         className={cn(
           "bg-[#8B5C9E] text-white hover:bg-[#7a4f8b] shadow-lg hover:shadow-xl font-semibold",
-          "h-auto px-8 py-4 text-lg",
+          "h-auto px-8 py-4 text-lg w-full sm:w-auto min-w-[180px] justify-center",
           variant === 'rounded' && "rounded-full",
           className
         )}

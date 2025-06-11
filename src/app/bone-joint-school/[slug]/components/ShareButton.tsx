@@ -40,9 +40,9 @@ export default function ShareButton({ url, title }: ShareButtonProps) {
   ];
   
   return (
-    <div className="relative group">
+    <div className="relative group w-full sm:w-auto">
       <button 
-        className="flex items-center gap-2 py-4 px-8 bg-white border-2 border-white text-[#8B5C9E] hover:bg-gray-100 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105"
+        className="flex items-center justify-center gap-2 py-4 px-8 bg-white border-2 border-gray-300 text-[#8B5C9E] hover:bg-gray-100 hover:border-[#8B5C9E] rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 w-full sm:w-auto min-w-[140px]"
         aria-label="Share this article"
       >
         <Share2 className="w-5 h-5" />

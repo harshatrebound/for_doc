@@ -434,7 +434,8 @@ export default async function BoneJointTopicPage({ params }: Props) {
                   {topicData.readingTime}
                 </span>
               </div>
-              <div className="flex items-center space-x-3">
+              {/* Mobile: Stack buttons vertically, Desktop: Side by side */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                 <ShareButton 
                   url={`${process.env.NEXT_PUBLIC_BASE_URL || 'https://sportsorthopedics.in'}/bone-joint-school/${params.slug}`}
                   title={topicData.title}

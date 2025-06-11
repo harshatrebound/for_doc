@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { Calendar, Clock, User, Phone, Mail, Check, Loader2, ChevronLeft } from 'lucide-react';
@@ -13,35 +13,12 @@ interface SummaryProps {
   isSubmitting?: boolean;
 }
 
-export const Summary: React.FC<SummaryProps> = ({
+export const Summary = ({
   formData,
   onSubmit,
   onBack,
   isSubmitting = false
-}) => {
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Check if mobile device
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-    };
-  }, []);
-  
-  // Provide haptic feedback when submitting
-  const handleSubmit = () => {
-    if (isMobile && window.navigator && window.navigator.vibrate) {
-      window.navigator.vibrate(50);
-    }
-    onSubmit();
-  };
+}: SummaryProps) => {
 
   return (
     <motion.div
@@ -82,9 +59,6 @@ export const Summary: React.FC<SummaryProps> = ({
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#8B5C9E]/10 text-[#8B5C9E]">
                   {formData.doctor.speciality}
                 </span>
-                {formData.doctor.experience && (
-                  <span className="text-xs sm:text-sm text-gray-500">{formData.doctor.experience} years exp.</span>
-                )}
               </div>
             </div>
           </div>
@@ -101,7 +75,7 @@ export const Summary: React.FC<SummaryProps> = ({
               <div>
                 <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Date</p>
                 <p className="font-medium text-gray-900 text-sm sm:text-base">
-                  {format(formData.selectedDate, isMobile ? 'EEE, MMM d, yyyy' : 'EEEE, MMMM d, yyyy')}
+                  {format(formData.selectedDate, 'EEEE, MMMM d, yyyy')}
                 </p>
               </div>
             </div>
@@ -185,11 +159,26 @@ export const Summary: React.FC<SummaryProps> = ({
         )}
       </div>
 
+      {/* Important Notice */}
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center mt-0.5">
+            <span className="text-amber-600 text-xs font-bold">!</span>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-amber-800 mb-1">Important Notice</p>
+            <p className="text-sm text-amber-700">
+              Please note: Dr Naveen doesn't see back & neck pains. Please book an appointment with Dr Sameer for the same.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Submit Button */}
       <div className="flex justify-end pt-4">
         <motion.button
           type="button"
-          onClick={handleSubmit}
+          onClick={onSubmit}
           whileTap={{ scale: 0.98 }}
           disabled={isSubmitting}
           className="w-full sm:w-auto px-6 py-3 text-sm font-medium text-white bg-[#8B5C9E] rounded-lg hover:bg-[#7A4B8D] shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8B5C9E] transition-colors disabled:opacity-70 disabled:cursor-not-allowed touch-manipulation"
