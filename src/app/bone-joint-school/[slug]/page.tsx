@@ -382,7 +382,7 @@ export default async function BoneJointTopicPage({ params }: Props) {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
         
-        <div className="absolute inset-0 flex items-center justify-start">
+        <div className="absolute inset-0 flex items-end sm:items-center justify-start pb-8 sm:pb-0">
           <div className="container mx-auto px-4">
             <div className="max-w-2xl">
               <Breadcrumbs items={topicData.breadcrumbData} className="mb-6" />
@@ -425,7 +425,7 @@ export default async function BoneJointTopicPage({ params }: Props) {
       <div className="container mx-auto px-4 -mt-8">
         <div className="max-w-6xl mx-auto">
           <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center space-x-4 text-sm text-gray-600">
                 <span className="font-medium text-gray-900">{topicData.title}</span>
                 <span className="text-gray-300">•</span>
