@@ -192,7 +192,7 @@ export default async function PostPage({ params }: Props) {
       {/* Content Section */}
       <section className="py-16 px-4">
         <div className="container mx-auto max-w-4xl">
-          <div className="lg:flex lg:gap-12">
+          <div className="lg:flex lg:gap-12 lg:items-start">
             {/* Main Content */}
             <article className="lg:w-2/3">
               {/* Navigation */}
@@ -221,30 +221,32 @@ export default async function PostPage({ params }: Props) {
               </div>
             </article>
 
-            {/* Sidebar */}
+            {/* Sticky Sidebar */}
             <aside className="lg:w-1/3 mt-12 lg:mt-0">
-              {/* Call to Action */}
-              <div className="bg-gradient-to-r from-[#8B5C9E] to-[#7a4f8a] text-white p-6 rounded-xl mb-8">
-                <h3 className="text-lg font-bold mb-3">Need Expert Care?</h3>
-                <p className="text-sm mb-4 text-white/90">
-                  Get personalized treatment from our orthopedic specialists.
-                </p>
-                <Button className="w-full bg-white text-[#8B5C9E] hover:bg-gray-100">
-                  Book an Appointment
-                </Button>
-              </div>
-
-              {/* Related Posts */}
-              {relatedPosts.length > 0 && (
-                <div className="bg-gray-50 p-6 rounded-xl">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Related Articles</h3>
-                  <div className="space-y-1">
-                    {relatedPosts.map(relatedPost => (
-                      <RelatedPostCard key={relatedPost.id} post={relatedPost} />
-                    ))}
-                  </div>
+              <div className="lg:sticky lg:top-8 space-y-8">
+                {/* Call to Action */}
+                <div className="bg-gradient-to-r from-[#8B5C9E] to-[#7a4f8a] text-white p-6 rounded-xl">
+                  <h3 className="text-lg font-bold mb-3 text-white">Need Expert Care?</h3>
+                  <p className="text-sm mb-4 text-white/90">
+                    Get personalized treatment from our orthopedic specialists.
+                  </p>
+                  <Button className="w-full bg-white text-[#8B5C9E] hover:bg-gray-100">
+                    Book an Appointment
+                  </Button>
                 </div>
-              )}
+
+                {/* Related Posts */}
+                {relatedPosts.length > 0 && (
+                  <div className="bg-gray-50 p-6 rounded-xl">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Related Articles</h3>
+                    <div className="space-y-1">
+                      {relatedPosts.map(relatedPost => (
+                        <RelatedPostCard key={relatedPost.id} post={relatedPost} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </aside>
           </div>
         </div>
