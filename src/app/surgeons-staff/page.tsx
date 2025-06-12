@@ -60,9 +60,9 @@ export default async function SurgeonsStaffPage({ searchParams }: StaffPageProps
     'Psychologist': { title: 'Sports Psychologist', icon: UserPlus, priority: 3 },
     'Fellow': { title: 'Sports Orthopedics Fellows', icon: Users, priority: 4 },
     'Physiotherapist': { title: 'Physiotherapists', icon: UserPlus, priority: 5 },
-    'Staff': { title: 'Clinic Staff', icon: Users, priority: 6 },
-    'ManipalStaff': { title: 'Manipal Hospital Staff', icon: Users, priority: 7 },
-    'Other': { title: 'Other Team Members', icon: Users, priority: 8 },
+    'ManipalStaff': { title: 'Manipal Hospital Staff', icon: Users, priority: 6 },
+    'Other': { title: 'Other Team Members', icon: Users, priority: 7 },
+    'Staff': { title: 'Clinic Staff', icon: Users, priority: 8 },
   };
 
   // Sort categories by priority
