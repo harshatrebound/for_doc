@@ -52,11 +52,16 @@ export default async function SurgeonsStaffPage({ searchParams }: StaffPageProps
 
   // Group staff by category for organized display
   const groupedStaff = groupStaffByCategory(allStaff);
+  
+  // Debug: Log available categories
+  console.log('Available categories:', Object.keys(groupedStaff));
+  console.log('All staff:', allStaff.map(s => ({ title: s.title, category: s.category })));
 
   // Define category mapping with icons - Dr. Naveen first, Associate Consultant MUST be 2nd, Clinic Staff last
   const categoryConfig: Record<string, { title: string; icon: any; priority: number }> = {
     'Director': { title: 'Director', icon: Award, priority: 1 },
-    'Consultant': { title: 'Associate Consultant', icon: Award, priority: 2 }, // MUST be 2nd
+    'Associate Consultant': { title: 'Associate Consultant', icon: Award, priority: 2 }, // MUST be 2nd - using exact category name
+    'Consultant': { title: 'Associate Consultant', icon: Award, priority: 2 }, // Backup for different naming
     'Sports Psychologist': { title: 'Sports Psychologist', icon: UserPlus, priority: 3 },
     'Sports Orthopedics Fellows': { title: 'Sports Orthopedics Fellows', icon: Users, priority: 4 },
     'Physiotherapists': { title: 'Physiotherapists', icon: UserPlus, priority: 5 },
