@@ -57,10 +57,10 @@ export default async function SurgeonsStaffPage({ searchParams }: StaffPageProps
   const categoryConfig: Record<string, { title: string; icon: any; priority: number }> = {
     'Director': { title: 'Director', icon: Award, priority: 1 },
     'Consultant': { title: 'Associate Consultant', icon: Award, priority: 2 },
-    'Psychologist': { title: 'Sports Psychologist', icon: UserPlus, priority: 3 },
-    'Fellow': { title: 'Sports Orthopedics Fellows', icon: Users, priority: 4 },
-    'Physiotherapist': { title: 'Physiotherapists', icon: UserPlus, priority: 5 },
-    'ManipalStaff': { title: 'Manipal Hospital Staff', icon: Users, priority: 6 },
+    'Sports Psychologist': { title: 'Sports Psychologist', icon: UserPlus, priority: 3 },
+    'Sports Orthopedics Fellows': { title: 'Sports Orthopedics Fellows', icon: Users, priority: 4 },
+    'Physiotherapists': { title: 'Physiotherapists', icon: UserPlus, priority: 5 },
+    'Manipal Hospital Staff': { title: 'Manipal Hospital Staff', icon: Users, priority: 6 },
     'Other': { title: 'Other Team Members', icon: Users, priority: 7 },
     'Staff': { title: 'Clinic Staff', icon: Users, priority: 999 }, // Moved to last
   };
