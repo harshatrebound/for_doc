@@ -53,7 +53,7 @@ export default async function SurgeonsStaffPage({ searchParams }: StaffPageProps
   // Group staff by category for organized display
   const groupedStaff = groupStaffByCategory(allStaff);
 
-  // Define category mapping with icons
+  // Define category mapping with icons - Dr. Naveen first, Clinic Staff last
   const categoryConfig: Record<string, { title: string; icon: any; priority: number }> = {
     'Director': { title: 'Director', icon: Award, priority: 1 },
     'Consultant': { title: 'Associate Consultant', icon: Award, priority: 2 },
@@ -62,7 +62,7 @@ export default async function SurgeonsStaffPage({ searchParams }: StaffPageProps
     'Physiotherapist': { title: 'Physiotherapists', icon: UserPlus, priority: 5 },
     'ManipalStaff': { title: 'Manipal Hospital Staff', icon: Users, priority: 6 },
     'Other': { title: 'Other Team Members', icon: Users, priority: 7 },
-    'Staff': { title: 'Clinic Staff', icon: Users, priority: 8 },
+    'Staff': { title: 'Clinic Staff', icon: Users, priority: 999 }, // Moved to last
   };
 
   // Sort categories by priority
