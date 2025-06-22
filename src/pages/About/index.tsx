@@ -926,30 +926,54 @@ const AboutPage = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
             {[
               {
-                name: 'Apple',
-                logo: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg',
+                name: 'Partner Company 1',
+                logo: 'https://cdn.prod.website-files.com/655e49f111202615f47a3d82/65e5c92892bf62b79a899c5f_6.webp',
               },
               {
-                name: 'Google',
-                logo: 'https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg',
+                name: 'Partner Company 2',
+                logo: 'https://cdn.prod.website-files.com/655e49f111202615f47a3d82/65e5c92892bf62b79a899c5d_32.webp',
               },
               {
-                name: 'Microsoft',
-                logo: 'https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg',
+                name: 'Partner Company 3',
+                logo: 'https://cdn.prod.website-files.com/655e49f111202615f47a3d82/65e5c92892bf62b79a899c5b_5.webp',
               },
               {
-                name: 'Amazon',
-                logo: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg',
+                name: 'Partner Company 4',
+                logo: 'https://cdn.prod.website-files.com/655e49f111202615f47a3d82/65e5c92892bf62b79a899c59_2.webp',
               },
               {
-                name: 'Meta',
-                logo: 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg',
+                name: 'Partner Company 5',
+                logo: 'https://cdn.prod.website-files.com/655e49f111202615f47a3d82/65e2ec85b68d550746b8d92e_1.webp',
               },
               {
-                name: 'Netflix',
-                logo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
+                name: 'Partner Company 6',
+                logo: 'https://cdn.prod.website-files.com/655e49f111202615f47a3d82/65e5c92892bf62b79a899c51_18.webp',
               },
-            ].map((partner, index) => (
+              {
+                name: 'Partner Company 7',
+                logo: 'https://cdn.prod.website-files.com/655e49f111202615f47a3d82/65e2ec85b68d550746b8d92a_27.webp',
+              },
+              {
+                name: 'Partner Company 8',
+                logo: 'https://cdn.prod.website-files.com/655e49f111202615f47a3d82/65e5c92892bf62b79a899c57_21.webp',
+              },
+              {
+                name: 'Partner Company 9',
+                logo: 'https://cdn.prod.website-files.com/655e49f111202615f47a3d82/65e5c92892bf62b79a899c55_22.webp',
+              },
+              {
+                name: 'Partner Company 10',
+                logo: 'https://cdn.prod.website-files.com/655e49f111202615f47a3d82/65e5c92892bf62b79a899c53_20.webp',
+              },
+              {
+                name: 'Partner Company 11',
+                logo: 'https://cdn.prod.website-files.com/655e49f111202615f47a3d82/65e5c92892bf62b79a899c4f_23.webp',
+              },
+              {
+                name: 'Partner Company 12',
+                logo: 'https://cdn.prod.website-files.com/655e49f111202615f47a3d82/65e5c92892bf62b79a899c4d_17.webp',
+              },
+            ].slice(0, 6).map((partner, index) => (
               <motion.div
                 key={partner.name}
                 initial={{ opacity: 0, y: 10 }}
@@ -964,7 +988,7 @@ const AboutPage = () => {
                 <motion.img
                   src={partner.logo}
                   alt={partner.name}
-                  className="h-8 opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0"
+                  className="h-8 max-w-full opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0 object-contain"
                   whileHover={{ scale: 1.05 }}
                 />
               </motion.div>
