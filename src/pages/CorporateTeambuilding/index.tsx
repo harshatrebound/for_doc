@@ -12,6 +12,30 @@ import TestimonialsSection from '../../components/TestimonialsSection';
 import PartnersSection from '../../components/PartnersSection';
 import { supabase } from '../../lib/supabaseClient';
 
+// Fallback Unsplash images for corporate team building
+const fallbackImages = [
+  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=400&h=300&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=300&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=400&h=300&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&h=300&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=300&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1551818255-e6e10975cd17?w=400&h=300&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=300&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=400&h=300&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400&h=300&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=300&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&h=300&fit=crop&crop=faces'
+];
+
+// Function to get a consistent fallback image based on index
+const getFallbackImageByIndex = (index: number) => {
+  return fallbackImages[index % fallbackImages.length];
+};
+
 interface CorporateTeambuilding {
   id: number;
   name: string;
@@ -222,8 +246,13 @@ const CorporateTeamBuildingActivities: React.FC = () => {
                       transition={{ duration: 0.6, delay: index * 0.1 }}
                       className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                     >
-                      <div className="relative h-48 bg-gradient-to-br from-[#FF4C39] to-[#FFB573]">
-                        <div className="absolute inset-0 bg-black/20"></div>
+                      <div className="relative h-48">
+                        <img
+                          src={getFallbackImageByIndex(index)}
+                          alt={teambuilding.main_heading || teambuilding.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
                         <div className="absolute bottom-4 left-4 right-4">
                           <h3 className="text-xl font-bold text-white mb-2">
                             {teambuilding.main_heading || teambuilding.name}

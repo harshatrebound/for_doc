@@ -58,53 +58,82 @@ const PartnersSection = () => {
     threshold: 0.1,
   });
 
-  return (
-    <section className="w-full bg-[#eeeeee] py-12" ref={ref}>
-      <div className="max-w-[1200px] mx-auto px-4 lg:px-6">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5 }}
-            className="block text-sm md:text-base font-medium font-['DM Sans'] text-[#636363] mb-2"
-          >
-            Our Partners
-          </motion.span>
-          <motion.h2
-            initial={{ opacity: 0, y: 10 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-2xl md:text-[40px] font-semibold font-['Inter'] leading-tight bg-gradient-to-b from-[#FF4C39] to-[#FFB573] bg-clip-text text-transparent"
-          >
-            Trusted by Industry Leaders
-          </motion.h2>
-        </div>
+  // Duplicate partners array for seamless infinite scroll
+  const duplicatedPartners = [...partners, ...partners];
 
-        {/* Partners Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
-          {partners.map((partner, index) => (
-            <motion.div
-              key={partner.name}
+  return (
+    <>
+      <style>
+        {`
+          @keyframes partners-scroll {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(-50%);
+            }
+          }
+
+          .partners-scroll {
+            animation: partners-scroll 30s linear infinite;
+          }
+
+          .partners-scroll:hover {
+            animation-play-state: paused;
+          }
+        `}
+      </style>
+      
+      <section className="w-full bg-[#eeeeee] py-12 overflow-hidden" ref={ref}>
+        <div className="max-w-[1200px] mx-auto px-4 lg:px-6">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <motion.span
               initial={{ opacity: 0, y: 10 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{
-                duration: 0.5,
-                delay: index * 0.08,
-              }}
-              className="group flex justify-center"
+              transition={{ duration: 0.5 }}
+              className="block text-sm md:text-base font-medium font-['DM Sans'] text-[#636363] mb-2"
             >
-              <motion.img
-                src={partner.logo}
-                alt={partner.name}
-                className="h-8 max-w-full opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0 object-contain"
-                whileHover={{ scale: 1.05 }}
-              />
+              Our Partners
+            </motion.span>
+            <motion.h2
+              initial={{ opacity: 0, y: 10 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-2xl md:text-[40px] font-semibold font-['Inter'] leading-tight bg-gradient-to-b from-[#FF4C39] to-[#FFB573] bg-clip-text text-transparent"
+            >
+              Trusted by Industry Leaders
+            </motion.h2>
+          </div>
+
+          {/* Partners Scroller */}
+          <div className="relative">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={inView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex space-x-12 partners-scroll"
+              style={{
+                width: 'fit-content',
+              }}
+            >
+              {duplicatedPartners.map((partner, index) => (
+                <div
+                  key={`${partner.name}-${index}`}
+                  className="group flex-shrink-0 flex items-center justify-center w-32 h-16"
+                >
+                  <img
+                    src={partner.logo}
+                    alt={partner.name}
+                    className="h-8 max-w-full opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0 object-contain hover:scale-105"
+                  />
+                </div>
+              ))}
             </motion.div>
-          ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 };
 

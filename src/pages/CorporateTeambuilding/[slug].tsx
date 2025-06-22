@@ -13,6 +13,38 @@ import TestimonialsSection from '../../components/TestimonialsSection';
 import PartnersSection from '../../components/PartnersSection';
 import { supabase } from '../../lib/supabaseClient';
 
+// Fallback Unsplash images for corporate team building
+const fallbackImages = [
+  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&h=600&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=800&h=600&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=600&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=600&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&h=600&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=600&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1551818255-e6e10975cd17?w=800&h=600&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=800&h=600&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=600&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800&h=600&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop&crop=faces',
+  'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&h=600&fit=crop&crop=faces'
+];
+
+// Function to get a random fallback image
+const getRandomFallbackImage = () => {
+  return fallbackImages[Math.floor(Math.random() * fallbackImages.length)];
+};
+
+// Function to get fallback image with error handling
+const getImageWithFallback = (originalImage: string | undefined, fallbackImage?: string) => {
+  if (originalImage) {
+    return originalImage;
+  }
+  return fallbackImage || getRandomFallbackImage();
+};
+
 interface CorporateTeambuilding {
   id: number;
   name: string;
@@ -214,7 +246,7 @@ const CorporateTeambuildingDetail: React.FC = () => {
                 className="order-1 lg:order-2"
               >
                 <img
-                  src="/images/corporate-team.jpg"
+                  src={getRandomFallbackImage()}
                   alt={teambuilding.name}
                   className="w-full h-[500px] object-cover rounded-2xl shadow-lg"
                 />
@@ -348,15 +380,13 @@ const CorporateTeambuildingDetail: React.FC = () => {
                     transition={{ duration: 0.6, delay: index * 0.1 }}
                     className="bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300"
                   >
-                    {card.image && (
-                      <div className="relative pt-[75%]">
-                        <img
-                          src={card.image}
-                          alt={card.heading}
-                          className="absolute inset-0 w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
+                    <div className="relative pt-[75%]">
+                      <img
+                        src={getImageWithFallback(card.image)}
+                        alt={card.heading}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    </div>
                     <div className="p-6">
                       <h3 className="text-xl font-bold text-[#002B4F]">{card.heading}</h3>
                     </div>
