@@ -1,4 +1,6 @@
+import React from 'react';
 import { motion } from 'framer-motion';
+import { FiMapPin, FiUsers, FiClock } from 'react-icons/fi';
 
 interface StayCTASectionProps {
   stayName: string;
@@ -18,8 +20,6 @@ const StayCTASection = ({ stayName, destinationName }: StayCTASectionProps) => {
       .replace(/^Team outing\s*/i, '')
       .trim();
   };
-
-
 
   return (
     <section className="w-full bg-white py-16 sm:py-20 md:py-24">
@@ -48,60 +48,47 @@ const StayCTASection = ({ stayName, destinationName }: StayCTASectionProps) => {
           </p>
 
           {/* Stats Section - Apple-style clean design */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-12 lg:gap-16 mb-8">
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 mb-12 max-w-2xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="flex items-center gap-3"
+              className="flex flex-col items-center"
             >
-              <div className="w-12 h-12 bg-gradient-to-br from-[#FF4C39] to-[#FFB573] rounded-2xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+              <div className="w-12 h-12 bg-gradient-to-br from-[#FF4C39]/10 to-[#FFB573]/10 rounded-2xl flex items-center justify-center mb-3">
+                <FiMapPin className="w-6 h-6 text-[#FF4C39]" />
               </div>
-              <div className="text-left">
-                <div className="text-2xl font-bold text-[#1a1a1a]">{destinationName}</div>
-                <div className="text-sm text-[#666] font-medium">Premium Location</div>
-              </div>
+              <h4 className="text-lg font-bold text-[#1a1a1a] mb-1 font-outfit">Beautiful Location</h4>
+              <p className="text-[#666] text-sm">Premium Location</p>
             </motion.div>
 
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="flex items-center gap-3"
+              className="flex flex-col items-center"
             >
-              <div className="w-12 h-12 bg-gradient-to-br from-[#FF4C39] to-[#FFB573] rounded-2xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+              <div className="w-12 h-12 bg-gradient-to-br from-[#FF4C39]/10 to-[#FFB573]/10 rounded-2xl flex items-center justify-center mb-3">
+                <FiUsers className="w-6 h-6 text-[#FF4C39]" />
               </div>
-              <div className="text-left">
-                <div className="text-2xl font-bold text-[#1a1a1a]">10-300</div>
-                <div className="text-sm text-[#666] font-medium">Team Size</div>
-              </div>
+              <h4 className="text-lg font-bold text-[#1a1a1a] mb-1 font-outfit">10-300</h4>
+              <p className="text-[#666] text-sm">Team Size</p>
             </motion.div>
 
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex items-center gap-3"
+              className="flex flex-col items-center"
             >
-              <div className="w-12 h-12 bg-gradient-to-br from-[#FF4C39] to-[#FFB573] rounded-2xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+              <div className="w-12 h-12 bg-gradient-to-br from-[#FF4C39]/10 to-[#FFB573]/10 rounded-2xl flex items-center justify-center mb-3">
+                <FiClock className="w-6 h-6 text-[#FF4C39]" />
               </div>
-              <div className="text-left">
-                <div className="text-2xl font-bold text-[#1a1a1a]">24hr</div>
-                <div className="text-sm text-[#666] font-medium">Response Time</div>
-              </div>
+              <h4 className="text-lg font-bold text-[#1a1a1a] mb-1 font-outfit">24hr</h4>
+              <p className="text-[#666] text-sm">Response Time</p>
             </motion.div>
           </div>
 
@@ -114,9 +101,9 @@ const StayCTASection = ({ stayName, destinationName }: StayCTASectionProps) => {
             whileHover={{ y: -2, transition: { duration: 0.2 } }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
-              const formSection = document.getElementById('stay-booking-form');
-              if (formSection) {
-                formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              const contactSection = document.getElementById('contact-section');
+              if (contactSection) {
+                contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }
             }}
             className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-2xl font-semibold text-lg hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#FF4C39]/30 focus:ring-offset-2 group"
@@ -136,7 +123,7 @@ const StayCTASection = ({ stayName, destinationName }: StayCTASectionProps) => {
         </motion.div>
 
         {/* Benefits Grid - Minimalist Apple-style cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -146,11 +133,11 @@ const StayCTASection = ({ stayName, destinationName }: StayCTASectionProps) => {
           >
             <div className="w-14 h-14 bg-gradient-to-br from-[#FF4C39]/10 to-[#FFB573]/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
               <svg className="w-7 h-7 text-[#FF4C39]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <h4 className="text-xl font-bold text-[#1a1a1a] mb-3 font-outfit">Expert Planning</h4>
-            <p className="text-[#666] leading-relaxed">10+ years organizing memorable team experiences at premium locations</p>
+            <p className="text-[#666] leading-relaxed">Professional event coordination from start to finish with attention to every detail</p>
           </motion.div>
 
           <motion.div
@@ -162,11 +149,11 @@ const StayCTASection = ({ stayName, destinationName }: StayCTASectionProps) => {
           >
             <div className="w-14 h-14 bg-gradient-to-br from-[#FF4C39]/10 to-[#FFB573]/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
               <svg className="w-7 h-7 text-[#FF4C39]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <h4 className="text-xl font-bold text-[#1a1a1a] mb-3 font-outfit">Custom Packages</h4>
-            <p className="text-[#666] leading-relaxed">Tailored team building activities that match your group's unique needs</p>
+            <h4 className="text-xl font-bold text-[#1a1a1a] mb-3 font-outfit">Quick Response</h4>
+            <p className="text-[#666] leading-relaxed">Fast 24-hour response time with personalized proposals tailored to your needs</p>
           </motion.div>
 
           <motion.div
@@ -183,22 +170,6 @@ const StayCTASection = ({ stayName, destinationName }: StayCTASectionProps) => {
             </div>
             <h4 className="text-xl font-bold text-[#1a1a1a] mb-3 font-outfit">Best Rates</h4>
             <p className="text-[#666] leading-relaxed">Competitive pricing with transparent costs and no hidden booking fees</p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="bg-white p-8 rounded-3xl border border-gray-100 hover:border-[#FF4C39]/20 hover:shadow-lg transition-all duration-300 group"
-          >
-            <div className="w-14 h-14 bg-gradient-to-br from-[#FF4C39]/10 to-[#FFB573]/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg className="w-7 h-7 text-[#FF4C39]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            </div>
-            <h4 className="text-xl font-bold text-[#1a1a1a] mb-3 font-outfit">Full Support</h4>
-            <p className="text-[#666] leading-relaxed">End-to-end assistance from initial planning to post-event follow-up</p>
           </motion.div>
         </div>
       </div>
