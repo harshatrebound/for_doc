@@ -13,23 +13,23 @@ import TestimonialsSection from '../../components/TestimonialsSection';
 import PartnersSection from '../../components/PartnersSection';
 import { supabase } from '../../lib/supabaseClient';
 
-// Fallback Unsplash images for corporate team building
+// Team building related Unsplash images
 const fallbackImages = [
-  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&h=600&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=800&h=600&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=600&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=600&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&h=600&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=600&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1551818255-e6e10975cd17?w=800&h=600&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=800&h=600&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=600&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800&h=600&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&h=600&fit=crop&crop=faces'
+  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop&crop=center', // Team meeting
+  'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&h=600&fit=crop&crop=center', // Team collaboration
+  'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=800&h=600&fit=crop&crop=center', // Team discussion
+  'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=600&fit=crop&crop=center', // Team workshop
+  'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=600&fit=crop&crop=center', // Team presentation
+  'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop&crop=center', // Team planning
+  'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&h=600&fit=crop&crop=center', // Team brainstorming
+  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=600&fit=crop&crop=center', // Team meeting room
+  'https://images.unsplash.com/photo-1551818255-e6e10975cd17?w=800&h=600&fit=crop&crop=center', // Team high five
+  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop&crop=center', // Team huddle
+  'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=800&h=600&fit=crop&crop=center', // Team outdoor activity
+  'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=600&fit=crop&crop=center', // Team building exercise
+  'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800&h=600&fit=crop&crop=center', // Team celebration
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop&crop=center', // Team work session
+  'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&h=600&fit=crop&crop=center'  // Team collaboration
 ];
 
 // Function to get a random fallback image
@@ -204,9 +204,9 @@ const CorporateTeambuildingDetail: React.FC = () => {
                 className="order-2 lg:order-1"
               >
                 {teambuilding.tagline && (
-                  <p className="text-lg text-[#FF4C39] font-medium mb-4">
+                  <div className="inline-block px-4 py-2 bg-[#FF4C39]/10 text-[#FF4C39] rounded-full text-sm font-medium mb-4">
                     {teambuilding.tagline}
-                  </p>
+                  </div>
                 )}
                 
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 font-outfit leading-tight">
@@ -233,7 +233,7 @@ const CorporateTeambuildingDetail: React.FC = () => {
 
                 <button
                   onClick={() => setShowSkipSearchPopup(true)}
-                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-full font-medium text-lg hover:shadow-lg transition-all duration-300"
+                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-full font-medium text-lg hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                 >
                   {teambuilding.button_text || "Get Started"}
                 </button>
@@ -245,11 +245,14 @@ const CorporateTeambuildingDetail: React.FC = () => {
                 transition={{ duration: 0.8 }}
                 className="order-1 lg:order-2"
               >
-                <img
-                  src={getRandomFallbackImage()}
-                  alt={teambuilding.name}
-                  className="w-full h-[500px] object-cover rounded-2xl shadow-lg"
-                />
+                <div className="relative">
+                  <img
+                    src={getRandomFallbackImage()}
+                    alt={teambuilding.name}
+                    className="w-full h-[500px] object-cover rounded-2xl shadow-lg"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl"></div>
+                </div>
               </motion.div>
             </div>
           </div>
@@ -342,7 +345,7 @@ const CorporateTeambuildingDetail: React.FC = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300"
+                    className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100"
                   >
                     <h3 className="text-xl font-bold text-[#002B4F] mb-4">{reason.heading}</h3>
                     {reason.paragraph && (
@@ -378,17 +381,18 @@ const CorporateTeambuildingDetail: React.FC = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                    className="group bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100 hover:-translate-y-1"
                   >
-                    <div className="relative pt-[75%]">
+                    <div className="relative pt-[75%] overflow-hidden">
                       <img
                         src={getImageWithFallback(card.image)}
                         alt={card.heading}
-                        className="absolute inset-0 w-full h-full object-cover"
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-60"></div>
                     </div>
                     <div className="p-6">
-                      <h3 className="text-xl font-bold text-[#002B4F]">{card.heading}</h3>
+                      <h3 className="text-xl font-bold text-[#002B4F] group-hover:text-[#FF4C39] transition-colors duration-300">{card.heading}</h3>
                     </div>
                   </motion.div>
                 ))}

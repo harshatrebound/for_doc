@@ -12,24 +12,27 @@ import TestimonialsSection from '../../components/TestimonialsSection';
 import PartnersSection from '../../components/PartnersSection';
 import { supabase } from '../../lib/supabaseClient';
 
-// Fallback Unsplash images for corporate team building
+// Team building related Unsplash images
 const fallbackImages = [
-  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=400&h=300&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=300&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=400&h=300&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&h=300&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=300&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1551818255-e6e10975cd17?w=400&h=300&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=300&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=400&h=300&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400&h=300&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=300&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&h=300&fit=crop&crop=faces'
+  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop&crop=center', // Team meeting
+  'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=400&h=300&fit=crop&crop=center', // Team collaboration
+  'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop&crop=center', // Team discussion
+  'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=300&fit=crop&crop=center', // Team workshop
+  'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=400&h=300&fit=crop&crop=center', // Team presentation
+  'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop&crop=center', // Team planning
+  'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&h=300&fit=crop&crop=center', // Team brainstorming
+  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=300&fit=crop&crop=center', // Team meeting room
+  'https://images.unsplash.com/photo-1551818255-e6e10975cd17?w=400&h=300&fit=crop&crop=center', // Team high five
+  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=300&fit=crop&crop=center', // Team huddle
+  'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=400&h=300&fit=crop&crop=center', // Team outdoor activity
+  'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400&h=300&fit=crop&crop=center', // Team building exercise
+  'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=300&fit=crop&crop=center', // Team celebration
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop&crop=center', // Team work session
+  'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&h=300&fit=crop&crop=center'  // Team collaboration
 ];
+
+// Hero image for team building
+const heroImage = 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=800&fit=crop&crop=center';
 
 // Function to get a consistent fallback image based on index
 const getFallbackImageByIndex = (index: number) => {
@@ -97,35 +100,42 @@ const CorporateTeamBuildingActivities: React.FC = () => {
       {/* Hero Section */}
       <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
-          <div 
+          <img
+            src={heroImage}
+            alt="Corporate Team Building Activities"
             className="w-full h-full object-cover"
-            style={{
-              backgroundImage: "url('/images/corporate-team.jpg')",
-              backgroundPosition: 'center',
-              backgroundSize: 'cover',
-              backgroundRepeat: 'no-repeat'
-            }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70" />
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
-          <motion.h1
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6"
+            className="inline-block px-4 py-2 bg-[#FF4C39]/20 backdrop-blur-sm rounded-full border border-[#FF4C39]/30 mb-6"
           >
-            Corporate Team Building Activities
+            <span className="text-[#FFB573] font-medium">Empower Your Team</span>
+          </motion.div>
+          
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight"
+          >
+            Partnering with Leading Corporate Team Building Companies
           </motion.h1>
+          
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl text-gray-200 mb-8"
+            className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto"
           >
-            Strengthen team bonds and enhance workplace collaboration through engaging activities
+            Forge Stronger Bonds with Top Corporate Team Building Experts
           </motion.p>
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -133,7 +143,7 @@ const CorporateTeamBuildingActivities: React.FC = () => {
           >
             <Link
               to="#activities"
-              className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-full font-medium text-lg hover:shadow-lg transition-all duration-300"
+              className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-full font-medium text-lg hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
             >
               Explore Activities
               <FiArrowDown className="ml-2 w-5 h-5" />
@@ -142,8 +152,37 @@ const CorporateTeamBuildingActivities: React.FC = () => {
         </div>
       </section>
 
+      {/* Introduction Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <p className="text-lg text-gray-600 leading-relaxed">
+              Discover our Corporate Team Building Companies program designed to enhance team collaboration and performance.
+            </p>
+            <div className="mt-8 flex justify-center">
+              <Link
+                to="#activities"
+                className="inline-flex items-center text-[#FF4C39] hover:text-[#FFB573] font-medium text-lg transition-colors"
+              >
+                Learn More
+                <FiArrowRight className="ml-2 w-5 h-5" />
+              </Link>
+              <div className="ml-8 flex items-center text-gray-500">
+                <FiUsers className="mr-2 w-5 h-5" />
+                <span>Team Activity</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Benefits Section */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-[#002B4F] mb-6">
@@ -155,7 +194,7 @@ const CorporateTeamBuildingActivities: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="p-8 bg-gray-50 rounded-xl hover:shadow-lg transition-shadow duration-300">
+            <div className="p-8 bg-white rounded-xl hover:shadow-lg transition-shadow duration-300 border border-gray-100">
               <FiUsers className="text-4xl text-[#FF4C39] mb-6" />
               <h3 className="text-xl font-bold text-[#002B4F] mb-4">Enhanced Team Bonding</h3>
               <p className="text-gray-600">
@@ -163,7 +202,7 @@ const CorporateTeamBuildingActivities: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-8 bg-gray-50 rounded-xl hover:shadow-lg transition-shadow duration-300">
+            <div className="p-8 bg-white rounded-xl hover:shadow-lg transition-shadow duration-300 border border-gray-100">
               <FiTarget className="text-4xl text-[#FF4C39] mb-6" />
               <h3 className="text-xl font-bold text-[#002B4F] mb-4">Improved Communication</h3>
               <p className="text-gray-600">
@@ -171,7 +210,7 @@ const CorporateTeamBuildingActivities: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-8 bg-gray-50 rounded-xl hover:shadow-lg transition-shadow duration-300">
+            <div className="p-8 bg-white rounded-xl hover:shadow-lg transition-shadow duration-300 border border-gray-100">
               <FiBriefcase className="text-4xl text-[#FF4C39] mb-6" />
               <h3 className="text-xl font-bold text-[#002B4F] mb-4">Professional Growth</h3>
               <p className="text-gray-600">
@@ -179,7 +218,7 @@ const CorporateTeamBuildingActivities: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-8 bg-gray-50 rounded-xl hover:shadow-lg transition-shadow duration-300">
+            <div className="p-8 bg-white rounded-xl hover:shadow-lg transition-shadow duration-300 border border-gray-100">
               <FiAward className="text-4xl text-[#FF4C39] mb-6" />
               <h3 className="text-xl font-bold text-[#002B4F] mb-4">Increased Productivity</h3>
               <p className="text-gray-600">
@@ -187,7 +226,7 @@ const CorporateTeamBuildingActivities: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-8 bg-gray-50 rounded-xl hover:shadow-lg transition-shadow duration-300">
+            <div className="p-8 bg-white rounded-xl hover:shadow-lg transition-shadow duration-300 border border-gray-100">
               <FiSmile className="text-4xl text-[#FF4C39] mb-6" />
               <h3 className="text-xl font-bold text-[#002B4F] mb-4">Employee Satisfaction</h3>
               <p className="text-gray-600">
@@ -195,7 +234,7 @@ const CorporateTeamBuildingActivities: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-8 bg-gray-50 rounded-xl hover:shadow-lg transition-shadow duration-300">
+            <div className="p-8 bg-white rounded-xl hover:shadow-lg transition-shadow duration-300 border border-gray-100">
               <FiTarget className="text-4xl text-[#FF4C39] mb-6" />
               <h3 className="text-xl font-bold text-[#002B4F] mb-4">Goal Achievement</h3>
               <p className="text-gray-600">
@@ -207,7 +246,7 @@ const CorporateTeamBuildingActivities: React.FC = () => {
       </section>
 
       {/* Corporate Team Building Activities Section */}
-      <section id="activities" className="py-24 bg-gray-50">
+      <section id="activities" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-[#002B4F] mb-6">
@@ -244,44 +283,51 @@ const CorporateTeamBuildingActivities: React.FC = () => {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.6, delay: index * 0.1 }}
-                      className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-[#FF4C39]/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
                     >
-                      <div className="relative h-48">
+                      <div className="relative h-56 overflow-hidden">
                         <img
                           src={getFallbackImageByIndex(index)}
                           alt={teambuilding.main_heading || teambuilding.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                        <div className="absolute bottom-4 left-4 right-4">
-                          <h3 className="text-xl font-bold text-white mb-2">
-                            {teambuilding.main_heading || teambuilding.name}
-                          </h3>
-                          {teambuilding.tagline && (
-                            <p className="text-white/90 text-sm">
-                              {teambuilding.tagline}
-                            </p>
-                          )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
+                        
+                        {/* Floating tag */}
+                        <div className="absolute top-4 left-4">
+                          <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-[#FF4C39] text-sm font-medium rounded-full">
+                            Team Building
+                          </span>
                         </div>
                       </div>
 
-                      <div className="p-6">
-                        <p className="text-gray-600 mb-4 line-clamp-3">
+                      <div className="p-8">
+                        <h3 className="text-xl font-bold text-[#002B4F] mb-3 group-hover:text-[#FF4C39] transition-colors duration-300">
+                          {teambuilding.main_heading || teambuilding.name}
+                        </h3>
+                        
+                        {teambuilding.tagline && (
+                          <p className="text-[#FF4C39] text-sm font-medium mb-3 uppercase tracking-wide">
+                            {teambuilding.tagline}
+                          </p>
+                        )}
+                        
+                        <p className="text-gray-600 mb-6 line-clamp-3 leading-relaxed">
                           {teambuilding.meta_description || `Discover our ${teambuilding.name} program designed to enhance team collaboration and performance.`}
                         </p>
                         
                         <div className="flex justify-between items-center">
                           <Link
                             to={`/corporate-teambuilding/${teambuilding.slug}`}
-                            className="inline-flex items-center text-[#FF4C39] hover:text-[#FFB573] font-medium transition-colors"
+                            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-full font-medium transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                           >
                             Learn More
                             <FiArrowRight className="ml-2 w-4 h-4" />
                           </Link>
                           
-                          <div className="flex items-center text-sm text-gray-500">
-                            <FiUsers className="mr-1 w-4 h-4" />
-                            <span>Team Activity</span>
+                          <div className="flex items-center text-sm text-gray-400">
+                            <FiUsers className="mr-2 w-4 h-4" />
+                            <span>Corporate</span>
                           </div>
                         </div>
                       </div>
