@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { FiMapPin, FiUsers, FiClock } from 'react-icons/fi';
 
@@ -43,7 +42,7 @@ const StayCTASection = ({ stayName, destinationName }: StayCTASectionProps) => {
           </h2>
           
           <p className="text-lg sm:text-xl text-[#666] max-w-2xl mx-auto font-light leading-relaxed mb-12">
-            Get a personalized quote for your team outing at this beautiful resort. 
+            Get a personalized quote for your team outing at this beautiful resort in {destinationName}. 
             We'll handle everything from planning to execution.
           </p>
 
@@ -60,7 +59,7 @@ const StayCTASection = ({ stayName, destinationName }: StayCTASectionProps) => {
                 <FiMapPin className="w-6 h-6 text-[#FF4C39]" />
               </div>
               <h4 className="text-lg font-bold text-[#1a1a1a] mb-1 font-outfit">Beautiful Location</h4>
-              <p className="text-[#666] text-sm">Premium Location</p>
+              <p className="text-[#666] text-sm">{destinationName}</p>
             </motion.div>
 
             <motion.div
