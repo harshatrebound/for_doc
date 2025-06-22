@@ -204,36 +204,36 @@ const CorporateTeambuildingDetail: React.FC = () => {
                 className="order-2 lg:order-1"
               >
                 {teambuilding.tagline && (
-                  <div className="inline-block px-4 py-2 bg-[#FF4C39]/10 text-[#FF4C39] rounded-full text-sm font-medium mb-6">
+                  <div className="inline-block px-4 py-2 bg-[#F3F3F3] text-[#636363] rounded-full text-sm font-medium mb-6 font-dm-sans">
                     {teambuilding.tagline}
                   </div>
                 )}
                 
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#313131] mb-6 leading-tight font-outfit">
                   {teambuilding.main_heading || teambuilding.name}
                 </h1>
                 
                 <div className="flex flex-wrap gap-4 mb-8">
-                  <div className="flex items-center px-4 py-2 bg-gray-100 rounded-full">
+                  <div className="flex items-center px-4 py-2 bg-[#F3F3F3] rounded-full">
                     <FiUsers className="mr-2 text-[#FF4C39] w-4 h-4" />
-                    <span className="text-gray-700 text-sm font-medium">Team Activity</span>
+                    <span className="text-[#636363] text-sm font-medium font-dm-sans">Team Activity</span>
                   </div>
-                  <div className="flex items-center px-4 py-2 bg-gray-100 rounded-full">
+                  <div className="flex items-center px-4 py-2 bg-[#F3F3F3] rounded-full">
                     <FiBriefcase className="mr-2 text-[#FF4C39] w-4 h-4" />
-                    <span className="text-gray-700 text-sm font-medium">Corporate</span>
+                    <span className="text-[#636363] text-sm font-medium font-dm-sans">Corporate</span>
                   </div>
                   <button 
                     onClick={handleShare}
-                    className="flex items-center px-4 py-2 bg-gray-100 hover:bg-[#FF4C39]/10 rounded-full transition-colors duration-300"
+                    className="flex items-center px-4 py-2 bg-[#F3F3F3] hover:bg-[#FF4C39]/10 rounded-full transition-colors duration-300"
                   >
                     <FiShare2 className="mr-2 text-[#FF4C39] w-4 h-4" />
-                    <span className="text-gray-700 hover:text-[#FF4C39] text-sm font-medium transition-colors">Share</span>
+                    <span className="text-[#636363] hover:text-[#FF4C39] text-sm font-medium transition-colors font-dm-sans">Share</span>
                   </button>
                 </div>
 
                 <button
                   onClick={() => setShowSkipSearchPopup(true)}
-                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-full font-medium text-lg hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-full font-medium text-lg hover:shadow-lg transition-all duration-300 hover:-translate-y-1 font-outfit"
                 >
                   {teambuilding.button_text || "Get Started"}
                 </button>
@@ -260,7 +260,7 @@ const CorporateTeambuildingDetail: React.FC = () => {
 
         {/* Heading 2 Section */}
         {teambuilding.heading_2 && (
-          <section className="py-20 bg-gray-50">
+          <section className="py-20 bg-[#F3F3F3]">
             <div className="max-w-4xl mx-auto px-4">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -268,12 +268,12 @@ const CorporateTeambuildingDetail: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
               >
-                <h2 className="text-3xl md:text-4xl font-bold text-[#002B4F] mb-6">
+                <h2 className="text-3xl md:text-4xl font-bold text-[#313131] mb-6 font-inter">
                   {teambuilding.heading_2}
                 </h2>
                 {teambuilding.heading_2_argument && (
                   <div 
-                    className="prose prose-lg max-w-none text-gray-600"
+                    className="prose prose-lg max-w-none text-[#636363] font-dm-sans"
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(teambuilding.heading_2_argument) }}
                   />
                 )}
@@ -293,25 +293,25 @@ const CorporateTeambuildingDetail: React.FC = () => {
                 transition={{ duration: 0.6 }}
               >
                 {teambuilding.heading_3_satire && (
-                  <p className="text-lg text-[#FF4C39] font-medium mb-4">
+                  <p className="text-lg text-[#FF4C39] font-medium mb-4 font-dm-sans">
                     {teambuilding.heading_3_satire}
                   </p>
                 )}
                 
-                <h2 className="text-3xl md:text-4xl font-bold text-[#002B4F] mb-6">
+                <h2 className="text-3xl md:text-4xl font-bold text-[#313131] mb-6 font-inter">
                   {teambuilding.heading_3}
                 </h2>
                 
                 <div className="space-y-6">
                   {teambuilding.heading_3_argument_1 && (
                     <div 
-                      className="prose prose-lg max-w-none text-gray-600"
+                      className="prose prose-lg max-w-none text-[#636363] font-dm-sans"
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(teambuilding.heading_3_argument_1) }}
                     />
                   )}
                   {teambuilding.heading_3_argument_2 && (
                     <div 
-                      className="prose prose-lg max-w-none text-gray-600"
+                      className="prose prose-lg max-w-none text-[#636363] font-dm-sans"
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(teambuilding.heading_3_argument_2) }}
                     />
                   )}
@@ -323,10 +323,10 @@ const CorporateTeambuildingDetail: React.FC = () => {
 
         {/* Reasons Section */}
         {(teambuilding.reason_1_heading || teambuilding.reason_2_heading || teambuilding.reason_3_heading || teambuilding.reason_4_heading || teambuilding.reason_5_heading) && (
-          <section className="py-20 bg-gray-50">
+          <section className="py-20 bg-[#F3F3F3]">
             <div className="max-w-7xl mx-auto px-4">
               {teambuilding.heading_4 && (
-                <h2 className="text-3xl md:text-4xl font-bold text-center text-[#002B4F] mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold text-center text-[#313131] mb-12 font-inter">
                   {teambuilding.heading_4}
                 </h2>
               )}
@@ -345,12 +345,12 @@ const CorporateTeambuildingDetail: React.FC = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100"
+                    className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-[#EEEEEE]"
                   >
-                    <h3 className="text-xl font-bold text-[#002B4F] mb-4">{reason.heading}</h3>
+                    <h3 className="text-xl font-bold text-[#313131] mb-4 font-inter">{reason.heading}</h3>
                     {reason.paragraph && (
                       <div 
-                        className="text-gray-600 leading-relaxed"
+                        className="text-[#636363] leading-relaxed font-dm-sans"
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(reason.paragraph) }}
                       />
                     )}
@@ -365,7 +365,7 @@ const CorporateTeambuildingDetail: React.FC = () => {
         {teambuilding.special_section_heading && (
           <section className="py-20 bg-white">
             <div className="max-w-7xl mx-auto px-4">
-              <h2 className="text-3xl md:text-4xl font-bold text-center text-[#002B4F] mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-center text-[#313131] mb-12 font-inter">
                 {teambuilding.special_section_heading}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -381,7 +381,7 @@ const CorporateTeambuildingDetail: React.FC = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="group bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100 hover:-translate-y-1"
+                    className="group bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 border border-[#EEEEEE] hover:-translate-y-1"
                   >
                     <div className="relative pt-[75%] overflow-hidden">
                       <img
@@ -392,7 +392,7 @@ const CorporateTeambuildingDetail: React.FC = () => {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-60"></div>
                     </div>
                     <div className="p-6">
-                      <h3 className="text-xl font-bold text-[#002B4F] group-hover:text-[#FF4C39] transition-colors duration-300">{card.heading}</h3>
+                      <h3 className="text-xl font-bold text-[#313131] group-hover:text-[#FF4C39] transition-colors duration-300 font-inter">{card.heading}</h3>
                     </div>
                   </motion.div>
                 ))}
@@ -402,7 +402,7 @@ const CorporateTeambuildingDetail: React.FC = () => {
         )}
 
         {/* CTA Section */}
-        <section className="py-20 px-4 bg-gradient-to-r from-[#002B4F] to-[#0F4C75]">
+        <section className="py-20 px-4 bg-gradient-to-r from-[#313131] to-[#636363]">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -410,12 +410,12 @@ const CorporateTeambuildingDetail: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 font-outfit text-white">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white font-outfit">
                 {teambuilding.form_cta_heading || `Ready to Transform Your Team with ${teambuilding.name}?`}
               </h2>
               {teambuilding.form_cta_paragraph && (
                 <div 
-                  className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto prose prose-lg prose-invert"
+                  className="text-xl text-white/90 mb-8 max-w-2xl mx-auto prose prose-lg prose-invert font-dm-sans"
                   dangerouslySetInnerHTML={{ 
                     __html: sanitizeHtml(teambuilding.form_cta_paragraph)
                   }}
@@ -423,7 +423,7 @@ const CorporateTeambuildingDetail: React.FC = () => {
               )}
               <button
                 onClick={() => setShowSkipSearchPopup(true)}
-                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-full font-medium text-lg hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-full font-medium text-lg hover:shadow-lg transition-all duration-300 hover:-translate-y-1 font-outfit"
               >
                 {teambuilding.button_text || "Get Started Today"}
               </button>
