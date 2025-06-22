@@ -113,9 +113,9 @@ const CorporateTeamBuildingActivities: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-block px-4 py-2 bg-[#FF4C39]/20 backdrop-blur-sm rounded-full border border-[#FF4C39]/30 mb-6"
+            className="inline-block px-6 py-3 bg-[#FF4C39]/20 backdrop-blur-sm rounded-full border border-[#FF4C39]/30 mb-8"
           >
-            <span className="text-[#FFB573] font-medium">Empower Your Team</span>
+            <span className="text-[#FFB573] font-medium text-lg">Empower Your Team</span>
           </motion.div>
           
           <motion.h1
@@ -124,14 +124,18 @@ const CorporateTeamBuildingActivities: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight"
           >
-            Partnering with Leading Corporate Team Building Companies
+            Partnering with Leading<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4C39] to-[#FFB573]">
+              Corporate Team Building
+            </span><br />
+            Companies
           </motion.h1>
           
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto"
+            className="text-xl text-gray-200 mb-10 max-w-2xl mx-auto leading-relaxed"
           >
             Forge Stronger Bonds with Top Corporate Team Building Experts
           </motion.p>
@@ -140,6 +144,7 @@ const CorporateTeamBuildingActivities: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
             <Link
               to="#activities"
@@ -148,6 +153,11 @@ const CorporateTeamBuildingActivities: React.FC = () => {
               Explore Activities
               <FiArrowDown className="ml-2 w-5 h-5" />
             </Link>
+            
+            <div className="flex items-center text-white/80">
+              <FiUsers className="mr-2 w-5 h-5" />
+              <span className="text-sm">Trusted by 500+ Companies</span>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -160,21 +170,29 @@ const CorporateTeamBuildingActivities: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
+            className="space-y-8"
           >
-            <p className="text-lg text-gray-600 leading-relaxed">
-              Discover our Corporate Team Building Companies program designed to enhance team collaboration and performance.
-            </p>
-            <div className="mt-8 flex justify-center">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-3xl md:text-4xl font-bold text-[#002B4F] mb-6">
+                Corporate Team Building Companies
+              </h2>
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Discover our Corporate Team Building Companies program designed to enhance team collaboration and performance through innovative activities and expert facilitation.
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-4">
               <Link
                 to="#activities"
-                className="inline-flex items-center text-[#FF4C39] hover:text-[#FFB573] font-medium text-lg transition-colors"
+                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-full font-medium transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
               >
                 Learn More
-                <FiArrowRight className="ml-2 w-5 h-5" />
+                <FiArrowRight className="ml-2 w-4 h-4" />
               </Link>
-              <div className="ml-8 flex items-center text-gray-500">
-                <FiUsers className="mr-2 w-5 h-5" />
-                <span>Team Activity</span>
+              
+              <div className="flex items-center text-gray-500 bg-gray-50 px-4 py-2 rounded-full">
+                <FiUsers className="mr-2 w-4 h-4" />
+                <span className="text-sm font-medium">Team Activity</span>
               </div>
             </div>
           </motion.div>
@@ -302,31 +320,33 @@ const CorporateTeamBuildingActivities: React.FC = () => {
                       </div>
 
                       <div className="p-8">
-                        <h3 className="text-xl font-bold text-[#002B4F] mb-3 group-hover:text-[#FF4C39] transition-colors duration-300">
-                          {teambuilding.main_heading || teambuilding.name}
-                        </h3>
+                        <div className="mb-4">
+                          {teambuilding.tagline && (
+                            <span className="inline-block px-3 py-1 bg-[#FF4C39]/10 text-[#FF4C39] text-xs font-medium rounded-full mb-3">
+                              {teambuilding.tagline}
+                            </span>
+                          )}
+                          
+                          <h3 className="text-xl font-bold text-[#002B4F] mb-3 group-hover:text-[#FF4C39] transition-colors duration-300 leading-tight">
+                            {teambuilding.main_heading || teambuilding.name}
+                          </h3>
+                        </div>
                         
-                        {teambuilding.tagline && (
-                          <p className="text-[#FF4C39] text-sm font-medium mb-3 uppercase tracking-wide">
-                            {teambuilding.tagline}
-                          </p>
-                        )}
-                        
-                        <p className="text-gray-600 mb-6 line-clamp-3 leading-relaxed">
+                        <p className="text-gray-600 mb-6 line-clamp-3 leading-relaxed text-sm">
                           {teambuilding.meta_description || `Discover our ${teambuilding.name} program designed to enhance team collaboration and performance.`}
                         </p>
                         
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                           <Link
                             to={`/corporate-teambuilding/${teambuilding.slug}`}
-                            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-full font-medium transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                            className="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-full font-medium text-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                           >
                             Learn More
                             <FiArrowRight className="ml-2 w-4 h-4" />
                           </Link>
                           
-                          <div className="flex items-center text-sm text-gray-400">
-                            <FiUsers className="mr-2 w-4 h-4" />
+                          <div className="flex items-center text-xs text-gray-400">
+                            <FiUsers className="mr-1.5 w-3.5 h-3.5" />
                             <span>Corporate</span>
                           </div>
                         </div>

@@ -204,30 +204,30 @@ const CorporateTeambuildingDetail: React.FC = () => {
                 className="order-2 lg:order-1"
               >
                 {teambuilding.tagline && (
-                  <div className="inline-block px-4 py-2 bg-[#FF4C39]/10 text-[#FF4C39] rounded-full text-sm font-medium mb-4">
+                  <div className="inline-block px-4 py-2 bg-[#FF4C39]/10 text-[#FF4C39] rounded-full text-sm font-medium mb-6">
                     {teambuilding.tagline}
                   </div>
                 )}
                 
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 font-outfit leading-tight">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
                   {teambuilding.main_heading || teambuilding.name}
                 </h1>
                 
-                <div className="flex flex-wrap gap-6 text-gray-600 text-lg mb-8">
-                  <div className="flex items-center">
-                    <FiUsers className="mr-2 text-[#FF4C39]" />
-                    <span>Team Activity</span>
+                <div className="flex flex-wrap gap-4 mb-8">
+                  <div className="flex items-center px-4 py-2 bg-gray-100 rounded-full">
+                    <FiUsers className="mr-2 text-[#FF4C39] w-4 h-4" />
+                    <span className="text-gray-700 text-sm font-medium">Team Activity</span>
                   </div>
-                  <div className="flex items-center">
-                    <FiBriefcase className="mr-2 text-[#FF4C39]" />
-                    <span>Corporate</span>
+                  <div className="flex items-center px-4 py-2 bg-gray-100 rounded-full">
+                    <FiBriefcase className="mr-2 text-[#FF4C39] w-4 h-4" />
+                    <span className="text-gray-700 text-sm font-medium">Corporate</span>
                   </div>
                   <button 
                     onClick={handleShare}
-                    className="flex items-center text-[#FF4C39] hover:text-[#FFB573] transition-colors"
+                    className="flex items-center px-4 py-2 bg-gray-100 hover:bg-[#FF4C39]/10 rounded-full transition-colors duration-300"
                   >
-                    <FiShare2 className="mr-2" />
-                    <span>Share</span>
+                    <FiShare2 className="mr-2 text-[#FF4C39] w-4 h-4" />
+                    <span className="text-gray-700 hover:text-[#FF4C39] text-sm font-medium transition-colors">Share</span>
                   </button>
                 </div>
 
