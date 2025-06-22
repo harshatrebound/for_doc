@@ -46,12 +46,7 @@ const Analytics = () => {
             `}
           </script>
           <noscript>
-            <iframe
-              src={`https://www.googletagmanager.com/ns.html?id=${ANALYTICS_CONFIG.GTM_ID}`}
-              height="0"
-              width="0"
-              style={{ display: 'none', visibility: 'hidden' }}
-            ></iframe>
+            {`<iframe src="https://www.googletagmanager.com/ns.html?id=${ANALYTICS_CONFIG.GTM_ID}" height="0" width="0" style="display:none;visibility:hidden"></iframe>`}
           </noscript>
         </>
       )}
@@ -97,12 +92,7 @@ const Analytics = () => {
             `}
           </script>
           <noscript>
-            <img
-              height="1"
-              width="1"
-              style={{ display: 'none' }}
-              src={`https://www.facebook.com/tr?id=${ANALYTICS_CONFIG.FACEBOOK_PIXEL_ID}&ev=PageView&noscript=1`}
-            />
+            {`<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${ANALYTICS_CONFIG.FACEBOOK_PIXEL_ID}&ev=PageView&noscript=1" />`}
           </noscript>
         </>
       )}
