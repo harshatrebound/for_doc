@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host --port 5173",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && npm run generate-sitemap",
+    "build-only": "tsc && vite build",
+    "generate-sitemap": "tsx scripts/generateSitemap.ts",
     "preview": "vite preview",
     "clean": "rimraf dist node_modules",
     "start": "npm run build && vite preview"

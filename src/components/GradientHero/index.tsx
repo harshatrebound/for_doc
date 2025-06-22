@@ -1,5 +1,5 @@
 import { useInView } from 'react-intersection-observer';
-import { memo, useMemo } from 'react';
+import { memo } from 'react';
 import {
   HeroContainer,
   ContentContainer,
@@ -16,14 +16,8 @@ interface GradientHeroProps {
   className?: string;
 }
 
-// Team building related hero images
-const teamBuildingImages = [
-  "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop", // Team with hands together
-  "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop", // Team meeting
-  "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop", // Team collaboration
-  "https://images.unsplash.com/photo-1527525443983-6e60c75fff46?q=80&w=2070&auto=format&fit=crop", // Team success
-  "https://images.unsplash.com/photo-1603201667141-5a2d4c673378?q=80&w=2069&auto=format&fit=crop"  // Team outdoor activity
-];
+// Hero image - custom image from public folder
+const heroImageUrl = "/hero.webp";
 
 const GradientHero: React.FC<GradientHeroProps> = ({ className }) => {
   const [ref, inView] = useInView({
@@ -31,11 +25,8 @@ const GradientHero: React.FC<GradientHeroProps> = ({ className }) => {
     triggerOnce: true
   });
 
-  // Select a random team building image
-  const heroImage = useMemo(() => {
-    const randomIndex = Math.floor(Math.random() * teamBuildingImages.length);
-    return teamBuildingImages[randomIndex];
-  }, []);
+  // Use the custom hero image
+  const heroImage = heroImageUrl;
 
   // Stats with hardcoded values
   const stats = [

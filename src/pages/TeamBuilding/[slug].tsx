@@ -6,7 +6,7 @@ import { FiUsers, FiClock, FiShare2, FiArrowRight } from 'react-icons/fi';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import NewsletterSection from '../../components/NewsletterSection';
-import SkipSearchPopup from '../../components/SkipSearchPopup';
+import PageWrapper from '../../components/PageWrapper';
 
 interface TeamBuildingPage {
   id: number;
@@ -24,7 +24,6 @@ const TeamBuildingDetail = () => {
   const [page, setPage] = useState<TeamBuildingPage | null>(null);
   const [similarPages, setSimilarPages] = useState<TeamBuildingPage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showSkipSearchPopup, setShowSkipSearchPopup] = useState(false);
 
   useEffect(() => {
     const fetchPage = async () => {
@@ -116,14 +115,8 @@ const TeamBuildingDetail = () => {
         <meta property="og:type" content="article" />
       </Helmet>
 
-      <div className="min-h-screen bg-white">
+      <PageWrapper className="min-h-screen bg-white">
         <Navbar />
-        
-        {/* Skip Search Popup */}
-        <SkipSearchPopup 
-          isVisible={showSkipSearchPopup} 
-          onClose={() => setShowSkipSearchPopup(false)} 
-        />
         
         {/* Hero Section */}
         <section className="relative pt-32 pb-20">
@@ -162,13 +155,13 @@ const TeamBuildingDetail = () => {
                   </button>
                 </div>
 
-                <button
-                  onClick={() => setShowSkipSearchPopup(true)}
+                <Link
+                  to="/contact"
                   className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-full font-medium text-lg hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                 >
                   Partner with Us
                   <FiArrowRight className="ml-2 w-5 h-5" />
-                </button>
+                </Link>
               </motion.div>
 
               {/* Image Column */}
@@ -299,20 +292,20 @@ const TeamBuildingDetail = () => {
               <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
                 Let's create unforgettable team experiences together.
               </p>
-              <button
-                onClick={() => setShowSkipSearchPopup(true)}
+              <Link
+                to="/contact"
                 className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-full font-medium text-lg hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
               >
                 Get Started
                 <FiArrowRight className="ml-2 w-5 h-5" />
-              </button>
+              </Link>
             </motion.div>
           </div>
         </section>
 
         <NewsletterSection />
         <Footer />
-      </div>
+      </PageWrapper>
     </>
   );
 };

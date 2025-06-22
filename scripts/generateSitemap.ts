@@ -13,18 +13,92 @@ const BASE_URL = 'https://www.trebound.com';
 
 // Static routes with their priorities and change frequencies
 const staticRoutes: SitemapURL[] = [
+  // Core pages
   { loc: '/', priority: 1.0, changefreq: 'weekly' },
+  { loc: '/about', priority: 0.8, changefreq: 'monthly' },
+  { loc: '/contact', priority: 0.7, changefreq: 'monthly' },
+  { loc: '/thank-you', priority: 0.5, changefreq: 'yearly' },
+  { loc: '/privacy-policy', priority: 0.5, changefreq: 'yearly' },
+  { loc: '/terms-and-conditions', priority: 0.5, changefreq: 'yearly' },
+  
+  // Main service pages
   { loc: '/team-outing-regions', priority: 0.9, changefreq: 'weekly' },
   { loc: '/corporate-team-outing-places', priority: 0.9, changefreq: 'weekly' },
   { loc: '/stays', priority: 0.8, changefreq: 'weekly' },
   { loc: '/team-outings', priority: 0.8, changefreq: 'weekly' },
   { loc: '/team-building-activity', priority: 0.8, changefreq: 'weekly' },
-  { loc: '/jobs', priority: 0.7, changefreq: 'daily' },
-  { loc: '/blog', priority: 0.8, changefreq: 'daily' },
   { loc: '/teambuilding', priority: 0.9, changefreq: 'weekly' },
   { loc: '/corporate-teambuilding', priority: 0.9, changefreq: 'weekly' },
   { loc: '/customized-training', priority: 0.8, changefreq: 'weekly' },
-  { loc: '/contact', priority: 0.7, changefreq: 'monthly' },
+  
+  // Blog and Jobs
+  { loc: '/blog', priority: 0.8, changefreq: 'daily' },
+  { loc: '/jobs', priority: 0.7, changefreq: 'daily' },
+  
+  // Virtual and Online Activities
+  { loc: '/virtual-team-building', priority: 0.8, changefreq: 'weekly' },
+  { loc: '/virtual-team-building-activities-for-the-holiday-season', priority: 0.7, changefreq: 'monthly' },
+  { loc: '/fun-virtual-team-building-games', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/online-team-building-activities-for-digital-workspaces', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/virtual-escape-room-teambuilding-activity-trebound', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/virtual-team-building-icebreaker-games', priority: 0.7, changefreq: 'weekly' },
+  
+  // Outbound and Outdoor Activities
+  { loc: '/outbound-teambuilding-activities', priority: 0.8, changefreq: 'weekly' },
+  { loc: '/exciting-outdoor-team-building-activities', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/corporate-team-outbound-training', priority: 0.7, changefreq: 'weekly' },
+  
+  // Team Building Games and Activities
+  { loc: '/team-building-games', priority: 0.8, changefreq: 'weekly' },
+  { loc: '/corporate-team-building-games', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/icebreaker-games', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/team-collaboration-games', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/top-team-building-activities', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/top-team-building-activities-for-large-groups', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/team-building-activities-for-small-groups', priority: 0.7, changefreq: 'weekly' },
+  
+  // Corporate Team Outings
+  { loc: '/corporate-team-outings', priority: 0.8, changefreq: 'weekly' },
+  { loc: '/corporate-team-offsite', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/plan-your-team-offsite-today', priority: 0.7, changefreq: 'weekly' },
+  
+  // Location-specific pages
+  { loc: '/corporate-team-outing-in-bangalore', priority: 0.8, changefreq: 'weekly' },
+  { loc: '/corporate-team-building-activities-in-mumbai', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/corporate-team-building-activities-in-hyderabad', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/corporate-team-building-activities', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/team-building-activities-in-bangalore', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/team-outing-places-in-hyderabad', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/team-outing-places-in-bangalore', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/team-outing-resorts-in-bangalore', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/corporate-team-outing-places-in-hyderabad', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/corporate-team-outing-places-in-bangalore', priority: 0.7, changefreq: 'weekly' },
+  
+  // Resort and Stay pages
+  { loc: '/one-day-outing-in-bangalore', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/one-day-outing-resorts-in-hyderabad', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/overnight-team-outing-near-bangalore', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/resorts-around-bangalore', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/discover-the-perfect-setting-for-your-team-in-bangalore', priority: 0.7, changefreq: 'weekly' },
+  
+  // Engagement and Special Activities
+  { loc: '/team-engagement-activities', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/high-engaging-team-building-activities', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/high-engagement-team-building-activities', priority: 0.7, changefreq: 'weekly' },
+  { loc: '/fun-indoor-team-building-activities', priority: 0.7, changefreq: 'weekly' },
+  
+  // Special Programs and Services
+  { loc: '/corporate-gifting', priority: 0.6, changefreq: 'monthly' },
+  { loc: '/campus-to-corporate', priority: 0.6, changefreq: 'monthly' },
+  { loc: '/global-partner-registration', priority: 0.6, changefreq: 'monthly' },
+  { loc: '/amdocs', priority: 0.6, changefreq: 'monthly' },
+  
+  // Guidelines and Information
+  { loc: '/onground-dos-donts', priority: 0.6, changefreq: 'monthly' },
+  { loc: '/virtual-dos-donts', priority: 0.6, changefreq: 'monthly' },
+  
+  // Special Long URL
+  { loc: '/return-to-office-2022-welcome-your-employees-back-to-office-with-an-amazing-fun-experience', priority: 0.6, changefreq: 'yearly' },
 ];
 
 // Function to escape special characters in XML
@@ -63,13 +137,13 @@ const fetchDynamicRoutes = async (): Promise<SitemapURL[]> => {
   // Fetch blog posts
   const { data: blogPosts } = await supabase
     .from('blog_posts')
-    .select('slug, updated_at, published_at')
-    .eq('featured', true);
+    .select('slug, updated_on, published_on')
+    .not('published_on', 'is', null);
 
   blogPosts?.forEach(post => {
     dynamicRoutes.push({
       loc: `/blog/${post.slug}`,
-      lastmod: formatDate(new Date(post.updated_at || post.published_at)),
+      lastmod: formatDate(new Date(post.updated_on || post.published_on)),
       changefreq: 'monthly',
       priority: 0.7
     });

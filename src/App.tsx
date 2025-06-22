@@ -2,6 +2,8 @@ import { Helmet } from 'react-helmet-async';
 import { useEffect, useState } from 'react';
 import useSkipSearchPopup from './hooks/useSkipSearchPopup';
 import SkipSearchPopup from './components/SkipSearchPopup';
+import Analytics from './components/Analytics';
+import CustomAnalytics from './components/CustomAnalytics';
 import Navbar from './components/Navbar';
 import GradientHero from './components/GradientHero';
 import ServicesSection from './components/ServicesSection';
@@ -25,6 +27,8 @@ function App() {
 
   return (
     <>
+      <Analytics />
+      <CustomAnalytics />
       <Helmet>
         <title>Trebound | Premium Team Building & Corporate Events Solutions</title>
         <meta 

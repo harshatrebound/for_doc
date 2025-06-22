@@ -12,12 +12,27 @@ import GalleryModal from '../../components/GalleryModal';
 import SafeHTML from '../../components/SafeHTML';
 import PartnersSection from '../../components/PartnersSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
+import StayCTAButton from '../../components/StayCTAButton';
+import StayCTASection from '../../components/StayCTASection';
+import PageWrapper from '../../components/PageWrapper';
 
 // Helper function to extract plain text from HTML
 const extractTextFromHtml = (html: string) => {
   if (!html) return '';
   const doc = new DOMParser().parseFromString(html, 'text/html');
   return doc.body.textContent || '';
+};
+
+// Helper function to clean stay name by removing any "Team Outing" variations
+const cleanStayName = (name: string) => {
+  if (!name) return '';
+  // Remove various "Team Outing" patterns at the beginning
+  return name
+    .replace(/^Team Outing at\s*/i, '')
+    .replace(/^Team Outing\s*/i, '')
+    .replace(/^Team outing at\s*/i, '')
+    .replace(/^Team outing\s*/i, '')
+    .trim();
 };
 
 const StayDetail = () => {
@@ -88,7 +103,7 @@ const StayDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       {/* Navbar */}
       <Navbar />
 
@@ -123,7 +138,7 @@ const StayDetail = () => {
           transition={{ duration: 0.5 }}
           className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#313131] mb-4"
         >
-          Team Outing at {stay.name}
+          {cleanStayName(stay.name)}
         </motion.h1>
         
         <motion.p
@@ -206,6 +221,12 @@ const StayDetail = () => {
           </div>
         </div>
       </section>
+
+      {/* CTA Button Section */}
+      <StayCTAButton 
+        stayName={stay.name}
+        destinationName={stay.destination_details?.name || 'Beautiful Location'}
+      />
 
       {/* Main Content Section */}
       <section className="w-full bg-white py-16" ref={ref}>
@@ -415,30 +436,14 @@ const StayDetail = () => {
         </div>
       </section>
 
-      {/* Ready to Book Section */}
-      <section className="w-full bg-[#003366] py-16 overflow-hidden">
-        <div className="max-w-[1200px] mx-auto px-4 lg:px-6 relative">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="text-center"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 font-['Inter']">
-              Ready to Book Your Team Outing?
-            </h2>
-            <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto font-['DM Sans']">
-              Contact us now to check availability and get a customized quote for your team outing at {stay.name}.
-            </p>
-            <a 
-              href="#contact-section" 
-              className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-white bg-gradient-to-r from-[#FF4C39] to-[#FFB573] rounded-lg hover:opacity-90 transition-opacity"
-            >
-              Get in Touch
-            </a>
-          </motion.div>
-        </div>
-      </section>
+      {/* Enhanced Booking Form Section */}
+      <div id="stay-booking-form">
+        <StayCTASection 
+          stayName={stay.name}
+          destinationName={stay.destination_details?.name || 'Beautiful Location'}
+          location={stay.location || stay.destination_details?.name}
+        />
+      </div>
 
       {/* Partners Section */}
       <PartnersSection />
@@ -453,7 +458,7 @@ const StayDetail = () => {
 
       {/* Footer */}
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 
