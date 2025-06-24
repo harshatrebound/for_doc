@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useContactSubmission } from '../../lib/hooks/useSupabaseData';
 import type { ActivityType } from '../../lib/supabaseClient';
 
@@ -52,11 +52,17 @@ const steps = [
   }
 ];
 
-const ContactSection = () => {
+interface ContactSectionProps {
+  autoFocusName?: boolean;
+}
+
+const ContactSection = ({ autoFocusName = false }: ContactSectionProps) => {
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
+
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -118,6 +124,16 @@ const ContactSection = () => {
     }
   }, [success]);
 
+  // Auto-focus name input when autoFocusName prop is true
+  useEffect(() => {
+    if (autoFocusName && nameInputRef.current) {
+      // Small delay to ensure the component is rendered and scrolled to
+      setTimeout(() => {
+        nameInputRef.current?.focus();
+      }, 500);
+    }
+  }, [autoFocusName]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(prev => ({
       ...prev,
@@ -126,7 +142,7 @@ const ContactSection = () => {
   };
 
   return (
-    <section className="w-full bg-white py-12" ref={ref}>
+    <section id="contact-section" className="w-full bg-white py-12" ref={ref}>
       <div className="max-w-[1200px] mx-auto px-4 lg:px-6">
         <div className="relative rounded-[20px] border border-[#eeeeee] p-8 lg:p-12">
           <div className="flex flex-col lg:flex-row lg:justify-around items-start lg:items-start gap-12">
@@ -193,6 +209,7 @@ const ContactSection = () => {
                         Name
                       </label>
                       <input
+                        ref={nameInputRef}
                         type="text"
                         name="name"
                         placeholder="Enter your name"

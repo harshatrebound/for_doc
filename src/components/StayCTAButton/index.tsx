@@ -4,9 +4,10 @@ import { FiArrowRight, FiMapPin, FiUsers, FiClock } from 'react-icons/fi';
 interface StayCTAButtonProps {
   stayName: string;
   destinationName: string;
+  onCTAClick?: () => void;
 }
 
-const StayCTAButton = ({ stayName, destinationName }: StayCTAButtonProps) => {
+const StayCTAButton = ({ stayName, destinationName, onCTAClick }: StayCTAButtonProps) => {
   // Helper function to clean stay name by removing any "Team Outing" variations
   const cleanStayName = (name: string) => {
     if (!name) return '';
@@ -20,12 +21,17 @@ const StayCTAButton = ({ stayName, destinationName }: StayCTAButtonProps) => {
   };
 
   const scrollToForm = () => {
-    const formSection = document.getElementById('stay-booking-form');
-    if (formSection) {
-      formSection.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-      });
+    if (onCTAClick) {
+      onCTAClick();
+    } else {
+      // Fallback to default behavior
+      const contactSection = document.getElementById('contact-section');
+      if (contactSection) {
+        contactSection.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
     }
   };
 

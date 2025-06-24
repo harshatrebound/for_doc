@@ -282,13 +282,37 @@ export const useContactSubmission = () => {
       setError(null);
       setSuccess(false);
 
-      const { error: submitError } = await supabase
-        .from('contact_submissions')
-        .insert([data]);
+      console.log('Submitting data:', data);
+      console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
 
-      if (submitError) throw submitError;
+      // Use direct fetch API to bypass potential Supabase client issues
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/contact_submissions`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify(data)
+        }
+      );
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+      
       setSuccess(true);
+      console.log('Form submitted successfully!');
     } catch (err) {
+      console.error('Form submission error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred while submitting the form');
     } finally {
       setLoading(false);

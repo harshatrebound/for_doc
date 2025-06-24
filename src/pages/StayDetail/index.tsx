@@ -42,6 +42,7 @@ const StayDetail = () => {
   
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [galleryInitialIndex, setGalleryInitialIndex] = useState(0);
+  const [shouldAutoFocusName, setShouldAutoFocusName] = useState(false);
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -67,6 +68,18 @@ const StayDetail = () => {
   const openGallery = (index: number) => {
     setGalleryInitialIndex(index);
     setIsGalleryOpen(true);
+  };
+
+  const handleCTAClick = () => {
+    // Scroll to contact section
+    const contactSection = document.getElementById('contact-section');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    // Trigger auto-focus on name field
+    setShouldAutoFocusName(true);
+    // Reset the flag after a delay
+    setTimeout(() => setShouldAutoFocusName(false), 1000);
   };
 
   // If stay is loading, show loading state
@@ -226,6 +239,7 @@ const StayDetail = () => {
       <StayCTAButton 
         stayName={stay.name}
         destinationName={stay.destination_details?.name || 'Beautiful Location'}
+        onCTAClick={handleCTAClick}
       />
 
       {/* Main Content Section */}
@@ -442,6 +456,7 @@ const StayDetail = () => {
           stayName={stay.name}
           destinationName={stay.destination_details?.name || 'Beautiful Location'}
           location={stay.location || stay.destination_details?.name}
+          onCTAClick={handleCTAClick}
         />
       </div>
 
@@ -452,8 +467,8 @@ const StayDetail = () => {
       <TestimonialsSection />
 
       {/* Contact Section with ID for scroll */}
-      <div id="contact-section">
-        <ContactSection />
+      <div>
+        <ContactSection autoFocusName={shouldAutoFocusName} />
       </div>
 
       {/* Footer */}

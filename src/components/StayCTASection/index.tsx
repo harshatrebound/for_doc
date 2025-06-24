@@ -5,9 +5,10 @@ interface StayCTASectionProps {
   stayName: string;
   destinationName: string;
   location?: string;
+  onCTAClick?: () => void;
 }
 
-const StayCTASection = ({ stayName, destinationName }: StayCTASectionProps) => {
+const StayCTASection = ({ stayName, destinationName, onCTAClick }: StayCTASectionProps) => {
   // Helper function to clean stay name by removing any "Team Outing" variations
   const cleanStayName = (name: string) => {
     if (!name) return '';
@@ -100,9 +101,14 @@ const StayCTASection = ({ stayName, destinationName }: StayCTASectionProps) => {
             whileHover={{ y: -2, transition: { duration: 0.2 } }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
-              const contactSection = document.getElementById('contact-section');
-              if (contactSection) {
-                contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              if (onCTAClick) {
+                onCTAClick();
+              } else {
+                // Fallback to default behavior
+                const contactSection = document.getElementById('contact-section');
+                if (contactSection) {
+                  contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
               }
             }}
             className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-2xl font-semibold text-lg hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#FF4C39]/30 focus:ring-offset-2 group"
