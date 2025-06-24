@@ -97,6 +97,12 @@ const BangaloreResortsPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate required fields
+    if (!formData.name.trim() || !formData.email.trim() || !formData.company.trim() || !formData.phone.trim() || !formData.teamSize) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
     try {
       // Submit to contact_submissions table
       const response = await fetch(
@@ -109,12 +115,12 @@ const BangaloreResortsPage: React.FC = () => {
             'Prefer': 'return=minimal'
           },
           body: JSON.stringify({
-            name: formData.name,
-            work_email: formData.email,
+            name: formData.name.trim(),
+            work_email: formData.email.trim(),
             preferred_destination: 'Bangalore Resorts',
-            phone: formData.phone,
+            phone: formData.phone.trim(),
             number_of_pax: parseInt(formData.teamSize.split('-')[0]) || 1, // Extract first number from team size
-            more_details: `Company: ${formData.company}\nTeam Size: ${formData.teamSize}\nMessage: ${formData.message}`,
+            more_details: `Company: ${formData.company.trim()}\nTeam Size: ${formData.teamSize}\nMessage: ${formData.message.trim()}`,
             activity_type: 'exploring',
             page_url: window.location.href,
             page_heading: 'Bangalore Resorts Access Form'
@@ -124,15 +130,25 @@ const BangaloreResortsPage: React.FC = () => {
 
       if (response.ok) {
         console.log('Form submitted successfully:', formData);
+        // Clear form
+        setFormData({
+          name: '',
+          email: '',
+          company: '',
+          phone: '',
+          teamSize: '',
+          message: ''
+        });
         // Redirect to thank you page after successful submission
         navigate('/thank-you');
       } else {
-        throw new Error('Failed to submit form');
+        const errorText = await response.text();
+        console.error('API Error:', errorText);
+        throw new Error(`Failed to submit form: ${response.status} - ${errorText}`);
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      // Still redirect to thank you page even if submission fails for better UX
-      navigate('/thank-you');
+      alert('An error occurred while submitting the form. Please try again.');
     }
   };
 

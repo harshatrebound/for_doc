@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useContactSubmission } from '../lib/hooks/useSupabaseData';
 
 interface QuoteModalContextType {
@@ -56,18 +56,31 @@ const QuoteModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    await submit({
-      name: formData.name,
-      work_email: formData.work_email,
-      preferred_destination: formData.preferred_destination,
-      phone: formData.phone || 'Not provided',
-      number_of_pax: formData.number_of_pax,
-      more_details: `Company: ${formData.company}\n\n${formData.more_details}`,
-      activity_type: formData.activity_type,
-      page_url: window.location.href,
-      page_heading: 'Quote Modal Form'
-    });
+    // Validate required fields
+    if (!formData.name.trim() || !formData.work_email.trim() || !formData.company.trim() || !formData.more_details.trim()) {
+      console.error('Missing required fields');
+      return;
+    }
 
+    try {
+      await submit({
+        name: formData.name.trim(),
+        work_email: formData.work_email.trim(),
+        preferred_destination: formData.preferred_destination,
+        phone: formData.phone.trim() || 'Not provided',
+        number_of_pax: formData.number_of_pax,
+        more_details: `Company: ${formData.company.trim()}\n\n${formData.more_details.trim()}`,
+        activity_type: formData.activity_type,
+        page_url: window.location.href,
+        page_heading: 'Quote Modal Form'
+      });
+    } catch (err) {
+      console.error('Form submission error:', err);
+    }
+  };
+
+  // Watch for successful submission
+  useEffect(() => {
     if (success) {
       setFormData({
         name: '',
@@ -83,7 +96,7 @@ const QuoteModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       onClose();
       window.location.href = '/thank-you';
     }
-  };
+  }, [success, onClose]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">

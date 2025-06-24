@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useContactSubmission } from '../../lib/hooks/useSupabaseData';
 import type { ActivityType } from '../../lib/supabaseClient';
 
@@ -72,16 +72,35 @@ const ContactSection = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.name.trim() || !formData.work_email.trim() || !formData.phone.trim() || !formData.preferred_destination.trim() || !formData.number_of_pax) {
+      console.error('Missing required fields');
+      return;
+    }
+
     const pageUrl = window.location.href;
     const pageHeading = document.title;
 
-    await submit({
-      ...formData,
-      number_of_pax: parseInt(formData.number_of_pax),
-      page_url: pageUrl,
-      page_heading: pageHeading
-    });
+    try {
+      await submit({
+        name: formData.name.trim(),
+        work_email: formData.work_email.trim(),
+        preferred_destination: formData.preferred_destination.trim(),
+        phone: formData.phone.trim(),
+        number_of_pax: parseInt(formData.number_of_pax),
+        more_details: formData.more_details.trim() || '',
+        activity_type: formData.activity_type,
+        page_url: pageUrl,
+        page_heading: pageHeading
+      });
+    } catch (err) {
+      console.error('Form submission error:', err);
+    }
+  };
 
+  // Watch for successful submission
+  useEffect(() => {
     if (success) {
       setFormData({
         name: '',
@@ -97,7 +116,7 @@ const ContactSection = () => {
         window.location.href = '/thank-you';
       }, 1000);
     }
-  };
+  }, [success]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(prev => ({

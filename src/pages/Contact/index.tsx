@@ -107,6 +107,20 @@ const ContactPage = () => {
           visible: true
         });
         
+        // Clear form data
+        setFormData({
+          name: '',
+          work_email: '',
+          phone: '',
+          company: '',
+          message: '',
+          preferred_destination: '',
+          number_of_pax: 1,
+          activity_type: 'exploring',
+          page_url: '',
+          page_heading: ''
+        });
+        
         // Redirect to thank you page after 2 seconds
         setTimeout(() => {
           window.location.href = '/thank-you';

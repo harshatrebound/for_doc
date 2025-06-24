@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX } from 'react-icons/fi';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useContactSubmission } from '../../lib/hooks/useSupabaseData';
 
 interface SkipSearchPopupProps {
@@ -32,13 +32,31 @@ const SkipSearchPopup = ({ onClose, isVisible }: SkipSearchPopupProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    await submit({
-      ...formData,
-      number_of_pax: parseInt(formData.number_of_pax) || 1,
-      page_url: window.location.href,
-      page_heading: 'Skip Search Popup Form'
-    });
+    // Validate required fields
+    if (!formData.name.trim() || !formData.work_email.trim() || !formData.phone.trim() || !formData.preferred_destination.trim() || !formData.number_of_pax) {
+      console.error('Missing required fields');
+      return;
+    }
 
+    try {
+      await submit({
+        name: formData.name.trim(),
+        work_email: formData.work_email.trim(),
+        phone: formData.phone.trim(),
+        preferred_destination: formData.preferred_destination.trim(),
+        number_of_pax: parseInt(formData.number_of_pax) || 1,
+        more_details: formData.more_details.trim() || '',
+        activity_type: formData.activity_type,
+        page_url: window.location.href,
+        page_heading: 'Skip Search Popup Form'
+      });
+    } catch (err) {
+      console.error('Form submission error:', err);
+    }
+  };
+
+  // Watch for successful submission
+  useEffect(() => {
     if (success) {
       setFormData({
         name: '',
@@ -53,7 +71,7 @@ const SkipSearchPopup = ({ onClose, isVisible }: SkipSearchPopupProps) => {
       onClose();
       window.location.href = '/thank-you';
     }
-  };
+  }, [success, onClose]);
 
   return (
     <AnimatePresence>

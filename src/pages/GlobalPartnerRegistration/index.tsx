@@ -133,23 +133,32 @@ const GlobalPartnerRegistration = () => {
     setLoading(true);
     setError(null);
 
+    // Validate required fields
+    if (!formData.companyName.trim() || !formData.firstName.trim() || !formData.lastName.trim() || 
+        !formData.email.trim() || !formData.phone.trim() || !formData.country.trim() || 
+        !formData.city.trim() || !formData.companyType.trim() || formData.servicesOffered.length === 0) {
+      setError('Please fill in all required fields');
+      setLoading(false);
+      return;
+    }
+
     try {
       const { error: supabaseError } = await supabase
-        .from('partner_registrations') // Make sure table name is correct
+        .from('partner_registrations')
         .insert([{
-          company_name: formData.companyName,
-          website: formData.website,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          country: formData.country,
-          city: formData.city,
-          company_type: formData.companyType,
-          employee_count: formData.employeeCount || null,
-          years_in_business: formData.yearsInBusiness || null,
+          company_name: formData.companyName.trim(),
+          website: formData.website.trim() || null,
+          first_name: formData.firstName.trim(),
+          last_name: formData.lastName.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          country: formData.country.trim(),
+          city: formData.city.trim(),
+          company_type: formData.companyType.trim(),
+          employee_count: formData.employeeCount.trim() || null,
+          years_in_business: formData.yearsInBusiness.trim() || null,
           services_offered: formData.servicesOffered,
-          message: formData.message,
+          message: formData.message.trim() || null,
           status: 'pending'
         }]);
 

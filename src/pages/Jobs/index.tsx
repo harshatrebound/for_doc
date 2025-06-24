@@ -75,6 +75,12 @@ const JobsPage = () => {
     e.preventDefault();
     if (!selectedJob) return;
 
+    // Validate required fields
+    if (!formData.fullName.trim() || !formData.email.trim() || !formData.resumeUrl.trim()) {
+      setSubmitError('Please fill in all required fields');
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitError('');
     setSubmitSuccess(false);
@@ -85,11 +91,11 @@ const JobsPage = () => {
         .insert([
           {
             job_id: selectedJob.id,
-            applicant_name: formData.fullName,
-            email: formData.email,
-            phone: formData.phone,
-            resume_url: formData.resumeUrl,
-            cover_letter: `Portfolio: ${formData.portfolioUrl}\n\nExperience Years: ${formData.experienceYears}\nCurrent Company: ${formData.currentCompany}\nNotice Period: ${formData.noticePeriod}\nExpected Salary: ${formData.expectedSalary}\n\nCover Letter:\n${formData.coverLetter}`
+            applicant_name: formData.fullName.trim(),
+            email: formData.email.trim(),
+            phone: formData.phone.trim() || null,
+            resume_url: formData.resumeUrl.trim(),
+            cover_letter: `Portfolio: ${formData.portfolioUrl.trim()}\n\nExperience Years: ${formData.experienceYears.trim()}\nCurrent Company: ${formData.currentCompany.trim()}\nNotice Period: ${formData.noticePeriod.trim()}\nExpected Salary: ${formData.expectedSalary.trim()}\n\nCover Letter:\n${formData.coverLetter.trim()}`
           }
         ]);
 
