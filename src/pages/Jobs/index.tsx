@@ -84,17 +84,12 @@ const JobsPage = () => {
         .from('job_applications')
         .insert([
           {
-            job_listing_id: selectedJob.id,
-            full_name: formData.fullName,
+            job_id: selectedJob.id,
+            applicant_name: formData.fullName,
             email: formData.email,
             phone: formData.phone,
             resume_url: formData.resumeUrl,
-            portfolio_url: formData.portfolioUrl,
-            cover_letter: formData.coverLetter,
-            experience_years: parseInt(formData.experienceYears),
-            current_company: formData.currentCompany,
-            notice_period: formData.noticePeriod,
-            expected_salary: formData.expectedSalary
+            cover_letter: `Portfolio: ${formData.portfolioUrl}\n\nExperience Years: ${formData.experienceYears}\nCurrent Company: ${formData.currentCompany}\nNotice Period: ${formData.noticePeriod}\nExpected Salary: ${formData.expectedSalary}\n\nCover Letter:\n${formData.coverLetter}`
           }
         ]);
 
@@ -116,6 +111,8 @@ const JobsPage = () => {
           noticePeriod: '',
           expectedSalary: ''
         });
+        // Redirect to thank you page
+        window.location.href = '/thank-you';
       }, 2000);
     } catch (error) {
       console.error('Error submitting application:', error);

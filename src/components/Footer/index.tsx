@@ -52,8 +52,12 @@ const Footer = () => {
     e.preventDefault();
     if (email) {
       await subscribe(email);
-      if (!error) {
+      if (!error && success) {
         setEmail(''); // Clear input on success
+        // Redirect to thank you page after successful subscription
+        setTimeout(() => {
+          window.location.href = '/thank-you';
+        }, 2000);
       }
     }
   };

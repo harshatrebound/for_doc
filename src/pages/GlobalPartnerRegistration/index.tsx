@@ -174,6 +174,10 @@ const GlobalPartnerRegistration = () => {
         servicesOffered: [],
         message: ''
       });
+      // Redirect to thank you page after successful submission
+      setTimeout(() => {
+        window.location.href = '/thank-you';
+      }, 2000);
     } catch (err) {
       console.error("Submission error:", err);
       setError(err instanceof Error ? err.message : 'Failed to submit registration. Please try again.');

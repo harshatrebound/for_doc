@@ -92,6 +92,10 @@ const ContactSection = () => {
         more_details: '',
         activity_type: 'exploring'
       });
+      // Redirect to thank you page
+      setTimeout(() => {
+        window.location.href = '/thank-you';
+      }, 1000);
     }
   };
 

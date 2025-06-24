@@ -1,0 +1,1036 @@
+{
+    "name": "Integration Google Sheets, Pipedrive CRM",
+    "flow": [
+        {
+            "id": 1,
+            "module": "google-sheets:watchRows",
+            "version": 2,
+            "parameters": {
+                "from": "drive",
+                "mode": "select",
+                "limit": 1,
+                "sheetId": "Sheet1",
+                "__IMTCONN__": 1332993,
+                "spreadsheetId": "/1clXgiXXbXq1rF6HqURh2xWJHltvNkewjz7B1J4Kys78",
+                "tableFirstRow": "A1:Z1",
+                "includesHeaders": true,
+                "valueRenderOption": "FORMATTED_VALUE",
+                "dateTimeRenderOption": "FORMATTED_STRING"
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": -113,
+                    "y": 4
+                },
+                "restore": {
+                    "parameters": {
+                        "from": {
+                            "label": "My Drive"
+                        },
+                        "mode": {
+                            "label": "Search by path"
+                        },
+                        "sheetId": {
+                            "label": "Sheet1"
+                        },
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "My Google connection (harsha@trebound.com)"
+                        },
+                        "spreadsheetId": {
+                            "path": [
+                                "All Leads Trebound"
+                            ]
+                        },
+                        "includesHeaders": {
+                            "label": "Yes"
+                        },
+                        "valueRenderOption": {
+                            "mode": "chose",
+                            "label": "Formatted value"
+                        },
+                        "dateTimeRenderOption": {
+                            "mode": "chose",
+                            "label": "Formatted string"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    },
+                    {
+                        "name": "mode",
+                        "type": "select",
+                        "label": "Search Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "select",
+                                "fromAll",
+                                "map"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "includesHeaders",
+                        "type": "select",
+                        "label": "Table contains headers",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                true,
+                                false
+                            ]
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "type": "uinteger",
+                        "label": "Limit",
+                        "required": true
+                    },
+                    {
+                        "name": "valueRenderOption",
+                        "type": "select",
+                        "label": "Value render option",
+                        "validate": {
+                            "enum": [
+                                "FORMATTED_VALUE",
+                                "UNFORMATTED_VALUE",
+                                "FORMULA"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "dateTimeRenderOption",
+                        "type": "select",
+                        "label": "Date and time render option",
+                        "validate": {
+                            "enum": [
+                                "SERIAL_NUMBER",
+                                "FORMATTED_STRING"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "type": "select",
+                        "label": "Drive",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share",
+                                "team"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "spreadsheetId",
+                        "type": "file",
+                        "label": "Spreadsheet ID",
+                        "required": true
+                    },
+                    {
+                        "name": "sheetId",
+                        "type": "select",
+                        "label": "Sheet Name",
+                        "required": true
+                    },
+                    {
+                        "name": "tableFirstRow",
+                        "type": "text",
+                        "label": "Row with headers",
+                        "required": true
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__ROW_NUMBER__",
+                        "type": "number",
+                        "label": "Row number"
+                    },
+                    {
+                        "name": "__SPREADSHEET_ID__",
+                        "type": "text",
+                        "label": "Spreadsheet ID"
+                    },
+                    {
+                        "name": "__SHEET__",
+                        "type": "text",
+                        "label": "Sheet"
+                    },
+                    {
+                        "name": "0",
+                        "type": "text",
+                        "label": "Name (A)"
+                    },
+                    {
+                        "name": "1",
+                        "type": "text",
+                        "label": "Email (B)"
+                    },
+                    {
+                        "name": "2",
+                        "type": "text",
+                        "label": "Phone (C)"
+                    },
+                    {
+                        "name": "3",
+                        "type": "text",
+                        "label": "No Of Pax (D)"
+                    },
+                    {
+                        "name": "4",
+                        "type": "text",
+                        "label": "Company (E)"
+                    },
+                    {
+                        "name": "5",
+                        "type": "text",
+                        "label": "Message (F)"
+                    },
+                    {
+                        "name": "6",
+                        "type": "text",
+                        "label": "Type of Activity (G)"
+                    },
+                    {
+                        "name": "7",
+                        "type": "text",
+                        "label": "URL (H)"
+                    },
+                    {
+                        "name": "8",
+                        "type": "text",
+                        "label": "Page Title (I)"
+                    },
+                    {
+                        "name": "9",
+                        "type": "text",
+                        "label": "Destination (J)"
+                    },
+                    {
+                        "name": "10",
+                        "type": "text",
+                        "label": "Date (K)"
+                    },
+                    {
+                        "name": "11",
+                        "type": "text",
+                        "label": "Gclid (L)"
+                    },
+                    {
+                        "name": "12",
+                        "type": "text",
+                        "label": "(M)"
+                    },
+                    {
+                        "name": "13",
+                        "type": "text",
+                        "label": "(N)"
+                    },
+                    {
+                        "name": "14",
+                        "type": "text",
+                        "label": "(O)"
+                    },
+                    {
+                        "name": "15",
+                        "type": "text",
+                        "label": "(P)"
+                    },
+                    {
+                        "name": "16",
+                        "type": "text",
+                        "label": "(Q)"
+                    },
+                    {
+                        "name": "17",
+                        "type": "text",
+                        "label": "(R)"
+                    },
+                    {
+                        "name": "18",
+                        "type": "text",
+                        "label": "(S)"
+                    },
+                    {
+                        "name": "19",
+                        "type": "text",
+                        "label": "(T)"
+                    },
+                    {
+                        "name": "20",
+                        "type": "text",
+                        "label": "(U)"
+                    },
+                    {
+                        "name": "21",
+                        "type": "text",
+                        "label": "(V)"
+                    },
+                    {
+                        "name": "22",
+                        "type": "text",
+                        "label": "(W)"
+                    },
+                    {
+                        "name": "23",
+                        "type": "text",
+                        "label": "(X)"
+                    },
+                    {
+                        "name": "24",
+                        "type": "text",
+                        "label": "(Y)"
+                    },
+                    {
+                        "name": "25",
+                        "type": "text",
+                        "label": "(Z)"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 2,
+            "module": "pipedrive:CreatePerson",
+            "version": 2,
+            "parameters": {
+                "__IMTCONN__": 1548658
+            },
+            "mapper": {
+                "name": "{{1.`0`}} Deal",
+                "email": [
+                    {
+                        "label": "Email",
+                        "value": "{{1.`1`}}",
+                        "primary": true
+                    }
+                ],
+                "phone": [
+                    {
+                        "label": "Phone",
+                        "value": "{{1.`2`}}"
+                    }
+                ],
+                "14be1bfe7398a76d25117f678216ffd2f27799db": "{{1.`7`}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "email": {
+                            "mode": "chose",
+                            "items": [
+                                {
+                                    "primary": {
+                                        "mode": "chose"
+                                    }
+                                }
+                            ]
+                        },
+                        "phone": {
+                            "mode": "chose",
+                            "items": [
+                                {
+                                    "primary": {
+                                        "mode": "chose"
+                                    }
+                                }
+                            ]
+                        },
+                        "visible_to": {
+                            "mode": "chose"
+                        },
+                        "91a71100d82c60a0559110448953c9890dd1ccc6": {
+                            "mode": "chose",
+                            "label": "Empty"
+                        },
+                        "d0169660b623838cc3680be5af1778b17d0aae23": {
+                            "mode": "chose",
+                            "label": "Empty"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "pipedrive-auth"
+                            },
+                            "label": "Trebound's Pipedrive (Anchit Singh anchit@trebound.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:pipedrive-auth,pipedrive-apikey",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "label": "Name",
+                        "required": true
+                    },
+                    {
+                        "name": "owner_id",
+                        "type": "number",
+                        "label": "Owner"
+                    },
+                    {
+                        "name": "org_id",
+                        "type": "number",
+                        "label": "Organization"
+                    },
+                    {
+                        "name": "email",
+                        "spec": [
+                            {
+                                "name": "label",
+                                "type": "text",
+                                "label": "Label"
+                            },
+                            {
+                                "name": "value",
+                                "type": "text",
+                                "label": "Value",
+                                "required": true
+                            },
+                            {
+                                "name": "primary",
+                                "type": "boolean",
+                                "label": "Is Primary"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Emails"
+                    },
+                    {
+                        "name": "phone",
+                        "spec": [
+                            {
+                                "name": "label",
+                                "type": "text",
+                                "label": "Label"
+                            },
+                            {
+                                "name": "value",
+                                "type": "text",
+                                "label": "Value",
+                                "required": true
+                            },
+                            {
+                                "name": "primary",
+                                "type": "boolean",
+                                "label": "Is Primary"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Phones"
+                    },
+                    {
+                        "name": "add_time",
+                        "type": "date",
+                        "label": "Add time"
+                    },
+                    {
+                        "name": "visible_to",
+                        "type": "select",
+                        "label": "Visible to"
+                    },
+                    {
+                        "name": "91a71100d82c60a0559110448953c9890dd1ccc6",
+                        "type": "select",
+                        "label": "POC Department"
+                    },
+                    {
+                        "name": "d0169660b623838cc3680be5af1778b17d0aae23",
+                        "type": "select",
+                        "label": "POC Exp Level"
+                    },
+                    {
+                        "name": "14be1bfe7398a76d25117f678216ffd2f27799db",
+                        "type": "text",
+                        "label": "Page Source"
+                    }
+                ]
+            },
+            "onerror": [
+                {
+                    "id": 7,
+                    "module": "builtin:Ignore",
+                    "version": 1,
+                    "metadata": {
+                        "designer": {
+                            "x": 592,
+                            "y": 247
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "module": "pipedrive:CreateObject",
+            "version": 2,
+            "parameters": {
+                "__IMTCONN__": 1548658
+            },
+            "mapper": {
+                "title": "{{1.`0`}}",
+                "status": "open",
+                "user_id": 2892916,
+                "stage_id": 27,
+                "person_id": "{{2.id}}",
+                "070c2dbfde5c886a586a7a9cf37f5ce86d4f9b39": 97,
+                "215eb21241eef3434cf373744d8d099cef03021f": "{{1.`3`}}",
+                "55998c8fe1b41d3ef219bcc39402380512657aa3": "{{1.`6`}}",
+                "6fb00b8718565ffe1a83f122b16a0f9cbe8b09cf": "{{1.`7`}}",
+                "7954c60cdac31dc90cfa59617c4791eb28a8438d": "{{1.`9`}}",
+                "9d3c36a1225fc6497a40da3d1d051baa09ba1f59": 16,
+                "abb353cd4290573af09cb576d0f0b296dd657a98": "{{1.`11`}}",
+                "f842039bcb93f119fe8145c6eb97293bd91be1b9": "{{1.`1`}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": -150
+                },
+                "restore": {
+                    "expect": {
+                        "status": {
+                            "mode": "chose",
+                            "label": "Open"
+                        },
+                        "user_id": {
+                            "mode": "chose",
+                            "label": "Anchit Singh"
+                        },
+                        "stage_id": {
+                            "mode": "chose",
+                            "label": "Lead In (Deals, 27)"
+                        },
+                        "visible_to": {
+                            "mode": "chose"
+                        },
+                        "070c2dbfde5c886a586a7a9cf37f5ce86d4f9b39": {
+                            "mode": "chose",
+                            "label": "Digital"
+                        },
+                        "215eb21241eef3434cf373744d8d099cef03021f": {
+                            "mode": "edit"
+                        },
+                        "55998c8fe1b41d3ef219bcc39402380512657aa3": {
+                            "mode": "edit"
+                        },
+                        "6058a9a2a6809ee413975bda068551bf3d286d77": {
+                            "mode": "chose",
+                            "label": "Empty"
+                        },
+                        "688863df790bfb9ba082f263bea15b13a876b88f": {
+                            "mode": "chose",
+                            "label": "Empty"
+                        },
+                        "7954c60cdac31dc90cfa59617c4791eb28a8438d": {
+                            "mode": "edit"
+                        },
+                        "7b86d5f758545137c5177daef410f620fbab3cb0": {
+                            "mode": "chose",
+                            "label": "Empty"
+                        },
+                        "8c6de8c894b35f74a36951789aaf538c51b02834": {
+                            "mode": "chose",
+                            "label": "Empty"
+                        },
+                        "9a4f4c2324775cc75a1f395a94286205d5acd5ab": {
+                            "mode": "chose",
+                            "label": "Empty"
+                        },
+                        "9d3c36a1225fc6497a40da3d1d051baa09ba1f59": {
+                            "mode": "chose",
+                            "label": "trebound.com"
+                        },
+                        "d0900ad704f547826d678f2cc01c5b8535a2ca16": {
+                            "mode": "chose",
+                            "label": "Empty"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "pipedrive-auth"
+                            },
+                            "label": "Trebound's Pipedrive (Anchit Singh anchit@trebound.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:pipedrive-auth,pipedrive-apikey",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "title",
+                        "type": "text",
+                        "label": "Title",
+                        "required": true
+                    },
+                    {
+                        "name": "value",
+                        "type": "text",
+                        "label": "Value"
+                    },
+                    {
+                        "name": "currency",
+                        "type": "text",
+                        "label": "Currency",
+                        "validate": {
+                            "max": 3,
+                            "min": 3
+                        }
+                    },
+                    {
+                        "name": "user_id",
+                        "type": "select",
+                        "label": "User"
+                    },
+                    {
+                        "name": "person_id",
+                        "type": "number",
+                        "label": "Person"
+                    },
+                    {
+                        "name": "org_id",
+                        "type": "number",
+                        "label": "Organization"
+                    },
+                    {
+                        "name": "stage_id",
+                        "type": "select",
+                        "label": "Stage"
+                    },
+                    {
+                        "name": "status",
+                        "type": "select",
+                        "label": "Status",
+                        "validate": {
+                            "enum": [
+                                "open",
+                                "won",
+                                "lost",
+                                "deleted"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "expected_close_date",
+                        "time": false,
+                        "type": "date",
+                        "label": "Expected close date"
+                    },
+                    {
+                        "name": "probability",
+                        "type": "number",
+                        "label": "Probability"
+                    },
+                    {
+                        "name": "lost_reason",
+                        "type": "text",
+                        "label": "Lost reason"
+                    },
+                    {
+                        "name": "add_time",
+                        "type": "date",
+                        "label": "Add time"
+                    },
+                    {
+                        "name": "visible_to",
+                        "type": "select",
+                        "label": "Visible to"
+                    },
+                    {
+                        "name": "8c6de8c894b35f74a36951789aaf538c51b02834",
+                        "type": "select",
+                        "label": "Deal Quarter"
+                    },
+                    {
+                        "name": "d0900ad704f547826d678f2cc01c5b8535a2ca16",
+                        "type": "select",
+                        "label": "Lead Medium"
+                    },
+                    {
+                        "name": "688863df790bfb9ba082f263bea15b13a876b88f",
+                        "type": "select",
+                        "label": "Lead Type"
+                    },
+                    {
+                        "name": "9a4f4c2324775cc75a1f395a94286205d5acd5ab",
+                        "type": "select",
+                        "label": "Budget Range"
+                    },
+                    {
+                        "name": "55998c8fe1b41d3ef219bcc39402380512657aa3",
+                        "type": "select",
+                        "label": "Type of Program"
+                    },
+                    {
+                        "name": "9d3c36a1225fc6497a40da3d1d051baa09ba1f59",
+                        "type": "select",
+                        "label": "Lead Source"
+                    },
+                    {
+                        "name": "070c2dbfde5c886a586a7a9cf37f5ce86d4f9b39",
+                        "type": "select",
+                        "label": "Lead Generation"
+                    },
+                    {
+                        "name": "7954c60cdac31dc90cfa59617c4791eb28a8438d",
+                        "type": "select",
+                        "label": "Lead Location"
+                    },
+                    {
+                        "name": "215eb21241eef3434cf373744d8d099cef03021f",
+                        "type": "select",
+                        "label": "Team Size"
+                    },
+                    {
+                        "name": "7b86d5f758545137c5177daef410f620fbab3cb0",
+                        "type": "select",
+                        "label": "Month of Activity"
+                    },
+                    {
+                        "name": "6058a9a2a6809ee413975bda068551bf3d286d77",
+                        "type": "select",
+                        "label": "End User"
+                    },
+                    {
+                        "name": "f842039bcb93f119fe8145c6eb97293bd91be1b9",
+                        "type": "text",
+                        "label": "email ID"
+                    },
+                    {
+                        "name": "6fb00b8718565ffe1a83f122b16a0f9cbe8b09cf",
+                        "type": "text",
+                        "label": "URL"
+                    },
+                    {
+                        "name": "abb353cd4290573af09cb576d0f0b296dd657a98",
+                        "type": "text",
+                        "label": "Gclid"
+                    }
+                ]
+            },
+            "onerror": [
+                {
+                    "id": 6,
+                    "module": "builtin:Ignore",
+                    "version": 1,
+                    "metadata": {
+                        "designer": {
+                            "x": 917,
+                            "y": 240
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "module": "google-email:ActionSendEmail",
+            "version": 2,
+            "parameters": {
+                "account": 2392502
+            },
+            "mapper": {
+                "cc": [],
+                "to": [
+                    "sales@trebound.com"
+                ],
+                "bcc": [],
+                "from": "",
+                "html": "<body>\n    <p>Hi Team,</p>\n\n    <p>A new deal has been added to the Pipedrive in the <strong>Lead In</strong> stage of <strong>Deals Pipeline</strong>. Please find the details below: (Empty fields denote no value provided from lead)</p>\n\n    <ul>\n        <li><strong>Name</strong>: {{1.`0`}}</li>\n        <li><strong>Email</strong>: {{1.`1`}}</li>\n        <li><strong>Phone</strong>: {{1.`2`}}</li>\n        <li><strong>No Of Pax</strong>: {{1.`3`}}</li>\n        <li><strong>Company</strong>: {{1.`4`}}</li>\n        <li><strong>Message</strong>: {{1.`5`}}</li>\n        <li><strong>Type of Activity</strong>: {{1.`6`}}</li>\n        <li><strong>URL</strong>: {{1.`7`}}</li>\n        <li><strong>Preferred Destination</strong>: {{1.`9`}}</li>\n    </ul>\n\n    <p>Please review the details.</p>\n\n    <p>Thanks,<br>Digital Trebound</p>\n</body>\n",
+                "subject": "New Deal Added to Pipedrive - Lead In Stage",
+                "attachments": []
+            },
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": -150
+                },
+                "restore": {
+                    "expect": {
+                        "cc": {
+                            "mode": "chose"
+                        },
+                        "to": {
+                            "mode": "chose",
+                            "items": [
+                                null
+                            ]
+                        },
+                        "bcc": {
+                            "mode": "chose"
+                        },
+                        "attachments": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "account": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google-restricted"
+                            },
+                            "label": "Gmail (harsha@trebound.com) (harsha@trebound.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "account",
+                        "type": "account:google-restricted",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "from",
+                        "type": "text",
+                        "label": "From"
+                    },
+                    {
+                        "name": "to",
+                        "spec": {
+                            "name": "value",
+                            "type": "email",
+                            "label": "Email address",
+                            "required": true
+                        },
+                        "type": "array",
+                        "label": "To",
+                        "required": true
+                    },
+                    {
+                        "name": "subject",
+                        "type": "text",
+                        "label": "Subject"
+                    },
+                    {
+                        "name": "html",
+                        "type": "text",
+                        "label": "Content"
+                    },
+                    {
+                        "name": "attachments",
+                        "spec": [
+                            {
+                                "name": "fileName",
+                                "type": "filename",
+                                "label": "File name",
+                                "required": true,
+                                "semantic": "file:name"
+                            },
+                            {
+                                "name": "data",
+                                "type": "buffer",
+                                "label": "Data",
+                                "required": true,
+                                "semantic": "file:data"
+                            },
+                            {
+                                "name": "cid",
+                                "type": "text",
+                                "label": "Content-ID"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Attachments"
+                    },
+                    {
+                        "name": "cc",
+                        "spec": {
+                            "name": "value",
+                            "type": "email",
+                            "label": "Email address"
+                        },
+                        "type": "array",
+                        "label": "Copy recipient"
+                    },
+                    {
+                        "name": "bcc",
+                        "spec": {
+                            "name": "value",
+                            "type": "email",
+                            "label": "Email address"
+                        },
+                        "type": "array",
+                        "label": "Blind copy recipient"
+                    }
+                ]
+            },
+            "onerror": [
+                {
+                    "id": 8,
+                    "module": "builtin:Ignore",
+                    "version": 1,
+                    "metadata": {
+                        "designer": {
+                            "x": 1404,
+                            "y": -275
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "module": "pipedrive:CreateNote",
+            "version": 2,
+            "parameters": {
+                "__IMTCONN__": 1548658
+            },
+            "mapper": {
+                "content": "Message: {{1.`5`}}\nCompany: {{1.`4`}}",
+                "deal_id": "{{4.id}}",
+                "add_time": "{{1.`10`}}",
+                "person_id": "{{2.id}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1205,
+                    "y": 137
+                },
+                "restore": {
+                    "expect": {
+                        "pinned_to_deal_flag": {
+                            "mode": "chose"
+                        },
+                        "pinned_to_person_flag": {
+                            "mode": "chose"
+                        },
+                        "pinned_to_organization_flag": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "pipedrive-auth"
+                            },
+                            "label": "Trebound's Pipedrive (Anchit Singh anchit@trebound.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:pipedrive-auth,pipedrive-apikey",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "content",
+                        "type": "text",
+                        "label": "Content",
+                        "required": true
+                    },
+                    {
+                        "name": "deal_id",
+                        "type": "number",
+                        "label": "Deal ID"
+                    },
+                    {
+                        "name": "person_id",
+                        "type": "number",
+                        "label": "Person"
+                    },
+                    {
+                        "name": "org_id",
+                        "type": "number",
+                        "label": "Organization"
+                    },
+                    {
+                        "name": "add_time",
+                        "type": "date",
+                        "label": "Add time"
+                    },
+                    {
+                        "name": "pinned_to_deal_flag",
+                        "type": "boolean",
+                        "label": "Pinned to deal flag"
+                    },
+                    {
+                        "name": "pinned_to_organization_flag",
+                        "type": "boolean",
+                        "label": "Pinned to organization flag"
+                    },
+                    {
+                        "name": "pinned_to_person_flag",
+                        "type": "boolean",
+                        "label": "Pinned to person flag"
+                    }
+                ]
+            },
+            "onerror": [
+                {
+                    "id": 10,
+                    "module": "builtin:Ignore",
+                    "version": 1,
+                    "metadata": {
+                        "designer": {
+                            "x": 1639,
+                            "y": 42
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": false,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 10,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "eu2.make.com",
+        "notes": []
+    }
+}

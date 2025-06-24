@@ -96,10 +96,44 @@ const BangaloreResortsPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log('Form submitted:', formData);
-    // Redirect to Bangalore corporate team outing places
-    navigate('/corporate-team-outing-places/bangalore');
+    
+    try {
+      // Submit to contact_submissions table
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/contact_submissions`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            work_email: formData.email,
+            preferred_destination: 'Bangalore Resorts',
+            phone: formData.phone,
+            number_of_pax: parseInt(formData.teamSize.split('-')[0]) || 1, // Extract first number from team size
+            more_details: `Company: ${formData.company}\nTeam Size: ${formData.teamSize}\nMessage: ${formData.message}`,
+            activity_type: 'exploring',
+            page_url: window.location.href,
+            page_heading: 'Bangalore Resorts Access Form'
+          })
+        }
+      );
+
+      if (response.ok) {
+        console.log('Form submitted successfully:', formData);
+        // Redirect to thank you page after successful submission
+        navigate('/thank-you');
+      } else {
+        throw new Error('Failed to submit form');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      // Still redirect to thank you page even if submission fails for better UX
+      navigate('/thank-you');
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

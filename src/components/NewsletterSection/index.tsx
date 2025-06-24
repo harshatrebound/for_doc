@@ -51,6 +51,10 @@ const NewsletterSection = () => {
         setStatus('success');
         setMessage('Thank you for subscribing to our newsletter!');
         setEmail('');
+        // Redirect to thank you page after successful subscription
+        setTimeout(() => {
+          window.location.href = '/thank-you';
+        }, 2000);
       } else {
         const error = await response.json();
         if (error.code === '23505') { // Unique violation

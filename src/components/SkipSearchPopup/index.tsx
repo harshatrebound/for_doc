@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX } from 'react-icons/fi';
+import { useState } from 'react';
+import { useContactSubmission } from '../../lib/hooks/useSupabaseData';
 
 interface SkipSearchPopupProps {
   onClose: () => void;
@@ -7,6 +9,52 @@ interface SkipSearchPopupProps {
 }
 
 const SkipSearchPopup = ({ onClose, isVisible }: SkipSearchPopupProps) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    work_email: '',
+    phone: '',
+    number_of_pax: '',
+    preferred_destination: '',
+    more_details: '',
+    activity_type: 'exploring' as const
+  });
+
+  const { submit, loading, error, success } = useContactSubmission();
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    await submit({
+      ...formData,
+      number_of_pax: parseInt(formData.number_of_pax) || 1,
+      page_url: window.location.href,
+      page_heading: 'Skip Search Popup Form'
+    });
+
+    if (success) {
+      setFormData({
+        name: '',
+        work_email: '',
+        phone: '',
+        number_of_pax: '',
+        preferred_destination: '',
+        more_details: '',
+        activity_type: 'exploring'
+      });
+      // Close popup and redirect to thank you page
+      onClose();
+      window.location.href = '/thank-you';
+    }
+  };
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -63,50 +111,92 @@ const SkipSearchPopup = ({ onClose, isVisible }: SkipSearchPopupProps) => {
                   </p>
                 </div>
 
-                <form className="space-y-3">
+                {success && (
+                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-green-700 text-sm">Thank you! We'll get back to you soon.</p>
+                  </div>
+                )}
+
+                {error && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-700 text-sm">{error}</p>
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-3">
                   <input
                     type="text"
+                    name="name"
                     placeholder="Name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#FF4C39]"
                   />
                   <input
                     type="email"
+                    name="work_email"
                     placeholder="Work Email"
+                    value={formData.work_email}
+                    onChange={handleInputChange}
+                    required
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#FF4C39]"
                   />
                   <div className="grid grid-cols-2 gap-3">
                     <input
                       type="tel"
+                      name="phone"
                       placeholder="Phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      required
                       className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#FF4C39]"
                     />
                     <input
-                      type="text"
+                      type="number"
+                      name="number_of_pax"
                       placeholder="No of Pax"
+                      value={formData.number_of_pax}
+                      onChange={handleInputChange}
+                      required
+                      min="1"
                       className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#FF4C39]"
                     />
                   </div>
                   <input
                     type="text"
+                    name="preferred_destination"
                     placeholder="Destination (Eg. Bangalore)"
+                    value={formData.preferred_destination}
+                    onChange={handleInputChange}
+                    required
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#FF4C39]"
                   />
                   <textarea
+                    name="more_details"
                     placeholder="More details? (*For priority)"
+                    value={formData.more_details}
+                    onChange={handleInputChange}
                     rows={2}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#FF4C39] resize-none"
                   />
-                  <select className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#FF4C39] bg-white">
-                    <option value="">Select type of activity</option>
-                    <option value="team_outing">Team Outing</option>
-                    <option value="team_building">Team Building</option>
-                    <option value="corporate_event">Corporate Event</option>
+                  <select 
+                    name="activity_type"
+                    value={formData.activity_type}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#FF4C39] bg-white"
+                  >
+                    <option value="exploring">Exploring Options</option>
+                    <option value="outbound">Outbound Activities</option>
+                    <option value="virtual">Virtual Activities</option>
+                    <option value="hybrid">Hybrid Activities</option>
                   </select>
                   <button
                     type="submit"
-                    className="w-full py-3 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity"
+                    disabled={loading}
+                    className="w-full py-3 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
                   >
-                    Submit
+                    {loading ? 'Submitting...' : 'Submit'}
                   </button>
                 </form>
 

@@ -107,9 +107,10 @@ const ContactPage = () => {
           visible: true
         });
         
+        // Redirect to thank you page after 2 seconds
         setTimeout(() => {
-          setSubmissionStatus(prev => ({ ...prev, visible: false }));
-        }, 6000);
+          window.location.href = '/thank-you';
+        }, 2000);
       } else {
         // Get more detailed error information
         let errorMessage = 'Server responded with an error';
