@@ -6,20 +6,20 @@ import { useNewsletterSubscription } from '../../lib/hooks/useSupabaseData';
 const navigation = {
   top: [
     { name: 'Home', href: '/' },
-    { name: 'Team Building', href: '/team-building' },
-    { name: 'Team Getaways', href: '/team-getaways' },
+    { name: 'Team Building', href: '/teambuilding' },
+    { name: 'Destinations', href: '/corporate-team-outing-places' },
     { name: 'Stays', href: '/stays' },
-    { name: 'Vendors', href: '/vendors' }
+    { name: 'Activities', href: '/team-building-activity' }
   ],
   bottom: [
     { name: 'About', href: '/about' },
-    { name: 'Blogs', href: '/blogs' },
+    { name: 'Blog', href: '/blog' },
     { name: 'Contact', href: '/contact' },
-    { name: 'Careers', href: '/careers' }
+    { name: 'Careers', href: '/jobs' }
   ],
   social: [
-    { name: 'Whatsapp', href: '#', aria: 'Whatsapp link' },
-    { name: 'Instagram', href: '#', aria: 'Instagram link' }
+    { name: 'WhatsApp', href: 'https://wa.me/919740616158', aria: 'Contact us on WhatsApp' },
+    { name: 'Instagram', href: 'https://www.instagram.com/trebound/', aria: 'Follow us on Instagram' }
   ]
 };
 

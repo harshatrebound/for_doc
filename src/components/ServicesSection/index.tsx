@@ -60,7 +60,6 @@ const ExploreButton = ({ slug, text = "Explore" }: { slug: string; text?: string
     <div className="absolute inset-0 bg-gradient-to-b from-[#ff4c39] to-[#ffb573] opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[8px]" />
     <a 
       href={`/${slug}`}
-      onClick={() => window.scrollTo(0, 0)}
       className="absolute inset-0 w-full h-full flex items-center justify-center gap-2 border border-[#b1b1b1] rounded-[8px] group-hover:border-transparent transition-colors duration-300"
     >
       <span className="text-base font-bold font-['DM Sans'] text-[#b1b1b1] group-hover:text-white transition-colors duration-300">
@@ -324,7 +323,6 @@ const ServicesSection: React.FC = () => {
                 href={`/${activeTab === 'trainings' ? 'customized-training' : 
                          activeTab === 'activities' ? 'team-building-activity' :
                          'stays'}`}
-                onClick={() => window.scrollTo(0, 0)}
               >
                 <ViewMoreButton />
               </a>

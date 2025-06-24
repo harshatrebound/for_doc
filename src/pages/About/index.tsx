@@ -923,7 +923,7 @@ const AboutPage = () => {
           </div>
 
           {/* Partners Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 items-center">
             {[
               {
                 name: 'Partner Company 1',
@@ -988,7 +988,7 @@ const AboutPage = () => {
                 <motion.img
                   src={partner.logo}
                   alt={partner.name}
-                  className="h-12 max-w-full opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0 object-contain"
+                  className="h-16 max-w-full opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0 object-contain"
                   whileHover={{ scale: 1.05 }}
                 />
               </motion.div>

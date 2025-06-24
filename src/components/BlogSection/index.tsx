@@ -202,7 +202,7 @@ const BlogSection = () => {
             transition={{ duration: 0.5, delay: 0.3 }}
           className="flex justify-center"
           >
-          <a href="/blog" onClick={() => window.scrollTo(0, 0)}>
+          <a href="/blog">
               <ViewMoreButton />
             </a>
           </motion.div>
