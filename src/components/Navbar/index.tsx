@@ -40,10 +40,6 @@ const navItems = [
     href: '/team-building-activity',
   },
   {
-    label: 'Corporate Teambuilding',
-    href: '/corporate-teambuilding',
-  },
-  {
     label: 'Blog',
     href: '/blog',
   },
