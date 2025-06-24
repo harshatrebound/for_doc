@@ -6,6 +6,7 @@ import { BsCheckCircle, BsBuilding, BsPeople } from 'react-icons/bs';
 import Navbar from '../../components/Navbar';
 import ContactSection from '../../components/ContactSection';
 import { bangaloreResorts } from '../../data/bangaloreResorts';
+import { webhookService } from '../../lib/webhookService';
 
 interface FormData {
   name: string;
@@ -104,6 +105,25 @@ const BangaloreResortsPage: React.FC = () => {
     }
 
     try {
+      // Send to n8n webhook (non-blocking)
+      try {
+        const webhookData = webhookService.prepareBangaloreResortsData({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          company: formData.company.trim(),
+          phone: formData.phone.trim(),
+          team_size: formData.teamSize,
+          message: formData.message.trim()
+        });
+        
+        // Send to webhook without waiting for response (fire and forget)
+        webhookService.sendToWebhook(webhookData).catch(error => {
+          console.error('N8N webhook failed (non-blocking):', error);
+        });
+      } catch (webhookError) {
+        console.error('Error preparing webhook data (non-blocking):', webhookError);
+      }
+
       // Submit to contact_submissions table
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/contact_submissions`,

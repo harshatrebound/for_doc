@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { useState, useEffect } from 'react';
 import { useNewsletterSubscription } from '../../lib/hooks/useSupabaseData';
+import { webhookService } from '../../lib/webhookService';
 
 const navigation = {
   top: [
@@ -51,6 +52,18 @@ const Footer = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
+      // Send to n8n webhook (non-blocking)
+      try {
+        const webhookData = webhookService.prepareNewsletterData(email);
+        
+        // Send to webhook without waiting for response (fire and forget)
+        webhookService.sendToWebhook(webhookData).catch(error => {
+          console.error('N8N webhook failed (non-blocking):', error);
+        });
+      } catch (webhookError) {
+        console.error('Error preparing webhook data (non-blocking):', webhookError);
+      }
+
       await subscribe(email);
       if (!error && success) {
         setEmail(''); // Clear input on success

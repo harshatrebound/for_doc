@@ -5,6 +5,7 @@ import { FiArrowRight, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import PartnersSection from '../../components/PartnersSection';
+import { webhookService } from '../../lib/webhookService';
 
 // Add custom styles
 const styles = {
@@ -68,6 +69,27 @@ const ContactPage = () => {
     console.log('SUBMISSION DATA:', finalSubmitData);
     console.log('Activity type:', typeof finalSubmitData.activity_type, finalSubmitData.activity_type);
     console.log('Number of pax:', typeof finalSubmitData.number_of_pax, finalSubmitData.number_of_pax);
+    
+    // Send to n8n webhook (non-blocking)
+    try {
+      const webhookData = webhookService.prepareContactData({
+        name: finalSubmitData.name,
+        work_email: finalSubmitData.work_email,
+        phone: finalSubmitData.phone,
+        company: formData.company,
+        preferred_destination: finalSubmitData.preferred_destination,
+        number_of_pax: finalSubmitData.number_of_pax,
+        message: finalSubmitData.more_details,
+        activity_type: finalSubmitData.activity_type
+      });
+      
+      // Send to webhook without waiting for response (fire and forget)
+      webhookService.sendToWebhook(webhookData).catch(error => {
+        console.error('N8N webhook failed (non-blocking):', error);
+      });
+    } catch (webhookError) {
+      console.error('Error preparing webhook data (non-blocking):', webhookError);
+    }
     
     try {
       const response = await fetch(

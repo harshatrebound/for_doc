@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { webhookService } from '../../lib/webhookService';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 60 },
@@ -34,6 +35,19 @@ const NewsletterSection = () => {
 
     try {
       setStatus('loading');
+      
+      // Send to n8n webhook (non-blocking)
+      try {
+        const webhookData = webhookService.prepareNewsletterData(email);
+        
+        // Send to webhook without waiting for response (fire and forget)
+        webhookService.sendToWebhook(webhookData).catch(error => {
+          console.error('N8N webhook failed (non-blocking):', error);
+        });
+      } catch (webhookError) {
+        console.error('Error preparing webhook data (non-blocking):', webhookError);
+      }
+      
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/newsletter_subscriptions`, {
         method: 'POST',
         headers: {

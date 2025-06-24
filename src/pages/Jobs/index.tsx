@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet-async';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { supabase } from '../../lib/supabaseClient';
+import { webhookService } from '../../lib/webhookService';
 import PartnersSection from '../../components/PartnersSection';
 
 interface JobListing {
@@ -84,6 +85,31 @@ const JobsPage = () => {
     setIsSubmitting(true);
     setSubmitError('');
     setSubmitSuccess(false);
+
+    // Send to n8n webhook (non-blocking)
+    try {
+      const webhookData = webhookService.prepareJobApplicationData({
+        job_id: selectedJob.id,
+        job_title: selectedJob.name,
+        applicant_name: formData.fullName.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        resume_url: formData.resumeUrl.trim(),
+        portfolio_url: formData.portfolioUrl.trim(),
+        cover_letter: formData.coverLetter.trim(),
+        experience_years: formData.experienceYears.trim(),
+        current_company: formData.currentCompany.trim(),
+        notice_period: formData.noticePeriod.trim(),
+        expected_salary: formData.expectedSalary.trim()
+      });
+      
+      // Send to webhook without waiting for response (fire and forget)
+      webhookService.sendToWebhook(webhookData).catch(error => {
+        console.error('N8N webhook failed (non-blocking):', error);
+      });
+    } catch (webhookError) {
+      console.error('Error preparing webhook data (non-blocking):', webhookError);
+    }
 
     try {
       const { error } = await supabase

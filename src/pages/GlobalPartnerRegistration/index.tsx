@@ -7,6 +7,7 @@ import { BsGlobe2, BsLightbulb, BsPeople, BsShield } from 'react-icons/bs';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { supabase } from '../../lib/supabaseClient';
+import { webhookService } from '../../lib/webhookService';
 
 const steps = [
   {
@@ -143,6 +144,32 @@ const GlobalPartnerRegistration = () => {
     }
 
     try {
+      // Send to n8n webhook (non-blocking)
+      try {
+        const webhookData = webhookService.preparePartnerRegistrationData({
+          company_name: formData.companyName.trim(),
+          website: formData.website.trim(),
+          first_name: formData.firstName.trim(),
+          last_name: formData.lastName.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          country: formData.country.trim(),
+          city: formData.city.trim(),
+          company_type: formData.companyType.trim(),
+          employee_count: formData.employeeCount.trim(),
+          years_in_business: formData.yearsInBusiness.trim(),
+          services_offered: formData.servicesOffered,
+          message: formData.message.trim()
+        });
+        
+        // Send to webhook without waiting for response (fire and forget)
+        webhookService.sendToWebhook(webhookData).catch(error => {
+          console.error('N8N webhook failed (non-blocking):', error);
+        });
+      } catch (webhookError) {
+        console.error('Error preparing webhook data (non-blocking):', webhookError);
+      }
+
       const { error: supabaseError } = await supabase
         .from('partner_registrations')
         .insert([{

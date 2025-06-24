@@ -271,6 +271,8 @@ export const useNewsletterSubscription = () => {
   return { subscribe, loading, error, success };
 };
 
+import { webhookService } from '../webhookService';
+
 export const useContactSubmission = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -284,6 +286,26 @@ export const useContactSubmission = () => {
 
       console.log('Submitting data:', data);
       console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+
+      // Send to n8n webhook first (non-blocking)
+      try {
+        const webhookData = webhookService.prepareContactData({
+          name: data.name,
+          work_email: data.work_email,
+          phone: data.phone,
+          preferred_destination: data.preferred_destination,
+          number_of_pax: data.number_of_pax,
+          more_details: data.more_details,
+          activity_type: data.activity_type
+        });
+        
+        // Send to webhook without waiting for response (fire and forget)
+        webhookService.sendToWebhook(webhookData).catch(error => {
+          console.error('N8N webhook failed (non-blocking):', error);
+        });
+      } catch (webhookError) {
+        console.error('Error preparing webhook data (non-blocking):', webhookError);
+      }
 
       // Use direct fetch API to bypass potential Supabase client issues
       const response = await fetch(
