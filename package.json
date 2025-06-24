@@ -10,7 +10,7 @@
     "generate-sitemap": "tsx scripts/generateSitemap.ts",
     "preview": "vite preview",
     "clean": "rimraf dist node_modules",
-    "start": "npm run build && node server.js"
+    "start": "npm run build && node server.cjs"
   },
   "dependencies": {
     "@emotion/styled": "^11.11.0",
