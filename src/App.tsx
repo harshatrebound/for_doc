@@ -1,21 +1,37 @@
 import { Helmet } from 'react-helmet-async';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import useSkipSearchPopup from './hooks/useSkipSearchPopup';
-import SkipSearchPopup from './components/SkipSearchPopup';
 import Analytics from './components/Analytics';
 import CustomAnalytics from './components/CustomAnalytics';
+import PerformanceMonitor from './components/PerformanceMonitor';
+import { initializeGCLIDTracking } from './lib/gclid';
 import Navbar from './components/Navbar';
 import GradientHero from './components/GradientHero';
-import ServicesSection from './components/ServicesSection';
-import StepsSection from './components/StepsSection';
-import OutboundSection from './components/OutboundSection';
-import DestinationsSection from './components/DestinationsSection';
-import InboundSection from './components/InboundSection';
-import BlogSection from './components/BlogSection';
-import TestimonialsSection from './components/TestimonialsSection';
-import PartnersSection from './components/PartnersSection';
-import ContactSection from './components/ContactSection';
-import Footer from './components/Footer';
+
+// Lazy load non-critical components
+const ServicesSection = lazy(() => import('./components/ServicesSection'));
+const StepsSection = lazy(() => import('./components/StepsSection'));
+const OutboundSection = lazy(() => import('./components/OutboundSection'));
+const DestinationsSection = lazy(() => import('./components/DestinationsSection'));
+const InboundSection = lazy(() => import('./components/InboundSection'));
+const BlogSection = lazy(() => import('./components/BlogSection'));
+const TestimonialsSection = lazy(() => import('./components/TestimonialsSection'));
+const PartnersSection = lazy(() => import('./components/PartnersSection'));
+const ContactSection = lazy(() => import('./components/ContactSection'));
+const Footer = lazy(() => import('./components/Footer'));
+const SkipSearchPopup = lazy(() => import('./components/SkipSearchPopup'));
+
+// Loading fallback component
+const SectionLoader = () => (
+  <div className="flex justify-center items-center py-20">
+    <div className="animate-pulse w-full max-w-4xl mx-auto px-4">
+      <div className="h-8 bg-gray-200 rounded mb-4"></div>
+      <div className="h-4 bg-gray-200 rounded mb-2"></div>
+      <div className="h-4 bg-gray-200 rounded mb-2"></div>
+      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+    </div>
+  </div>
+);
 
 function App() {
   const { isVisible, closePopup } = useSkipSearchPopup();
@@ -23,12 +39,16 @@ function App() {
 
   useEffect(() => {
     setCurrentUrl(window.location.href);
+    
+    // Initialize GCLID tracking for Google Ads
+    initializeGCLIDTracking();
   }, []);
 
   return (
     <>
       <Analytics />
       <CustomAnalytics />
+      <PerformanceMonitor />
       <Helmet>
         <title>Trebound | Premium Team Building & Corporate Events Solutions</title>
         <meta 
@@ -60,17 +80,51 @@ function App() {
       <div className="relative min-h-screen overflow-x-hidden bg-white">
         <Navbar />
         <GradientHero />
-        <ServicesSection />
-        <StepsSection />
-        <OutboundSection />
-        <DestinationsSection />
-        <InboundSection />
-        <BlogSection />
-        <TestimonialsSection />
-        <PartnersSection />
-        <ContactSection />
-        <Footer />
-        <SkipSearchPopup isVisible={isVisible} onClose={closePopup} />
+        
+        {/* Lazy load all sections below the fold */}
+        <Suspense fallback={<SectionLoader />}>
+          <ServicesSection />
+        </Suspense>
+        
+        <Suspense fallback={<SectionLoader />}>
+          <StepsSection />
+        </Suspense>
+        
+        <Suspense fallback={<SectionLoader />}>
+          <OutboundSection />
+        </Suspense>
+        
+        <Suspense fallback={<SectionLoader />}>
+          <DestinationsSection />
+        </Suspense>
+        
+        <Suspense fallback={<SectionLoader />}>
+          <InboundSection />
+        </Suspense>
+        
+        <Suspense fallback={<SectionLoader />}>
+          <BlogSection />
+        </Suspense>
+        
+        <Suspense fallback={<SectionLoader />}>
+          <TestimonialsSection />
+        </Suspense>
+        
+        <Suspense fallback={<SectionLoader />}>
+          <PartnersSection />
+        </Suspense>
+        
+        <Suspense fallback={<SectionLoader />}>
+          <ContactSection />
+        </Suspense>
+        
+        <Suspense fallback={<SectionLoader />}>
+          <Footer />
+        </Suspense>
+        
+        <Suspense fallback={null}>
+          <SkipSearchPopup isVisible={isVisible} onClose={closePopup} />
+        </Suspense>
       </div>
     </>
   );

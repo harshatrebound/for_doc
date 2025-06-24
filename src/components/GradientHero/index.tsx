@@ -1,5 +1,5 @@
 import { useInView } from 'react-intersection-observer';
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 import {
   HeroContainer,
   ContentContainer,
@@ -20,13 +20,19 @@ interface GradientHeroProps {
 const heroImageUrl = "/hero.webp";
 
 const GradientHero: React.FC<GradientHeroProps> = ({ className }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [ref, inView] = useInView({
     threshold: 0.15,
-    triggerOnce: true
+    triggerOnce: true,
+    rootMargin: '50px' // Start loading earlier
   });
 
-  // Use the custom hero image
-  const heroImage = heroImageUrl;
+  // Preload hero image for better LCP
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => setImageLoaded(true);
+    img.src = heroImageUrl;
+  }, []);
 
   // Stats with hardcoded values
   const stats = [
@@ -50,19 +56,32 @@ const GradientHero: React.FC<GradientHeroProps> = ({ className }) => {
         <div 
           className="absolute inset-0 z-0"
           style={{
-            backgroundImage: `url('${heroImage}')`, 
+            backgroundImage: imageLoaded ? `url('${heroImageUrl}')` : 'none',
+            backgroundColor: imageLoaded ? 'transparent' : '#1a1a1a', // Fallback color
             backgroundPosition: 'center',
             backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat'
+            backgroundRepeat: 'no-repeat',
+            opacity: imageLoaded ? 1 : 0.8,
+            transition: 'opacity 0.3s ease-in-out'
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-[rgba(0,0,0,0.3)] to-[rgba(0,0,0,0.5)]" />
         </div>
-        <ContentContainer variants={staggerChildren} initial="hidden" animate={inView ? "visible" : "hidden"}>
+        
+        {/* Optimize LCP element - reduce animation complexity */}
+        <ContentContainer 
+          variants={staggerChildren} 
+          initial="hidden" 
+          animate="visible" // Always visible to improve LCP
+        >
           <Title
+            className="hero-title" // Use CSS class for faster rendering
             initial="hidden"
-            animate={inView ? "visible" : "hidden"}
-            variants={fadeInUp}
+            animate="visible" // Always visible for LCP
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { opacity: 1, transition: { duration: 0.3 } } // Faster animation
+            }}
           >
             Transform Your Team<br />Into Champions
           </Title>
@@ -70,13 +89,18 @@ const GradientHero: React.FC<GradientHeroProps> = ({ className }) => {
             initial="hidden"
             animate={inView ? "visible" : "hidden"}
             variants={fadeInUp}
-            transition={{ delay: 0.15 }}
+            transition={{ delay: 0.1 }} // Reduced delay
           >
             Your Ultimate Team Building and Experience Hub
           </Subtitle>
         </ContentContainer>
 
-        <StatsContainer variants={staggerChildren} initial="hidden" animate={inView ? "visible" : "hidden"}>
+        {/* Lazy load stats - not critical for LCP */}
+        <StatsContainer 
+          variants={staggerChildren} 
+          initial="hidden" 
+          animate={inView ? "visible" : "hidden"}
+        >
           {stats.map((stat, index) => (
             <StatCard
               key={index}
@@ -91,7 +115,7 @@ const GradientHero: React.FC<GradientHeroProps> = ({ className }) => {
           ))}
         </StatsContainer>
       </HeroContainer>
-      <div className="h-[100px] md:h-[100px] sm:h-[200px] bg-white" /> {/* Adjusted spacer for mobile */}
+      <div className="h-[100px] md:h-[100px] sm:h-[200px] bg-white" />
     </div>
   );
 };

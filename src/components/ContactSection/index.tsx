@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { useState, useEffect, useRef } from 'react';
 import { useContactSubmission } from '../../lib/hooks/useSupabaseData';
+import { addGCLIDToFormData, populateGCLIDFields, trackConversion } from '../../lib/gclid';
 import type { ActivityType } from '../../lib/supabaseClient';
 
 const steps = [
@@ -63,6 +64,7 @@ const ContactSection = ({ autoFocusName = false }: ContactSectionProps) => {
   });
 
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -76,6 +78,13 @@ const ContactSection = ({ autoFocusName = false }: ContactSectionProps) => {
 
   const { submit, loading, error, success } = useContactSubmission();
 
+  // Auto-populate GCLID fields when form loads
+  useEffect(() => {
+    if (formRef.current) {
+      populateGCLIDFields(formRef.current);
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -88,18 +97,30 @@ const ContactSection = ({ autoFocusName = false }: ContactSectionProps) => {
     const pageUrl = window.location.href;
     const pageHeading = document.title;
 
+    // Prepare form data with GCLID and UTM parameters
+    const baseFormData = {
+      name: formData.name.trim(),
+      work_email: formData.work_email.trim(),
+      preferred_destination: formData.preferred_destination.trim(),
+      phone: formData.phone.trim(),
+      number_of_pax: parseInt(formData.number_of_pax),
+      more_details: formData.more_details.trim() || '',
+      activity_type: formData.activity_type,
+      page_url: pageUrl,
+      page_heading: pageHeading
+    };
+
+    // Add GCLID and UTM parameters for Google Ads tracking
+    const formDataWithTracking = addGCLIDToFormData(baseFormData);
+
+    console.log('📝 Form submission with tracking data:', formDataWithTracking);
+
     try {
-      await submit({
-        name: formData.name.trim(),
-        work_email: formData.work_email.trim(),
-        preferred_destination: formData.preferred_destination.trim(),
-        phone: formData.phone.trim(),
-        number_of_pax: parseInt(formData.number_of_pax),
-        more_details: formData.more_details.trim() || '',
-        activity_type: formData.activity_type,
-        page_url: pageUrl,
-        page_heading: pageHeading
-      });
+      await submit(formDataWithTracking as any); // Type assertion to handle additional tracking fields
+      
+      // Track conversion in Google Ads
+      trackConversion('contact_form_submission');
+      
     } catch (err) {
       console.error('Form submission error:', err);
     }
@@ -117,6 +138,10 @@ const ContactSection = ({ autoFocusName = false }: ContactSectionProps) => {
         more_details: '',
         activity_type: 'exploring'
       });
+      
+      // Track successful conversion
+      trackConversion('lead_generation', 1);
+      
       // Redirect to thank you page
       setTimeout(() => {
         window.location.href = '/thank-you';
@@ -147,23 +172,20 @@ const ContactSection = ({ autoFocusName = false }: ContactSectionProps) => {
         <div className="relative rounded-[20px] border border-[#eeeeee] p-8 lg:p-12">
           <div className="flex flex-col lg:flex-row lg:justify-around items-start lg:items-start gap-12">
             {/* Left Side - Steps */}
-            <div className="flex-1 max-w-[480px]">
-              <motion.span
-                initial={{ opacity: 0, y: 10 }}
+            <div className="w-full lg:w-[45%]">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5 }}
-                className="block text-sm md:text-base font-medium font-['DM Sans'] text-[#636363] mb-2"
+                className="mb-8"
               >
-                Get Started
-              </motion.span>
-              <motion.h2
-                initial={{ opacity: 0, y: 10 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="text-2xl md:text-[48px] font-semibold font-['Inter'] leading-tight bg-gradient-to-b from-[#FF4C39] to-[#FFB573] bg-clip-text text-transparent mb-10"
-              >
-                Join the Adventure
-              </motion.h2>
+                <div className="text-[#717171] text-lg font-medium font-['DM Sans'] mb-4">
+                  Reach Out To Us
+                </div>
+                <div className="text-[#313131] text-3xl font-semibold font-['DM Sans'] leading-tight">
+                  Let's Start Planning Your Amazing Experience!
+                </div>
+              </motion.div>
 
               <div className="space-y-8">
                 {steps.map((step, index) => (
@@ -191,7 +213,7 @@ const ContactSection = ({ autoFocusName = false }: ContactSectionProps) => {
             </div>
 
             {/* Right Side - Form */}
-            <div className="w-full lg:w-[480px]">
+            <div className="w-full lg:w-[50%]">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -201,7 +223,13 @@ const ContactSection = ({ autoFocusName = false }: ContactSectionProps) => {
                 <div className="text-[#717171] text-base font-medium font-['DM Sans'] mb-8">
                   To start the conversation, please fill in the form
                 </div>
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+                  {/* Hidden GCLID fields - auto-populated by our GCLID system */}
+                  <input type="hidden" name="gclid" />
+                  <input type="hidden" name="utm_source" />
+                  <input type="hidden" name="utm_medium" />
+                  <input type="hidden" name="utm_campaign" />
+                  
                   {/* Two-column grid for shorter inputs */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="relative">
@@ -219,6 +247,7 @@ const ContactSection = ({ autoFocusName = false }: ContactSectionProps) => {
                         className="w-full h-[45px] px-4 bg-white border border-[#e2e2e2] rounded-[8px] text-[#313131] text-base font-normal font-['DM Sans'] focus:outline-none focus:ring-1 focus:ring-[#ff4c39] focus:border-[#ff4c39] transition-all placeholder:text-[#979797]"
                       />
                     </div>
+                    
                     <div className="relative">
                       <label className="block text-[#313131] text-sm font-medium font-['DM Sans'] mb-1.5">
                         Work Email
@@ -334,7 +363,7 @@ const ContactSection = ({ autoFocusName = false }: ContactSectionProps) => {
                     </div>
                   )}
                   
-                  <div className="flex justify-center pt-2">
+                  <div className="pt-4">
                     <button
                       type="submit"
                       disabled={loading}

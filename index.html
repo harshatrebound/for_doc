@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/jpeg" href="/trebound_logos_icons/favicons/Trebound_Favicon_blue-32px.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/hero.webp" as="image" type="image/webp" fetchpriority="high">
+    <link rel="preload" href="/src/main.tsx" as="script" type="module">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- DNS prefetch for external scripts -->
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
+    <link rel="dns-prefetch" href="https://www.google-analytics.com">
+    <link rel="dns-prefetch" href="https://www.clarity.ms">
+    <link rel="dns-prefetch" href="https://snap.licdn.com">
+    
     <meta name="description" content="Trebound - Your Ultimate Corporate Team Building and Adventure Partner. Experience unforgettable team building activities and adventures." />
     <meta name="keywords" content="team building, corporate events, adventure activities, team development, corporate training" />
     <meta name="author" content="Trebound" />
@@ -27,75 +40,81 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
+    /* Critical CSS for LCP element */
+    .hero-title {
+      font-family: Outfit, sans-serif;
+      font-size: 64px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: white;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    @media (max-width: 768px) {
+      .hero-title { font-size: 40px; }
+    }
+    @media (max-width: 480px) {
+      .hero-title { font-size: 32px; }
+    }
     </style>
-    
-    <!-- Global site tag (gtag.js) - Google Ads: 832201286 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-832201286"></script>
+
+    <!-- Critical GTM script only -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-    
-      gtag('config', 'AW-832201286');
-    </script>
-
-    <script async src="https://tag.clearbitscripts.com/v1/pk_3d78ccd15f17d6e648228545d1bdbee0/tags.js" referrerpolicy="strict-origin-when-cross-origin"></script>
-
-    <script type="text/javascript">
-        (function(c,l,a,r,i,t,y){
-            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-        })(window, document, "clarity", "script", "j1ugmh1njp");
-    </script>
-
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-MQXBP2R');</script>
-    <!-- End Google Tag Manager -->
-
-    <!-- GoSquared Code -->
-    <script>
-      !function(g,s,q,r,d){r=g[r]=g[r]||function(){(r.q=r.q||[]).push(arguments)};
-      d=s.createElement(q);d.src='//d1l6p2sc9645hc.cloudfront.net/gosquared.js';q=
-      s.getElementsByTagName(q)[0];q.parentNode.insertBefore(d,q)}(window,document
-      ,'script','_gs');
-
-      _gs('GSN-721432-I');
-      _gs('set', 'anonymizeIP', true);
-    </script>
-    <!-- End of GoSquared Code -->
-
-    <!-- Start of signalzen Code -->
-    <script type="text/javascript">
-    var _sz=_sz||{};_sz.appId="43cc8936",function(){var e=document.createElement("script");e.src="https://cdn.signalzen.com/signalzen.js",e.setAttribute("async","true"),document.documentElement.firstChild.appendChild(e);var t=setInterval(function(){"undefined"!=typeof SignalZen&&(clearInterval(t),new SignalZen(_sz).load())},10)}();
-    </script>
-    <!-- End of signalzen Code -->
-
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-832183512"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'AW-832183512');
+    })(window,document,'script','dataLayer','GTM-MQXBP2R');
     </script>
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MQXBP2R"
         height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-        <!-- End Google Tag Manager (noscript) -->
+
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Load non-critical analytics after page load -->
+    <script>
+    window.addEventListener('load', function() {
+      // Delay non-critical scripts
+      setTimeout(function() {
+        // Google Ads
+        var gads = document.createElement('script');
+        gads.async = true;
+        gads.src = 'https://www.googletagmanager.com/gtag/js?id=AW-832201286';
+        document.head.appendChild(gads);
         
-        <script type="text/javascript">
+        gads.onload = function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'AW-832201286');
+          gtag('config', 'AW-832183512');
+        };
+        
+        // Microsoft Clarity
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "j1ugmh1njp");
+        
+        // GoSquared
+        !function(g,s,q,r,d){r=g[r]=g[r]||function(){(r.q=r.q||[]).push(arguments)};
+        d=s.createElement(q);d.src='//d1l6p2sc9645hc.cloudfront.net/gosquared.js';q=
+        s.getElementsByTagName(q)[0];q.parentNode.insertBefore(d,q)}(window,document
+        ,'script','_gs');
+        _gs('GSN-721432-I');
+        _gs('set', 'anonymizeIP', true);
+        
+        // SignalZen
+        var _sz=_sz||{};_sz.appId="43cc8936",function(){var e=document.createElement("script");e.src="https://cdn.signalzen.com/signalzen.js",e.setAttribute("async","true"),document.documentElement.firstChild.appendChild(e);var t=setInterval(function(){"undefined"!=typeof SignalZen&&(clearInterval(t),new SignalZen(_sz).load())},10)}();
+        
+        // LinkedIn
         _linkedin_partner_id = "539475";
         window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
         window._linkedin_data_partner_ids.push(_linkedin_partner_id);
-        </script><script type="text/javascript">
         (function(l) {
         if (!l){window.lintrk = function(a,b){window.lintrk.q.push([a,b])};
         window.lintrk.q=[]}
@@ -104,63 +123,58 @@
         b.type = "text/javascript";b.async = true;
         b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
         s.parentNode.insertBefore(b, s);})(window.lintrk);
-        </script>
-        <noscript>
-        <img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=539475&fmt=gif" />
-        </noscript>
         
-
+        // Clearbit
+        var cb = document.createElement('script');
+        cb.async = true;
+        cb.src = 'https://tag.clearbitscripts.com/v1/pk_3d78ccd15f17d6e648228545d1bdbee0/tags.js';
+        cb.referrerPolicy = 'strict-origin-when-cross-origin';
+        document.head.appendChild(cb);
         
-        <script>
-        
-        function getParam(p) {
-        var match = RegExp('[?&]' + p + '=([^&]*)').exec(window.location.search);
-        return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
-        }
-        
-        function getExpiryRecord(value) {
-        var expiryPeriod = 90 * 24 * 60 * 60 * 1000; // 90 day expiry in milliseconds
-        
-        var expiryDate = new Date().getTime() + expiryPeriod;
-        return {
-        value: value,
-        expiryDate: expiryDate
-        };
-        }
-        
-        function addGclid() {
-        var gclidParam = getParam('gclid');
-        var gclidFormFields = ['gclid_field', 'foobar']; // all possible gclid form field ids here
-        var gclidRecord = null;
-        var currGclidFormField;
-        
-        var gclsrcParam = getParam('gclsrc');
-        var isGclsrcValid = !gclsrcParam || gclsrcParam.indexOf('aw') !== -1;
-        
-        gclidFormFields.forEach(function (field) {
-        if (document.getElementById(field)) {
-        currGclidFormField = document.getElementById(field);
-        }
-        });
-        
-        if (gclidParam && isGclsrcValid) {
-        gclidRecord = getExpiryRecord(gclidParam);
-        localStorage.setItem('gclid', JSON.stringify(gclidRecord));
-        }
-        
-        var gclid = gclidRecord || JSON.parse(localStorage.getItem('gclid'));
-        var isGclidValid = gclid && new Date().getTime() < gclid.expiryDate;
-        
-        if (currGclidFormField && isGclidValid) {
-        currGclidFormField.value = gclid.value;
-        }
-        }
-        
-        window.addEventListener('load', addGclid);
-        
-        </script>
-
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+      }, 1000); // 1 second delay
+    });
+    
+    // GCLID tracking
+    function getParam(p) {
+    var match = RegExp('[?&]' + p + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+    }
+    
+    function getExpiryRecord(value) {
+    var expiryPeriod = 90 * 24 * 60 * 60 * 1000;
+    var expiryDate = new Date().getTime() + expiryPeriod;
+    return { value: value, expiryDate: expiryDate };
+    }
+    
+    function addGclid() {
+    var gclidParam = getParam('gclid');
+    var gclidFormFields = ['gclid_field', 'foobar'];
+    var gclidRecord = null;
+    var currGclidFormField;
+    
+    var gclsrcParam = getParam('gclsrc');
+    var isGclsrcValid = !gclsrcParam || gclsrcParam.indexOf('aw') !== -1;
+    
+    gclidFormFields.forEach(function (field) {
+    if (document.getElementById(field)) {
+    currGclidFormField = document.getElementById(field);
+    }
+    });
+    
+    if (gclidParam && isGclsrcValid) {
+    gclidRecord = getExpiryRecord(gclidParam);
+    localStorage.setItem('gclid', JSON.stringify(gclidRecord));
+    }
+    
+    var gclid = gclidRecord || JSON.parse(localStorage.getItem('gclid'));
+    var isGclidValid = gclid && new Date().getTime() < gclid.expiryDate;
+    
+    if (currGclidFormField && isGclidValid) {
+    currGclidFormField.value = gclid.value;
+    }
+    }
+    
+    window.addEventListener('load', addGclid);
+    </script>
   </body>
 </html>
