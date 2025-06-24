@@ -112,7 +112,7 @@ const PartnersSection = () => {
               initial={{ opacity: 0 }}
               animate={inView ? { opacity: 1 } : {}}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex space-x-6 partners-scroll"
+              className="flex space-x-1 partners-scroll"
               style={{
                 width: 'fit-content',
               }}
@@ -120,12 +120,12 @@ const PartnersSection = () => {
               {duplicatedPartners.map((partner, index) => (
                 <div
                   key={`${partner.name}-${index}`}
-                  className="group flex-shrink-0 flex items-center justify-center w-48 h-24"
+                  className="group flex-shrink-0 flex items-center justify-center w-64 h-36"
                 >
                   <img
                     src={partner.logo}
                     alt={partner.name}
-                    className="h-16 max-w-full opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0 object-contain hover:scale-105"
+                    className="h-40 max-w-full opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0 object-contain hover:scale-105"
                   />
                 </div>
               ))}
