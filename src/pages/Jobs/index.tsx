@@ -112,7 +112,9 @@ const JobsPage = () => {
           expectedSalary: ''
         });
         // Redirect to thank you page
-        window.location.href = '/thank-you';
+        if (typeof window !== 'undefined') {
+          window.location.href = '/thank-you';
+        }
       }, 2000);
     } catch (error) {
       console.error('Error submitting application:', error);

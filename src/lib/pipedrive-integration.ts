@@ -214,6 +214,11 @@ export class PipedriveIntegration {
 
 // Export function to create Pipedrive integration instance
 export function createPipedriveIntegration() {
+  // Only create integration if we're in a browser environment with the API token
+  if (typeof window === 'undefined') {
+    throw new Error('Pipedrive integration only available in browser environment');
+  }
+
   const config: PipedriveConfig = {
     apiToken: import.meta.env.VITE_PIPEDRIVE_API_TOKEN || '',
     companyDomain: 'trebound' // Based on the Make.com connection

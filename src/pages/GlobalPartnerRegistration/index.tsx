@@ -176,7 +176,9 @@ const GlobalPartnerRegistration = () => {
       });
       // Redirect to thank you page after successful submission
       setTimeout(() => {
-        window.location.href = '/thank-you';
+        if (typeof window !== 'undefined') {
+          window.location.href = '/thank-you';
+        }
       }, 2000);
     } catch (err) {
       console.error("Submission error:", err);

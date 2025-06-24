@@ -116,7 +116,7 @@ const BangaloreResortsPage: React.FC = () => {
             number_of_pax: parseInt(formData.teamSize.split('-')[0]) || 1, // Extract first number from team size
             more_details: `Company: ${formData.company}\nTeam Size: ${formData.teamSize}\nMessage: ${formData.message}`,
             activity_type: 'exploring',
-            page_url: window.location.href,
+            page_url: typeof window !== 'undefined' ? window.location.href : '',
             page_heading: 'Bangalore Resorts Access Form'
           })
         }

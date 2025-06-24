@@ -56,7 +56,9 @@ const Footer = () => {
         setEmail(''); // Clear input on success
         // Redirect to thank you page after successful subscription
         setTimeout(() => {
-          window.location.href = '/thank-you';
+          if (typeof window !== 'undefined') {
+            window.location.href = '/thank-you';
+          }
         }, 2000);
       }
     }
