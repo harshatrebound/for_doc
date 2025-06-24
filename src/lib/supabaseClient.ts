@@ -45,25 +45,43 @@ export interface Stay {
   id: number;
   name: string;
   slug: string;
-  title?: string;
-  tagline: string;
-  description: string;
-  banner_image_url: string;
-  image_url?: string;
-  destination_name: string;
-  location?: string;
-  price_per_night?: number;
-  max_capacity: number;
-  destination: number;
-  destination_details?: Destination | null;
+  collection_id?: string;
+  meta_title?: string;
+  meta_description?: string;
+  alt_text?: string;
+  tagline?: string;
   stay_description?: string;
+  location?: string;
+  special_activities?: string;
+  facilities?: string;
   stay_image?: string;
+  check_in_value?: string;
+  check_out_value?: string;
+  total_room_value?: string;
+  destination?: string;
+  location_plain_text?: string;
+  destination_cms_multi_reference?: string;
+  images?: string[];
+  price?: string;
+  created_on?: string;
+  updated_on?: string;
+  published_on?: string;
+  destination_id?: number;
+  // Legacy fields for backward compatibility
+  title?: string;
+  description?: string;
+  banner_image_url?: string;
+  image_url?: string;
+  destination_name?: string;
+  price_per_night?: number;
+  max_capacity?: number;
+  destination_details?: Destination | null;
   image_1?: string;
   image_2?: string;
   image_3?: string;
   rating?: string;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CustomizedTraining {

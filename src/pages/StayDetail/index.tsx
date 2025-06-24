@@ -48,21 +48,24 @@ const StayDetail = () => {
     threshold: 0.1,
   });
 
-  // Format images for gallery
-  const stayImages = [
-    stay?.banner_image_url,
-    stay?.image_1,
-    stay?.image_2,
-    stay?.image_3,
-  ]
-    .filter(Boolean)
+  // Format images for gallery - use images array from database or fallback to legacy fields
+  const stayImages = (stay?.images && stay.images.length > 0 
+    ? stay.images 
+    : [
+        stay?.banner_image_url,
+        stay?.stay_image,
+        stay?.image_1,
+        stay?.image_2,
+        stay?.image_3,
+      ].filter(Boolean)
+  )
     .map((url, index) => ({
       id: index + 1,
       url: url || '',
       alt: `${stay?.name || 'Stay'} image ${index + 1}`
     }));
 
-  // Calculate remaining images count for gallery preview
+  // Calculate remaining images count for gallery preview (show on 4th thumbnail)
   const remainingImagesCount = Math.max(0, stayImages.length - 4);
 
   const openGallery = (index: number) => {
