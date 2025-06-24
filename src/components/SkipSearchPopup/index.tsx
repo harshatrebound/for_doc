@@ -35,7 +35,7 @@ const SkipSearchPopup = ({ onClose, isVisible }: SkipSearchPopupProps) => {
     await submit({
       ...formData,
       number_of_pax: parseInt(formData.number_of_pax) || 1,
-      page_url: typeof window !== 'undefined' ? window.location.href : '',
+      page_url: window.location.href,
       page_heading: 'Skip Search Popup Form'
     });
 
@@ -51,9 +51,7 @@ const SkipSearchPopup = ({ onClose, isVisible }: SkipSearchPopupProps) => {
       });
       // Close popup and redirect to thank you page
       onClose();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/thank-you';
-      }
+      window.location.href = '/thank-you';
     }
   };
 

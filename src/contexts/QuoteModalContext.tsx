@@ -64,7 +64,7 @@ const QuoteModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       number_of_pax: formData.number_of_pax,
       more_details: `Company: ${formData.company}\n\n${formData.more_details}`,
       activity_type: formData.activity_type,
-              page_url: typeof window !== 'undefined' ? window.location.href : '',
+      page_url: window.location.href,
       page_heading: 'Quote Modal Form'
     });
 
@@ -81,9 +81,7 @@ const QuoteModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       });
       // Close modal and redirect to thank you page
       onClose();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/thank-you';
-      }
+      window.location.href = '/thank-you';
     }
   };
 

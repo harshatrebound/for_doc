@@ -72,7 +72,7 @@ const ContactSection = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const pageUrl = typeof window !== 'undefined' ? window.location.href : '';
+    const pageUrl = window.location.href;
     const pageHeading = document.title;
 
     await submit({
@@ -94,9 +94,7 @@ const ContactSection = () => {
       });
       // Redirect to thank you page
       setTimeout(() => {
-        if (typeof window !== 'undefined') {
-          window.location.href = '/thank-you';
-        }
+        window.location.href = '/thank-you';
       }, 1000);
     }
   };

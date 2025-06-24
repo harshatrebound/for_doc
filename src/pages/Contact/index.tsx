@@ -98,7 +98,7 @@ const ContactPage = () => {
           preferred_destination: 'Not specified',
           number_of_pax: 0,
           activity_type: 'exploring',
-          page_url: typeof window !== 'undefined' ? window.location.href : '',
+          page_url: window.location.href,
           page_heading: 'Contact Page Form'
         });
         setSubmissionStatus({
@@ -109,9 +109,7 @@ const ContactPage = () => {
         
         // Redirect to thank you page after 2 seconds
         setTimeout(() => {
-          if (typeof window !== 'undefined') {
-            window.location.href = '/thank-you';
-          }
+          window.location.href = '/thank-you';
         }, 2000);
       } else {
         // Get more detailed error information
