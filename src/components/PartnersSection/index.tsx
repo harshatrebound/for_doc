@@ -120,12 +120,12 @@ const PartnersSection = () => {
               {duplicatedPartners.map((partner, index) => (
                 <div
                   key={`${partner.name}-${index}`}
-                  className="group flex-shrink-0 flex items-center justify-center w-32 h-16"
+                  className="group flex-shrink-0 flex items-center justify-center w-40 h-20"
                 >
                   <img
                     src={partner.logo}
                     alt={partner.name}
-                    className="h-8 max-w-full opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0 object-contain hover:scale-105"
+                    className="h-12 max-w-full opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0 object-contain hover:scale-105"
                   />
                 </div>
               ))}

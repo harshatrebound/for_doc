@@ -69,7 +69,7 @@ const TestimonialCard = ({ rating, review, author, companyLogo, isActive = false
             <img
               src={companyLogo}
               alt={author.company}
-              className="h-10 opacity-70"
+              className="h-16 opacity-70"
             />
           </div>
         </div>

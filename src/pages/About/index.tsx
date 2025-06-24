@@ -988,7 +988,7 @@ const AboutPage = () => {
                 <motion.img
                   src={partner.logo}
                   alt={partner.name}
-                  className="h-8 max-w-full opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0 object-contain"
+                  className="h-12 max-w-full opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0 object-contain"
                   whileHover={{ scale: 1.05 }}
                 />
               </motion.div>
