@@ -6,6 +6,7 @@ import Footer from '../../components/Footer';
 import ContactSection from '../../components/ContactSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import TeamSection from '../../components/TeamSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 import { FiUsers, FiEdit3, FiClock, FiZap } from 'react-icons/fi';
 
@@ -34,7 +35,7 @@ const IcebreakerGamesPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Icebreaker Games | Trebound</title>
         <meta name="description" content="Energize your team with fun, creative, and impactful icebreaker games. Break the ice and build stronger teams with Trebound's expert-led activities." />
@@ -254,7 +255,7 @@ const IcebreakerGamesPage = () => {
       </div>
 
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

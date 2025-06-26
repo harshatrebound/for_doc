@@ -5,6 +5,7 @@ import { FiSearch, FiMapPin, FiStar, FiArrowRight, FiHome, FiClock } from 'react
 import { supabase } from '../../lib/supabaseClient';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import PageWrapper from '../../components/PageWrapper';
 import { Helmet } from 'react-helmet-async';
 
 interface Stay {
@@ -289,7 +290,7 @@ const Stays = () => {
       </Helmet>
 
       <Navbar />
-      <div className="min-h-screen bg-[#f8f9fa]">
+      <PageWrapper className="min-h-screen bg-[#f8f9fa]">
         {/* Hero Section */}
         <div className="relative bg-gradient-to-br from-[#003366] to-[#001a33] pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-24">
           <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] opacity-10" />
@@ -474,7 +475,7 @@ const Stays = () => {
             </div>
           )}
         </div>
-      </div>
+      </PageWrapper>
       <Footer />
     </>
   );

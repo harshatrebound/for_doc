@@ -11,6 +11,7 @@ import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection'
 import HowItWorksProcessSection from '../../components/HowItWorksProcessSection';
 import '../../index.css';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
+import PageWrapper from '../../components/PageWrapper';
 
 // Copied VirtualActivitiesPaginatedSection (only the section, not the whole page)
 const VirtualActivitiesPaginatedSection = () => {
@@ -133,7 +134,7 @@ const VirtualEscapeRoomTeambuildingActivityTrebound = () => {
   const [heroRef, heroInView] = useInView({ triggerOnce: true, threshold: 0.1 });
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Virtual Escape Room Team Building Activity | Trebound</title>
         <meta name="description" content="Experience the best virtual escape room team building activity with Trebound. Engage, connect, and energize your remote team with challenging puzzles and fun!" />
@@ -241,7 +242,7 @@ const VirtualEscapeRoomTeambuildingActivityTrebound = () => {
       </div>
 
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

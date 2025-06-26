@@ -8,6 +8,7 @@ import TestimonialsSection from '../../components/TestimonialsSection';
 import TeamSection from '../../components/TeamSection';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 import { FiUsers, FiMessageCircle, FiZap, FiCalendar } from 'react-icons/fi';
+import PageWrapper from '../../components/PageWrapper';
 
 const ITEMS_PER_PAGE = 9;
 
@@ -33,7 +34,7 @@ const VirtualTeamBuildingIcebreakerGamesPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Virtual Team Building Icebreaker Games | Trebound</title>
         <meta name="description" content="Energize your remote team with fun, creative, and impactful virtual icebreaker games. Break the ice and build stronger virtual teams with Trebound's expert-led activities." />
@@ -242,7 +243,7 @@ const VirtualTeamBuildingIcebreakerGamesPage = () => {
       </div>
 
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

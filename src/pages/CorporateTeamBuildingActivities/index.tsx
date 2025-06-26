@@ -6,6 +6,7 @@ import ContactSection from '../../components/ContactSection';
 import TeamSection from '../../components/TeamSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import PartnersSection from '../../components/PartnersSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 import React, { useState } from 'react';
 import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection';
@@ -14,7 +15,7 @@ import { Activity } from '../../lib/supabaseClient';
 
 const CorporateTeamBuildingActivities = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Corporate Team Building Activities | Trebound</title>
         <meta name="description" content="Engage your team with fun and impactful corporate team building activities. Explore the latest games and activities for your organization." />
@@ -178,7 +179,7 @@ const CorporateTeamBuildingActivities = () => {
       <PartnersSection />
       <ContactSection />
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

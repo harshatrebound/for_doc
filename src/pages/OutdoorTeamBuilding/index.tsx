@@ -9,10 +9,11 @@ import PartnersSection from '../../components/PartnersSection';
 import ActivitiesSection from '../../components/ActivitiesSection';
 import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection';
 import HowItWorksProcessSection from '../../components/HowItWorksProcessSection';
+import PageWrapper from '../../components/PageWrapper';
 
 const OutdoorTeamBuildingActivities = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Exciting Outdoor Team Building Activities | Trebound</title>
         <meta name="description" content="Fun & Engaging Outdoor Team Building Activities. Keep Your Employees Happy, Engaged and Energized. Explore the latest games & activities for your team." />
@@ -105,7 +106,7 @@ const OutdoorTeamBuildingActivities = () => {
       {/* Contact Section */}
       <ContactSection />
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

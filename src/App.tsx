@@ -1,6 +1,5 @@
 import { Helmet } from 'react-helmet-async';
 import { useEffect, useState, lazy, Suspense } from 'react';
-import useSkipSearchPopup from './hooks/useSkipSearchPopup';
 import Analytics from './components/Analytics';
 import CustomAnalytics from './components/CustomAnalytics';
 import PerformanceMonitor from './components/PerformanceMonitor';
@@ -19,7 +18,6 @@ const TestimonialsSection = lazy(() => import('./components/TestimonialsSection'
 const PartnersSection = lazy(() => import('./components/PartnersSection'));
 const ContactSection = lazy(() => import('./components/ContactSection'));
 const Footer = lazy(() => import('./components/Footer'));
-const SkipSearchPopup = lazy(() => import('./components/SkipSearchPopup'));
 
 // Loading fallback component
 const SectionLoader = () => (
@@ -34,7 +32,6 @@ const SectionLoader = () => (
 );
 
 function App() {
-  const { isVisible, closePopup } = useSkipSearchPopup();
   const [currentUrl, setCurrentUrl] = useState('');
 
   useEffect(() => {
@@ -120,10 +117,6 @@ function App() {
         
         <Suspense fallback={<SectionLoader />}>
           <Footer />
-        </Suspense>
-        
-        <Suspense fallback={null}>
-          <SkipSearchPopup isVisible={isVisible} onClose={closePopup} />
         </Suspense>
       </div>
     </>

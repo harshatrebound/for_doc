@@ -4,6 +4,7 @@ import { useRegions } from '../../lib/hooks/useSupabaseData';
 import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import PageWrapper from '../../components/PageWrapper';
 
 const ViewDetailsButton = () => (
   <div className="relative w-full h-[45px] group">
@@ -36,7 +37,7 @@ const TeamOutingRegions = () => {
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       {/* Navbar */}
       <Navbar />
 
@@ -198,7 +199,7 @@ const TeamOutingRegions = () => {
 
       {/* Footer */}
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

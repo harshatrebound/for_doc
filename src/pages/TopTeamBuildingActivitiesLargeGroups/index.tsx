@@ -6,6 +6,7 @@ import Footer from '../../components/Footer';
 import ContactSection from '../../components/ContactSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import TeamSection from '../../components/TeamSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 import { FiUsers, FiEdit3, FiZap, FiTarget } from 'react-icons/fi';
 
@@ -33,7 +34,7 @@ const TopTeamBuildingActivitiesLargeGroups = () => {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Top Team Building Activities for Large Groups | Trebound</title>
         <meta name="description" content="Discover the best team building activities for large groups. Boost collaboration, engagement, and unity with Trebound's expert-led activities designed for big teams." />
@@ -224,7 +225,7 @@ const TopTeamBuildingActivitiesLargeGroups = () => {
       </div>
 
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

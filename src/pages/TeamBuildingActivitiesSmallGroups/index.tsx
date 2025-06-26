@@ -6,6 +6,7 @@ import Footer from '../../components/Footer';
 import ContactSection from '../../components/ContactSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import TeamSection from '../../components/TeamSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 import { FiCheckCircle, FiTrendingUp, FiEdit3, FiZap } from 'react-icons/fi';
 
@@ -33,7 +34,7 @@ const TeamBuildingActivitiesSmallGroups = () => {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Team Building Activities for Small Groups | Trebound</title>
         <meta name="description" content="Discover the best team building activities for small groups. Boost collaboration, creativity, and trust with Trebound's expert-led activities designed for teams of 5-15 people." />
@@ -242,7 +243,7 @@ const TeamBuildingActivitiesSmallGroups = () => {
       </div>
 
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

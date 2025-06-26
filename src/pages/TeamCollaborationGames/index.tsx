@@ -6,6 +6,7 @@ import Footer from '../../components/Footer';
 import ContactSection from '../../components/ContactSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import TeamSection from '../../components/TeamSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 import { FiUsers, FiZap, FiAward, FiLayers } from 'react-icons/fi';
 
@@ -33,7 +34,7 @@ const TeamCollaborationGamesPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Team Collaboration Games | Trebound</title>
         <meta name="description" content="Boost collaboration and teamwork with Trebound's expert-led team collaboration games. Discover activities designed to foster communication, trust, and creative problem-solving." />
@@ -242,7 +243,7 @@ const TeamCollaborationGamesPage = () => {
       </div>
 
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

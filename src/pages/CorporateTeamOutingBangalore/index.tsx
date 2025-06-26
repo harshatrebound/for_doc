@@ -9,6 +9,7 @@ import ContactSection from '../../components/ContactSection';
 import TeamSection from '../../components/TeamSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import PartnersSection from '../../components/PartnersSection';
+import PageWrapper from '../../components/PageWrapper';
 import { supabase } from '../../lib/supabaseClient';
 
 // Constants
@@ -221,7 +222,7 @@ const CorporateTeamOutingBangalore = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Corporate Team Outing in Bangalore | Best Team Building Venues | Trebound</title>
         <meta name="description" content="Discover the best corporate team outing venues in Bangalore. From luxury resorts to adventure camps, find the perfect location for your next team building event. Book now!" />
@@ -453,7 +454,7 @@ const CorporateTeamOutingBangalore = () => {
 
       <ContactSection />
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

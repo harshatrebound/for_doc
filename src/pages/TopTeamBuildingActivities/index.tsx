@@ -6,6 +6,7 @@ import Footer from '../../components/Footer';
 import ContactSection from '../../components/ContactSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import TeamSection from '../../components/TeamSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 import { FiStar, FiTrendingUp, FiUsers, FiTarget } from 'react-icons/fi';
 
@@ -33,7 +34,7 @@ const TopTeamBuildingActivitiesPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Top Team Building Activities | Trebound</title>
         <meta name="description" content="Discover the most popular and impactful team building activities. Boost collaboration, creativity, and trust with Trebound's top-rated activities for teams of all sizes." />
@@ -224,7 +225,7 @@ const TopTeamBuildingActivitiesPage = () => {
       </div>
 
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

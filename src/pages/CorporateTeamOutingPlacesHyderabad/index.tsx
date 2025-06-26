@@ -6,6 +6,7 @@ import Footer from '../../components/Footer';
 import ContactSection from '../../components/ContactSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import PartnersSection from '../../components/PartnersSection';
+import PageWrapper from '../../components/PageWrapper';
 import { supabase } from '../../lib/supabaseClient';
 import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection';
 import HowItWorksProcessSection from '../../components/HowItWorksProcessSection';
@@ -118,7 +119,7 @@ const BestHyderabadStaysSection = () => {
 
 const CorporateTeamOutingPlacesHyderabad = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Corporate Team Outing Places in Hyderabad | Trebound</title>
         <meta name="description" content="Discover the best corporate team outing places in Hyderabad. Perfect venues for team building activities, corporate events, and team bonding experiences." />
@@ -184,7 +185,7 @@ const CorporateTeamOutingPlacesHyderabad = () => {
       </div>
 
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

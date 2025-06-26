@@ -9,6 +9,7 @@ import ContactSection from '../../components/ContactSection';
 import TeamSection from '../../components/TeamSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import PartnersSection from '../../components/PartnersSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 import { BsPeople, BsStars, BsHeadset } from 'react-icons/bs';
 import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection';
@@ -156,7 +157,7 @@ const ActivitiesSectionMumbai: React.FC = () => {
 const CorporateTeamOutingMumbai: React.FC = () => {
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Corporate Team Outing in Mumbai | Best Team Building Venues | Trebound</title>
         <meta name="description" content="Discover the best corporate team outing venues in Mumbai. From luxury resorts to adventure camps, find the perfect location for your next team building event. Book now!" />
@@ -238,7 +239,7 @@ const CorporateTeamOutingMumbai: React.FC = () => {
       {/* Contact Section */}
       <ContactSection />
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

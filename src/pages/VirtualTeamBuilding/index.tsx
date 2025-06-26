@@ -7,6 +7,7 @@ import TestimonialsSection from '../../components/TestimonialsSection';
 import PartnersSection from '../../components/PartnersSection';
 import ContactSection from '../../components/ContactSection';
 import Footer from '../../components/Footer';
+import PageWrapper from '../../components/PageWrapper';
 
 // Add custom styles
 const styles = {
@@ -27,7 +28,7 @@ const VirtualTeamBuildingPage: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Virtual Team Building Activities | Trebound</title>
         <meta name="description" content="Virtual team building activities for remote teams made easy" />
@@ -276,7 +277,7 @@ const VirtualTeamBuildingPage: React.FC = () => {
 
       {/* Footer */}
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

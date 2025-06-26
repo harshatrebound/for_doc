@@ -7,10 +7,11 @@ import TestimonialsSection from '../../components/TestimonialsSection';
 import ContactSection from '../../components/ContactSection';
 import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection';
 import HowItWorksProcessSection from '../../components/HowItWorksProcessSection';
+import PageWrapper from '../../components/PageWrapper';
 
 const VirtualTeamBuildingHolidayPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Virtual Team Building Activities for the Holiday Season | Trebound</title>
         <meta 
@@ -106,7 +107,7 @@ const VirtualTeamBuildingHolidayPage: React.FC = () => {
       <div id="contact-form">
         <ContactSection />
       </div>
-    </div>
+    </PageWrapper>
   );
 };
 

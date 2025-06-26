@@ -8,6 +8,7 @@ import TestimonialsSection from '../../components/TestimonialsSection';
 import PartnersSection from '../../components/PartnersSection';
 import ContactSection from '../../components/ContactSection';
 import Footer from '../../components/Footer';
+import PageWrapper from '../../components/PageWrapper';
 
 // Add custom styles
 const styles = {
@@ -28,7 +29,7 @@ const OutboundTeamBuildingPage: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Outbound Team Building Activities | Trebound</title>
         <meta name="description" content="Outbound team building activities for corporate teams made easy" />
@@ -277,7 +278,7 @@ const OutboundTeamBuildingPage: React.FC = () => {
 
       {/* Footer */}
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

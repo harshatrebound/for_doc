@@ -7,6 +7,7 @@ import Navbar from '../../components/Navbar';
 import ContactSection from '../../components/ContactSection';
 import { bangaloreResorts } from '../../data/bangaloreResorts';
 import { webhookService } from '../../lib/webhookService';
+import PageWrapper from '../../components/PageWrapper';
 
 interface FormData {
   name: string;
@@ -186,7 +187,7 @@ const BangaloreResortsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Best Team Outing Resorts in Bangalore | Trebound</title>
         <meta 
@@ -520,7 +521,7 @@ const BangaloreResortsPage: React.FC = () => {
       <div id="contact-form">
         <ContactSection />
       </div>
-    </div>
+    </PageWrapper>
   );
 };
 

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-const POPUP_DELAY = 15000; // 15 seconds
-const POPUP_SHOWN_KEY = 'skipSearchPopupShown';
+const POPUP_DELAY = 8000; // 8 seconds
+const POPUP_COUNT_KEY = 'skipSearchPopupCount';
+const POPUP_LAST_RESET_KEY = 'skipSearchPopupLastReset';
 const POPUP_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const MAX_POPUP_COUNT = 3; // Show 3 times before 24hr cooldown
 
 // Pages where skip search popup should NOT appear
 const EXCLUDED_PATHS = [
@@ -33,18 +35,32 @@ export const useSkipSearchPopup = () => {
       return;
     }
 
-    const lastShownTime = localStorage.getItem(POPUP_SHOWN_KEY);
     const currentTime = new Date().getTime();
+    const lastReset = parseInt(localStorage.getItem(POPUP_LAST_RESET_KEY) || '0');
 
-    // Check if popup was shown in the last 24 hours
-    if (lastShownTime && currentTime - parseInt(lastShownTime) < POPUP_EXPIRY) {
+    // Reset counter if 24 hours have passed since last reset
+    if (currentTime - lastReset >= POPUP_EXPIRY) {
+      localStorage.setItem(POPUP_COUNT_KEY, '0');
+      localStorage.setItem(POPUP_LAST_RESET_KEY, currentTime.toString());
+    }
+
+    // Get current count after potential reset
+    const popupCount = parseInt(localStorage.getItem(POPUP_COUNT_KEY) || '0');
+
+    // Don't show popup if we've already shown it 3 times in the current 24hr period
+    if (popupCount >= MAX_POPUP_COUNT) {
       return;
     }
 
     // Show popup after delay
     const timer = setTimeout(() => {
       setIsVisible(true);
-      localStorage.setItem(POPUP_SHOWN_KEY, currentTime.toString());
+      // Increment counter when popup is shown
+      localStorage.setItem(POPUP_COUNT_KEY, (popupCount + 1).toString());
+      // Set last reset time if this is the first popup of the period
+      if (popupCount === 0) {
+        localStorage.setItem(POPUP_LAST_RESET_KEY, currentTime.toString());
+      }
     }, POPUP_DELAY);
 
     return () => clearTimeout(timer);

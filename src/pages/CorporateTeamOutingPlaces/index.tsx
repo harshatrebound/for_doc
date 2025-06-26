@@ -8,6 +8,7 @@ import Footer from '../../components/Footer';
 import StepsSection from '../../components/StepsSection';
 import PartnersSection from '../../components/PartnersSection';
 import ContactSection from '../../components/ContactSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useRegions } from '../../lib/hooks/useSupabaseData';
 import type { Destination } from '../../lib/supabaseClient';
 import { supabase } from '../../lib/supabaseClient';
@@ -162,7 +163,7 @@ const CorporateTeamOutingPlaces = () => {
   const totalPages = Math.ceil(filteredDestinations.length / destinationsPerPage);
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       {/* Navbar */}
       <Navbar />
 
@@ -406,7 +407,7 @@ const CorporateTeamOutingPlaces = () => {
 
       {/* Footer */}
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

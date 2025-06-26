@@ -9,6 +9,7 @@ import { supabase } from '../../lib/supabaseClient';
 import ActivitiesSection from '../../components/ActivitiesSection';
 import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection';
 import HowItWorksProcessSection from '../../components/HowItWorksProcessSection';
+import PageWrapper from '../../components/PageWrapper';
 
 interface Resort {
   id: number;
@@ -127,7 +128,7 @@ const BestBangaloreStaysSection = () => {
 
 export default function TeamOutingPlacesBangalore() {
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Navbar />
       {/* Hero Section */}
       <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
@@ -238,6 +239,6 @@ export default function TeamOutingPlacesBangalore() {
         <ContactSection />
       </div>
       <Footer />
-    </div>
+    </PageWrapper>
   );
 } 

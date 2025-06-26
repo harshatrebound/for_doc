@@ -9,6 +9,7 @@ import { supabase } from '../../lib/supabaseClient';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection';
 import HowItWorksProcessSection from '../../components/HowItWorksProcessSection';
+import PageWrapper from '../../components/PageWrapper';
 
 // Resort Card (reused)
 const ResortCard = ({ name, tagline, image, rating = "4.6", slug }: { name: string; tagline: string; image: string; rating?: string; slug: string; }) => {
@@ -191,7 +192,7 @@ const ActivityCard = ({ activity }: { activity: any }) => (
 
 export default function TeamOutingPlacesHyderabad() {
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Navbar />
       {/* Hero Section */}
       <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
@@ -278,6 +279,6 @@ export default function TeamOutingPlacesHyderabad() {
       <PartnersSection />
       <ContactSection />
       <Footer />
-    </div>
+    </PageWrapper>
   );
 } 

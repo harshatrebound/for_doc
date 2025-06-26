@@ -7,6 +7,7 @@ import Footer from '../../components/Footer';
 import ContactSection from '../../components/ContactSection';
 import GameCard from '../../components/GameCard';
 import TeamSection from '../../components/TeamSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 import { FiCheck } from 'react-icons/fi';
 
@@ -48,7 +49,7 @@ const TeamBuildingGames = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Team Building Games & Activities for Corporate Teams | Best Corporate Team Building Activities | Trebound</title>
         <meta
@@ -570,7 +571,7 @@ const TeamBuildingGames = () => {
 
       <ContactSection />
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

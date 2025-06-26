@@ -9,6 +9,7 @@ import ContactSection from '../../components/ContactSection';
 import TeamSection from '../../components/TeamSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import PartnersSection from '../../components/PartnersSection';
+import PageWrapper from '../../components/PageWrapper';
 
 // Activity Interface
 interface Activity {
@@ -55,7 +56,7 @@ const CorporateTeamOffsite = () => {
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Corporate Team Offsite | Best Team Building Activities & Venues | Trebound</title>
         <meta
@@ -308,7 +309,7 @@ const CorporateTeamOffsite = () => {
 
       <ContactSection />
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

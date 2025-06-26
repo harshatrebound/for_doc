@@ -5,6 +5,7 @@ import Footer from '../../components/Footer';
 import ContactSection from '../../components/ContactSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import ActivitiesSection from '../../components/ActivitiesSection';
+import PageWrapper from '../../components/PageWrapper';
 import { supabase } from '../../lib/supabaseClient';
 import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection';
 import HowItWorksProcessSection from '../../components/HowItWorksProcessSection';
@@ -114,7 +115,7 @@ const BestHyderabadStaysSection = () => {
 
 export default function OneDayOutingResortsHyderabad() {
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Navbar />
       {/* Hero Section */}
       <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
@@ -164,6 +165,6 @@ export default function OneDayOutingResortsHyderabad() {
         <ContactSection />
       </div>
       <Footer />
-    </div>
+    </PageWrapper>
   );
 } 

@@ -3,6 +3,7 @@ import { useInView } from 'react-intersection-observer';
 import { useDestinations } from '../../lib/hooks/useSupabaseData';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import PageWrapper from '../../components/PageWrapper';
 import { useState, useMemo } from 'react';
 import type { Region } from '../../lib/supabaseClient';
 
@@ -36,18 +37,18 @@ const Destinations = () => {
 
   if (!currentRegion && !destinationsLoading) {
     return (
-      <div className="min-h-screen bg-white">
+      <PageWrapper className="min-h-screen bg-white">
         <Navbar />
         <div className="pt-32 px-4 text-center">
           <h1 className="text-2xl font-semibold text-gray-900">Region not found</h1>
         </div>
         <Footer />
-      </div>
+      </PageWrapper>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       {/* Navbar */}
       <Navbar />
 
@@ -202,7 +203,7 @@ const Destinations = () => {
 
       {/* Footer */}
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

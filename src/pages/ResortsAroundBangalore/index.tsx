@@ -9,10 +9,11 @@ import ActivitiesSection from '../../components/ActivitiesSection';
 import BestBangaloreStaysSection from '../../components/BestBangaloreStaysSection';
 import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection';
 import HowItWorksProcessSection from '../../components/HowItWorksProcessSection';
+import PageWrapper from '../../components/PageWrapper';
 
 const ResortsAroundBangalore = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Resorts Around Bangalore | Trebound</title>
         <meta name="description" content="Discover the best resorts in and around Bangalore for team outings. Curated list of top resorts with unmatched comfort, leisure, and team building activities." />
@@ -114,7 +115,7 @@ const ResortsAroundBangalore = () => {
       </div>
 
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

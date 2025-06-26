@@ -9,6 +9,7 @@ import TeamSection from '../../components/TeamSection';
 import ActivitiesSection from '../../components/ActivitiesSection';
 import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection';
 import HowItWorksProcessSection from '../../components/HowItWorksProcessSection';
+import PageWrapper from '../../components/PageWrapper';
 
 const FunIndoorTeamBuildingActivities = () => {
   const [heroRef, heroInView] = useInView({
@@ -17,7 +18,7 @@ const FunIndoorTeamBuildingActivities = () => {
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Fun Indoor Team Building Activities | Trebound</title>
         <meta name="description" content="Discover engaging indoor team building activities that foster collaboration, creativity, and team spirit. Perfect for corporate teams looking to strengthen bonds indoors." />
@@ -102,7 +103,7 @@ const FunIndoorTeamBuildingActivities = () => {
       </div>
 
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

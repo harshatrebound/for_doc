@@ -5,6 +5,7 @@ import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import ContactSection from '../../components/ContactSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
+import PageWrapper from '../../components/PageWrapper';
 // Import icons
 import { BsHeart, BsEmojiSmile, BsTag, BsGraphUp } from 'react-icons/bs';
 
@@ -27,7 +28,7 @@ const CorporateGiftingPage = () => {
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Corporate Gifting Solutions | Trebound</title>
         <meta name="description" content="Discover our premium corporate gifting solutions. From customized gift boxes to branded merchandise, we help you create memorable gifting experiences." />
@@ -518,7 +519,7 @@ const CorporateGiftingPage = () => {
           </div>
 
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

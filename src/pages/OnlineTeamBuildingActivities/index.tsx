@@ -9,6 +9,7 @@ import TestimonialsSection from '../../components/TestimonialsSection';
 import TeamSection from '../../components/TeamSection';
 import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection';
 import HowItWorksProcessSection from '../../components/HowItWorksProcessSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 
 const VirtualActivitiesPaginatedSection = () => {
@@ -131,7 +132,7 @@ const OnlineTeamBuildingActivities = () => {
   const [heroRef, heroInView] = useInView({ triggerOnce: true, threshold: 0.1 });
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Online Team Building Activities for Digital Workspaces | Trebound</title>
         <meta name="description" content="Discover the best online team building activities for digital workspaces. Engage, connect, and energize your remote team with Trebound." />
@@ -204,7 +205,7 @@ const OnlineTeamBuildingActivities = () => {
       </div>
 
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

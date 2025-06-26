@@ -10,6 +10,7 @@ import TestimonialsSection from '../../components/TestimonialsSection';
 import PartnersSection from '../../components/PartnersSection';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 import type { Activity } from '../../lib/supabaseClient'; // Import Activity type
+import PageWrapper from '../../components/PageWrapper';
 
 // Constants
 const ITEMS_PER_PAGE = 9; // Define ITEMS_PER_PAGE
@@ -49,7 +50,7 @@ const ReturnToOffice = () => {
     })) || [];
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Return to Office 2022 | Welcome Back Activities | Trebound</title>
         <meta 
@@ -195,7 +196,7 @@ const ReturnToOffice = () => {
 
       <ContactSection />
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

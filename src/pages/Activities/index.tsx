@@ -7,6 +7,7 @@ import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import ContactSection from '../../components/ContactSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useDestinations, useActivities } from '../../lib/hooks/useSupabaseData';
 
 const ITEMS_PER_PAGE = 12;
@@ -67,7 +68,7 @@ const Activities = () => {
 
   if (activitiesLoading) {
     return (
-      <div className="min-h-screen bg-white">
+      <PageWrapper className="min-h-screen bg-white">
         <Navbar />
         <div className="pt-32">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
@@ -82,7 +83,7 @@ const Activities = () => {
             ))}
           </div>
         </div>
-      </div>
+      </PageWrapper>
     );
   }
 
@@ -114,7 +115,7 @@ const Activities = () => {
         <link rel="canonical" href={window.location.href} />
       </Helmet>
 
-      <div className="min-h-screen bg-white">
+      <PageWrapper className="min-h-screen bg-white">
         <Navbar />
 
         {/* Hero Section */}
@@ -320,7 +321,7 @@ const Activities = () => {
 
         {/* Footer */}
         <Footer />
-      </div>
+      </PageWrapper>
     </>
   );
 };

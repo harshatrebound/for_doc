@@ -8,10 +8,11 @@ import TestimonialsSection from '../../components/TestimonialsSection';
 import ActivitiesSection from '../../components/ActivitiesSection';
 import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection';
 import HowItWorksProcessSection from '../../components/HowItWorksProcessSection';
+import PageWrapper from '../../components/PageWrapper';
 
 const PlanYourTeamOffsiteToday = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Plan Your Team Offsite Today | Trebound</title>
         <meta
@@ -129,7 +130,7 @@ const PlanYourTeamOffsiteToday = () => {
       </div>
 
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

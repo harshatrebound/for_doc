@@ -10,6 +10,7 @@ import TeamSection from '../../components/TeamSection';
 import ActivitiesSection from '../../components/ActivitiesSection';
 import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection';
 import HowItWorksProcessSection from '../../components/HowItWorksProcessSection';
+import PageWrapper from '../../components/PageWrapper';
 
 interface Resort {
   id: number;
@@ -131,7 +132,7 @@ const BestBangaloreStaysSection = () => {
 
 const CorporateTeamOutingPlacesBangalore = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Corporate Team Outing Places in Bangalore | Best Team Building Venues | Trebound</title>
         <meta name="description" content="Discover the best corporate team outing venues in Bangalore. From luxury resorts to adventure camps, find the perfect location for your next team building event. Book now!" />
@@ -236,7 +237,7 @@ const CorporateTeamOutingPlacesBangalore = () => {
       </div>
 
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

@@ -5,6 +5,7 @@ import Footer from '../../components/Footer';
 import ContactSection from '../../components/ContactSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import ActivitiesSection from '../../components/ActivitiesSection';
+import PageWrapper from '../../components/PageWrapper';
 import { supabase } from '../../lib/supabaseClient';
 import HowItWorksProcessSection from '../../components/HowItWorksProcessSection';
 
@@ -125,7 +126,7 @@ const BestOvernightStaysSection = () => {
 
 export default function OvernightTeamOutingNearBangalore() {
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Navbar />
       {/* Hero Section */}
       <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
@@ -262,6 +263,6 @@ export default function OvernightTeamOutingNearBangalore() {
         <ContactSection />
       </div>
       <Footer />
-    </div>
+    </PageWrapper>
   );
 } 

@@ -6,6 +6,7 @@ import Footer from '../../components/Footer';
 import ContactSection from '../../components/ContactSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import TeamSection from '../../components/TeamSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection';
 import HowItWorksProcessSection from '../../components/HowItWorksProcessSection';
@@ -129,7 +130,7 @@ const FunVirtualTeamBuildingGames = () => {
   const [heroRef, heroInView] = useInView({ triggerOnce: true, threshold: 0.1 });
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Fun Virtual Team Building Games | Trebound</title>
         <meta name="description" content="Discover the best virtual team building games and activities for remote teams. Engage, connect, and energize your team online with Trebound." />
@@ -202,7 +203,7 @@ const FunVirtualTeamBuildingGames = () => {
       </div>
 
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

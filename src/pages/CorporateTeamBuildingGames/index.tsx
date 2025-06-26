@@ -6,6 +6,7 @@ import ContactSection from '../../components/ContactSection';
 import TeamSection from '../../components/TeamSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import PartnersSection from '../../components/PartnersSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 import React, { useState } from 'react';
 import WhyChooseTreboundSection from '../../components/WhyChooseTreboundSection';
@@ -91,7 +92,7 @@ const CorporateTeamBuildingGames = () => {
   const totalPages = activitiesWithRating ? Math.ceil(activitiesWithRating.length / ITEMS_PER_PAGE) : 1;
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Corporate Team Building Games | Trebound</title>
         <meta name="description" content="Fun & Engaging Corporate Team Building Games. Keep Your Employees Happy, Engaged and Energized. Explore the latest games & activities for your team." />
@@ -207,7 +208,7 @@ const CorporateTeamBuildingGames = () => {
       {/* Contact Section */}
       <ContactSection />
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

@@ -9,6 +9,7 @@ import TeamSection from '../../components/TeamSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import PartnersSection from '../../components/PartnersSection';
 import StepsSection from '../../components/StepsSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 import { useState } from 'react';
 import React from 'react';
@@ -167,7 +168,7 @@ const TeamBuildingActivitiesMumbai: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Team Building Activities in Mumbai | Corporate Team Building Games | Trebound</title>
         <meta
@@ -331,7 +332,7 @@ const TeamBuildingActivitiesMumbai: React.FC = () => {
       {/* Contact Section */}
       <ContactSection />
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

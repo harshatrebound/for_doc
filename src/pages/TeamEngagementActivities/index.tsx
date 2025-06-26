@@ -9,6 +9,7 @@ import ContactSection from '../../components/ContactSection';
 import TeamSection from '../../components/TeamSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
 import PartnersSection from '../../components/PartnersSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useActivities } from '../../lib/hooks/useSupabaseData';
 import type { Activity as SupabaseActivity } from '../../lib/supabaseClient';
 
@@ -101,7 +102,7 @@ const TeamEngagementActivities = () => {
   }, [activities]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <PageWrapper className="min-h-screen bg-white">
       <Helmet>
         <title>Team Engagement Activities | Fun Employee Engagement Games | Trebound</title>
         <meta 
@@ -320,7 +321,7 @@ const TeamEngagementActivities = () => {
 
       <ContactSection />
       <Footer />
-    </div>
+    </PageWrapper>
   );
 };
 

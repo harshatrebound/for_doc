@@ -10,6 +10,7 @@ import TeamOutingsFooter from '../../components/TeamOutingsFooter';
 import ContactSection from '../../components/ContactSection';
 import PartnersSection from '../../components/PartnersSection';
 import TestimonialsSection from '../../components/TestimonialsSection';
+import PageWrapper from '../../components/PageWrapper';
 import { useTeamOutingAds } from '../../contexts/TeamOutingAdsContext';
 import type { TeamOutingAd } from '../../contexts/TeamOutingAdsContext';
 
@@ -141,7 +142,7 @@ const TeamOutings: React.FC = () => {
 
   return (
     <QuoteModalProvider>
-      <div className="min-h-screen bg-[#003366]">
+      <PageWrapper className="min-h-screen bg-[#003366]">
         <TeamOutingsHeader />
         
         {/* Hero Section */}
@@ -370,7 +371,7 @@ const TeamOutings: React.FC = () => {
         
         {/* Footer */}
         <TeamOutingsFooter />
-      </div>
+      </PageWrapper>
     </QuoteModalProvider>
   );
 };
