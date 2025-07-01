@@ -476,7 +476,7 @@ const ContactPage = () => {
                   <div className="space-y-4">
                     <p className="text-gray-600">
                       <span className="font-semibold block">Email:</span>
-                      <a href="mailto:sales@treboune.com" className="text-[#FF4C39] hover:text-[#FFB573] transition-colors">
+                      <a href="mailto:sales@trebound.com" className="text-[#FF4C39] hover:text-[#FFB573] transition-colors">
                         sales@trebound.com
                       </a>
                     </p>
