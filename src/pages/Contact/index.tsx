@@ -456,9 +456,9 @@ const ContactPage = () => {
                 <div className="bg-white p-8 rounded-2xl shadow-xl">
                   <h4 className="text-2xl font-bold mb-4 font-outfit">Our Office</h4>
                   <p className="text-gray-600 mb-6">
-                    91 Springboard Business Hub Pvt Ltd,<br />
-                    Plot No. 175, Industrial Area Phase 1,<br />
-                    Chandigarh, 160002
+                    #10, 5th B Cross, Shardamba Nagar, Jalahalli,<br />
+                    Bangalore, 560013,<br />
+                    India
                   </p>
                   <a
                     href="https://maps.google.com"
@@ -476,14 +476,14 @@ const ContactPage = () => {
                   <div className="space-y-4">
                     <p className="text-gray-600">
                       <span className="font-semibold block">Email:</span>
-                      <a href="mailto:partnerships@trebound.com" className="text-[#FF4C39] hover:text-[#FFB573] transition-colors">
-                        partnerships@trebound.com
+                      <a href="mailto:sales@treboune.com" className="text-[#FF4C39] hover:text-[#FFB573] transition-colors">
+                        sales@treboune.com
                       </a>
                     </p>
                     <p className="text-gray-600">
                       <span className="font-semibold block">Phone:</span>
-                      <a href="tel:+919876543210" className="text-[#FF4C39] hover:text-[#FFB573] transition-colors">
-                        +91 98765 43210
+                      <a href="tel:08095204666" className="text-[#FF4C39] hover:text-[#FFB573] transition-colors">
+                        080952 04666
                       </a>
                     </p>
                   </div>
