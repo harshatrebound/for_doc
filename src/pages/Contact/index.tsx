@@ -477,7 +477,7 @@ const ContactPage = () => {
                     <p className="text-gray-600">
                       <span className="font-semibold block">Email:</span>
                       <a href="mailto:sales@treboune.com" className="text-[#FF4C39] hover:text-[#FFB573] transition-colors">
-                        sales@treboune.com
+                        sales@trebound.com
                       </a>
                     </p>
                     <p className="text-gray-600">
