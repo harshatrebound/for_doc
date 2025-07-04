@@ -151,7 +151,7 @@ export default function HomePage() {
     
     // Rotate through specialty words
     const intervalId = setInterval(() => {
-      setCurrentSpecialtyIndex((prev) => (prev + 1) % specialtyWords.length);
+      setCurrentSpecialtyIndex((prev: number) => (prev + 1) % specialtyWords.length);
     }, 3000);
     
     return () => clearInterval(intervalId);
@@ -198,76 +198,58 @@ export default function HomePage() {
         title={
           <div className="max-w-5xl mx-auto text-center">
             <div className="inline-block bg-[#8B5C9E]/20 text-white px-4 py-1 rounded-lg text-sm font-medium mb-6 backdrop-blur-sm border border-[#8B5C9E]/30">
-              SPECIALIZED ORTHOPEDIC CARE
+              Excellence in Motion
             </div>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] mb-4">
-              <span className="block">Expert Care for</span>
-              <div className="relative h-[1.3em] mt-2">
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={currentSpecialtyIndex}
-                    initial={{ y: 50, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -50, opacity: 0 }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
-                    className="absolute inset-0 flex items-center justify-center"
-                    style={{
-                      textShadow: '0 0 15px rgba(255, 255, 255, 0.8), 0 0 30px rgba(139, 92, 158, 0.9), 0 0 45px rgba(139, 92, 158, 0.5)', 
-                      WebkitTextStroke: '1px rgba(255, 255, 255, 0.4)',
-                      position: 'relative'
-                    }}
-                  >
-                    <span className="relative z-10 px-6 py-2">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+              Expert Care for <br />
+              <span className="text-[#8B5C9E] bg-clip-text bg-gradient-to-r from-[#8B5C9E] to-[#A67FB5] relative inline-block">
+                {mounted && (
+                  <AnimatePresence>
+                    <motion.span
+                      key={currentSpecialtyIndex}
+                      initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+                      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                      exit={{ opacity: 0, y: -20, filter: 'blur(8px)' }}
+                      transition={{ 
+                        duration: 0.5, 
+                        ease: [0.4, 0, 0.2, 1] 
+                      }}
+                      className="absolute inset-0 whitespace-nowrap"
+                    >
                       {specialtyWords[currentSpecialtyIndex]}
-                      <span 
-                        className="absolute -inset-0 -z-10"
-                        style={{
-                          background: 'radial-gradient(circle, rgba(139, 92, 158, 0.7) 0%, rgba(139, 92, 158, 0.4) 40%, rgba(139, 92, 158, 0) 70%)',
-                          filter: 'blur(10px)',
-                          transform: 'translateZ(0)',
-                          borderRadius: '8px'
-                        }}
-                      ></span>
-                    </span>
-                  </motion.span>
-                </AnimatePresence>
-              </div>
+                    </motion.span>
+                  </AnimatePresence>
+                )}
+                {/* Invisible text for layout spacing */}
+                <span className="opacity-0 whitespace-nowrap">
+                  {mounted ? specialtyWords[currentSpecialtyIndex] : 'Joint Health'}
+                </span>
+              </span>
             </h1>
             <p className="mt-6 text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed font-light">
               Comprehensive orthopedic evaluation and treatment from experienced specialists dedicated to restoring your mobility and comfort.
             </p>
           </div>
         }
-        actions={
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-8">
-            <Button
-              size="lg"
-              className="bg-[#8B5C9E] hover:bg-[#7A4F8C] text-white rounded-md px-8 sm:px-10 py-6 sm:py-6 text-lg font-medium transition-all duration-300 hover:shadow-lg w-full sm:w-auto"
-              onClick={() => setIsBookingModalOpen(true)}
-              aria-label="Book an appointment with our specialists"
-            >
-              <span className="flex items-center justify-center">
-                Book an Appointment
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </span>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-2 border-white text-white bg-transparent hover:bg-white/10 rounded-md px-8 sm:px-10 py-6 sm:py-6 text-lg font-medium transition-all duration-300 w-full sm:w-auto"
-              aria-label="Learn more about our services"
-            >
-              <Link href="#specialties" className="flex items-center">
-                Explore Our Expertise
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
-            </Button>
-          </div>
-        }
       >
-        {
-          /* Professional Trust Indicators */
-        }
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+          <Button 
+            size="lg" 
+            className="bg-[#8B5C9E] hover:bg-[#7A4B8A] text-white px-8 py-4 text-lg"
+            onClick={() => setIsBookingModalOpen(true)}
+          >
+            Book Consultation
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+          <Button 
+            size="lg" 
+            variant="outline" 
+            className="border-white text-white hover:bg-white hover:text-[#8B5C9E] px-8 py-4 text-lg backdrop-blur-sm"
+            asChild
+          >
+            <Link href="#services">Our Services</Link>
+          </Button>
+        </div>
       </HeroSection>
 
       {/* Professional Trust Indicators Section (Moved from Hero) */}

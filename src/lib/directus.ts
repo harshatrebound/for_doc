@@ -120,6 +120,27 @@ export interface EducationalContent {
   canonical_url?: string;
 }
 
+export interface LandingPage {
+  id: string;
+  title: string;
+  slug: string;
+  featured_image_url: string;
+  content_html: string;
+  content_text: string;
+  content_length: number;
+  category: string;
+  location: string;
+  service_focus: string;
+  date_created: string;
+  date_updated: string;
+  status: string;
+  meta_title?: string;
+  meta_description?: string;
+  canonical_url?: string;
+  source_url?: string;
+  parent_slug?: string;
+}
+
 interface DirectusSchema {
   blog_content: BlogPost[];
   educational_content: EducationalContent[];
@@ -128,6 +149,7 @@ interface DirectusSchema {
   clinical_videos: ClinicalVideo[];
   staff_info: StaffMember[];
   publications: Publication[];
+  landing_pages: LandingPage[];
 }
 
 function toAssetUrl(fileId: string): string {
@@ -2006,5 +2028,148 @@ export async function debugPublicationsData(): Promise<any> {
   } catch (error) {
     console.error('Debug publications data error:', error);
     return { error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+// Function to get all landing pages
+export async function getLandingPages(): Promise<LandingPage[]> {
+  try {
+    const activeClient = client || createPublicClient();
+    if (!activeClient) {
+      console.error('Failed to create Directus client');
+      return [];
+    }
+    
+    const response = await activeClient.request(
+      readItems('landing_pages', {
+        fields: [
+          'id',
+          'title',
+          'slug',
+          'featured_image_url',
+          'content_html',
+          'content_text',
+          'content_length',
+          'category',
+          'location',
+          'service_focus',
+          'date_created',
+          'date_updated',
+          'status',
+          'meta_title',
+          'meta_description',
+          'canonical_url',
+          'source_url',
+          'parent_slug'
+        ],
+        filter: {
+          status: {
+            _eq: 'published'
+          }
+        }
+      })
+    );
+
+    return handleDirectusResponse<LandingPage>(response);
+  } catch (error) {
+    console.error('Error fetching landing pages:', error);
+    return [];
+  }
+}
+
+// Function to get a landing page by slug
+export async function getLandingPageBySlug(slug: string): Promise<LandingPage | null> {
+  try {
+    const activeClient = client || createPublicClient();
+    if (!activeClient) {
+      console.error('Failed to create Directus client');
+      return null;
+    }
+    
+    const response = await activeClient.request(
+      readItems('landing_pages', {
+        fields: [
+          'id',
+          'title',
+          'slug',
+          'featured_image_url',
+          'content_html',
+          'content_text',
+          'content_length',
+          'category',
+          'location',
+          'service_focus',
+          'date_created',
+          'date_updated',
+          'status',
+          'meta_title',
+          'meta_description',
+          'canonical_url',
+          'source_url',
+          'parent_slug'
+        ],
+        filter: {
+          slug: {
+            _eq: slug
+          },
+          status: {
+            _eq: 'published'
+          }
+        }
+      })
+    );
+
+    const items = handleDirectusResponse<LandingPage>(response);
+    return items.length > 0 ? items[0] : null;
+  } catch (error) {
+    console.error('Error fetching landing page by slug:', error);
+    return null;
+  }
+}
+
+// Function to get homepage content (root landing page)
+export async function getHomepageContent(): Promise<{
+  heroContent: LandingPage | null;
+  specialties: EducationalContent[];
+  featuredProcedures: ProcedureSurgery[];
+  featuredPosts: BlogPost[];
+  staffMembers: StaffMember[];
+  clinicalVideos: ClinicalVideo[];
+}> {
+  try {
+    const [
+      heroContent,
+      specialties,
+      featuredProcedures,
+      featuredPosts,
+      staffMembers,
+      clinicalVideos
+    ] = await Promise.all([
+      getLandingPageBySlug('homepage') || getLandingPages().then(pages => pages[0] || null),
+      getBoneJointContent(),
+      getFeaturedProcedures(6),
+      getBlogPosts(),
+      getFeaturedStaffMembers(3),
+      getFeaturedClinicalVideos(4)
+    ]);
+
+    return {
+      heroContent,
+      specialties: specialties.slice(0, 6), // Get first 6 specialties
+      featuredProcedures: featuredProcedures.slice(0, 6),
+      featuredPosts: featuredPosts.slice(0, 3),
+      staffMembers: staffMembers.slice(0, 3),
+      clinicalVideos: clinicalVideos.slice(0, 4)
+    };
+  } catch (error) {
+    console.error('Error fetching homepage content:', error);
+    return {
+      heroContent: null,
+      specialties: [],
+      featuredProcedures: [],
+      featuredPosts: [],
+      staffMembers: [],
+      clinicalVideos: []
+    };
   }
 } 
