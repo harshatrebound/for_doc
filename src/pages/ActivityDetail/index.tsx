@@ -383,7 +383,7 @@ const ActivityDetail = () => {
                     onClick={() => setIsSkipSearchOpen(true)}
                     className="px-12 py-4 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white font-bold font-['Outfit'] text-lg rounded-[35px] hover:opacity-90 transition-all duration-300 transform hover:-translate-y-[2px] shadow-lg hover:shadow-xl"
                   >
-                    Book This Activity
+                    Enquire Now
                   </button>
                 </div>
               </div>
@@ -486,7 +486,7 @@ const ActivityDetail = () => {
           onClick={() => setIsSkipSearchOpen(true)}
           className="px-8 py-4 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white font-bold font-['Outfit'] text-lg rounded-full hover:opacity-95 transition-all duration-300 transform hover:-translate-y-[2px] shadow-xl hover:shadow-2xl whitespace-nowrap flex items-center gap-2"
         >
-          <span>Book This Activity</span>
+          <span>Enquire Now</span>
           <div className="w-2 h-2 rounded-full bg-white/30"></div>
         </button>
       </div>

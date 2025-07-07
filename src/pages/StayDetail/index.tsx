@@ -15,6 +15,7 @@ import TestimonialsSection from '../../components/TestimonialsSection';
 import StayCTAButton from '../../components/StayCTAButton';
 import StayCTASection from '../../components/StayCTASection';
 import PageWrapper from '../../components/PageWrapper';
+import SkipSearchPopup from '../../components/SkipSearchPopup';
 
 // Helper function to extract plain text from HTML
 const extractTextFromHtml = (html: string) => {
@@ -47,6 +48,7 @@ const StayDetail = () => {
     triggerOnce: true,
     threshold: 0.1,
   });
+  const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
 
   // Format images for gallery - use images array from database or fallback to legacy fields
   const stayImages = (stay?.images && stay.images.length > 0 
@@ -133,6 +135,18 @@ const StayDetail = () => {
           />
         )}
       </AnimatePresence>
+
+      {/* Enquire Now Floating Button and Popup */}
+      <div className="fixed bottom-24 right-8 z-40">
+        <button
+          onClick={() => setIsEnquiryOpen(true)}
+          className="px-8 py-4 bg-gradient-to-r from-[#FF4C39] to-[#FFB573] text-white font-bold text-lg rounded-full hover:opacity-95 transition-all duration-300 transform hover:-translate-y-[2px] shadow-xl hover:shadow-2xl whitespace-nowrap flex items-center gap-2"
+        >
+          <span>Enquire Now</span>
+          <div className="w-2 h-2 rounded-full bg-white/30"></div>
+        </button>
+      </div>
+      <SkipSearchPopup isVisible={isEnquiryOpen} onClose={() => setIsEnquiryOpen(false)} />
 
       {/* Hero Section */}
       <section className="pt-32 pb-12 px-4 md:px-8 lg:px-16 max-w-[1400px] mx-auto">
@@ -237,13 +251,6 @@ const StayDetail = () => {
           </div>
         </div>
       </section>
-
-      {/* CTA Button Section */}
-      <StayCTAButton 
-        stayName={stay.name}
-        destinationName={stay.destination_details?.name || 'Beautiful Location'}
-        onCTAClick={handleCTAClick}
-      />
 
       {/* Main Content Section */}
       <section className="w-full bg-white py-16" ref={ref}>

@@ -46,7 +46,7 @@ const BookNowButton = ({ slug }: { slug: string }) => (
       className="absolute inset-0 w-full h-full flex items-center justify-center gap-1.5 sm:gap-2 border border-[#b1b1b1] rounded-[8px] group-hover:border-transparent transition-colors duration-300"
     >
       <span className="text-sm sm:text-base font-bold font-['DM Sans'] text-[#b1b1b1] group-hover:text-white transition-colors duration-300">
-        Book Now
+        View Details
       </span>
       <FiArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#b1b1b1] group-hover:text-white transition-colors duration-300" />
     </a>
