@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getLandingPageBySlug } from '@/lib/directus';
+import { getLandingPageBySlug, getPostBySlug } from '@/lib/directus';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import { getImageUrl } from '@/lib/directus';
@@ -15,11 +15,82 @@ interface LandingPageProps {
 }
 
 export default async function LandingPage({ params }: LandingPageProps) {
-  // Fetch the landing page from Directus
+  // First try to fetch as a landing page
   const landingPage = await getLandingPageBySlug(params.slug);
-
-  // If no landing page found, show 404
+  
+  // If no landing page found, try to fetch as a blog post
   if (!landingPage) {
+    const blogPost = await getPostBySlug(params.slug);
+    
+    // If blog post found, render it
+    if (blogPost) {
+      return (
+        <div className="min-h-screen bg-white">
+          <SiteHeader />
+          
+          {/* Blog Post Hero */}
+          <section className="relative py-20 lg:py-32 overflow-hidden">
+            {blogPost.featured_image_url && (
+              <div className="absolute inset-0 z-0">
+                <Image
+                  src={blogPost.featured_image_url}
+                  alt={blogPost.title}
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-black/50" />
+              </div>
+            )}
+            
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center">
+                <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+                  {blogPost.title}
+                </h1>
+                <div className="flex items-center justify-center gap-4 text-white/80">
+                  <time dateTime={blogPost.date_created}>
+                    {new Date(blogPost.date_created).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </time>
+                  {blogPost.reading_time && (
+                    <>
+                      <span>•</span>
+                      <span>{blogPost.reading_time} min read</span>
+                    </>
+                  )}
+                  {blogPost.category && (
+                    <>
+                      <span>•</span>
+                      <span>{blogPost.category}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Blog Content */}
+          <section className="py-16 lg:py-24">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+              <article className="prose prose-lg max-w-none">
+                {blogPost.content_html ? (
+                  <div dangerouslySetInnerHTML={{ __html: blogPost.content_html }} />
+                ) : (
+                  <p>{blogPost.content_text}</p>
+                )}
+              </article>
+            </div>
+          </section>
+
+          <SiteFooter />
+        </div>
+      );
+    }
+    
+    // If neither landing page nor blog post found, show 404
     notFound();
   }
 
@@ -78,21 +149,37 @@ export default async function LandingPage({ params }: LandingPageProps) {
 
 // Generate metadata for the page
 export async function generateMetadata({ params }: LandingPageProps) {
+  // First try landing page
   const landingPage = await getLandingPageBySlug(params.slug);
 
-  if (!landingPage) {
+  if (landingPage) {
     return {
-      title: 'Page Not Found',
+      title: landingPage.meta_title || landingPage.title,
+      description: landingPage.meta_description || landingPage.content_text?.substring(0, 160),
+      openGraph: {
+        title: landingPage.meta_title || landingPage.title,
+        description: landingPage.meta_description || landingPage.content_text?.substring(0, 160),
+        images: landingPage.featured_image_url ? [getImageUrl(landingPage.featured_image_url)] : [],
+      },
+    };
+  }
+
+  // Try blog post
+  const blogPost = await getPostBySlug(params.slug);
+  
+  if (blogPost) {
+    return {
+      title: blogPost.meta_title || blogPost.title,
+      description: blogPost.meta_description || blogPost.excerpt || blogPost.content_text?.substring(0, 160),
+      openGraph: {
+        title: blogPost.meta_title || blogPost.title,
+        description: blogPost.meta_description || blogPost.excerpt || blogPost.content_text?.substring(0, 160),
+        images: blogPost.featured_image_url ? [blogPost.featured_image_url] : [],
+      },
     };
   }
 
   return {
-    title: landingPage.meta_title || landingPage.title,
-    description: landingPage.meta_description || landingPage.content_text?.substring(0, 160),
-    openGraph: {
-      title: landingPage.meta_title || landingPage.title,
-      description: landingPage.meta_description || landingPage.content_text?.substring(0, 160),
-      images: landingPage.featured_image_url ? [getImageUrl(landingPage.featured_image_url)] : [],
-    },
+    title: 'Page Not Found',
   };
 } 
