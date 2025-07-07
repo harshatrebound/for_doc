@@ -1,0 +1,212 @@
+import Link from 'next/link';
+import Image from 'next/image';
+import { Calendar, Clock, Facebook, Twitter, Linkedin, Mail, ArrowLeft } from 'lucide-react';
+import type { BlogPost } from '@/lib/directus'; // Assuming BlogPost type is exported from directus lib
+import { getImageUrl } from '@/lib/directus'; // Import getImageUrl
+import { Button } from '@/components/ui/button'; // Assuming Button is a shared component
+
+// Helper function to format date (can be kept here or moved to a utils file if used elsewhere)
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+// Social share component
+const SocialShare = ({ url, title }: { url: string; title: string }) => {
+  const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || 'https://staged-doc.up.railway.app';
+  const encodedUrl = encodeURIComponent(`${baseUrl}${url}`);
+  const encodedTitle = encodeURIComponent(title);
+
+  return (
+    <div className="flex items-center space-x-2">
+      <span className="text-gray-500 text-sm font-medium mr-2">Share:</span>
+      <a
+        href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="p-2 text-gray-600 hover:text-[#1877F2] hover:bg-gray-100 rounded-full transition-colors"
+        aria-label="Share on Facebook"
+      >
+        <Facebook size={18} />
+      </a>
+      <a
+        href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="p-2 text-gray-600 hover:text-[#1DA1F2] hover:bg-gray-100 rounded-full transition-colors"
+        aria-label="Share on Twitter"
+      >
+        <Twitter size={18} />
+      </a>
+      <a
+        href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="p-2 text-gray-600 hover:text-[#0A66C2] hover:bg-gray-100 rounded-full transition-colors"
+        aria-label="Share on LinkedIn"
+      >
+        <Linkedin size={18} />
+      </a>
+      <a
+        href={`mailto:?subject=${encodedTitle}&body=${encodedUrl}`}
+        className="p-2 text-gray-600 hover:text-[#8B5C9E] hover:bg-gray-100 rounded-full transition-colors"
+        aria-label="Share via Email"
+      >
+        <Mail size={18} />
+      </a>
+    </div>
+  );
+};
+
+// Related post card component
+const RelatedPostCard = ({ post }: { post: BlogPost }) => {
+  return (
+    <Link href={`/${post.slug}`} className="block">
+      <div className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+        <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+          {post.featured_image_url && (
+            <Image
+              src={getImageUrl(post.featured_image_url)}
+              alt={post.title}
+              fill
+              sizes="64px"
+              className="object-cover"
+            />
+          )}
+        </div>
+        <div className="flex-grow min-w-0">
+          <h4 className="text-sm font-medium text-gray-900 line-clamp-2 group-hover:text-[#8B5C9E] transition-colors">
+            {post.title}
+          </h4>
+          <div className="flex items-center mt-1 text-xs text-gray-500">
+            <Calendar className="w-3 h-3 mr-1" />
+            <span>{formatDate(post.date_created)}</span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+};
+
+interface BlogPostLayoutProps {
+  post: BlogPost;
+  relatedPosts: BlogPost[];
+}
+
+export default function BlogPostLayout({ post, relatedPosts }: BlogPostLayoutProps) {
+  // It's assumed SiteHeader and SiteFooter will be part of the parent page layout
+  // that uses this component, so they are not included here directly.
+  // If this component should be fully standalone with header/footer, they can be added back.
+  return (
+    <>
+      {/* Hero Section */}
+      <section className="relative h-[40vh] md:h-[50vh] flex items-center justify-center text-white overflow-hidden">
+        <div className="absolute inset-0 z-0 bg-gray-800">
+          {post.featured_image_url && (
+            <Image
+              src={getImageUrl(post.featured_image_url)}
+              alt={post.title}
+              fill
+              sizes="100vw"
+              priority
+              className="object-cover opacity-70"
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
+        </div>
+
+        <div className="relative z-10 container mx-auto px-4 text-center">
+          {post.category && (
+            <div className="inline-block bg-[#8B5C9E] text-white text-xs font-bold px-3 py-1 rounded-full mb-4">
+              {post.category}
+            </div>
+          )}
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white max-w-4xl mx-auto leading-tight">
+            {post.title}
+          </h1>
+          <div className="flex items-center justify-center text-white/90 mt-4 text-sm">
+            <div className="flex items-center mr-4">
+              <Calendar className="w-4 h-4 mr-1" />
+              <span>{formatDate(post.date_created)}</span>
+            </div>
+            {post.reading_time && (
+              <div className="flex items-center">
+                <Clock className="w-4 h-4 mr-1" />
+                <span>{post.reading_time} min read</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Content Section */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-4xl">
+          <div className="lg:flex lg:gap-12 lg:items-start">
+            {/* Main Content */}
+            <article className="lg:w-2/3">
+              {/* Navigation to all blogs */}
+              <div className="mb-8">
+                <Link
+                  href="/blogs" // Link to the main blog listing page
+                  className="inline-flex items-center text-[#8B5C9E] hover:text-[#7a4f8a] transition-colors text-sm font-medium"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-1" />
+                  Back to all posts
+                </Link>
+              </div>
+
+              {/* Article Content */}
+              <div className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-a:text-[#8B5C9E] prose-a:no-underline hover:prose-a:underline prose-strong:text-gray-900 prose-blockquote:border-l-[#8B5C9E] prose-blockquote:text-gray-700">
+                {post.content_html ? (
+                  <div dangerouslySetInnerHTML={{ __html: post.content_html }} />
+                ) : (
+                  <div className="whitespace-pre-wrap">{post.content_text}</div>
+                )}
+              </div>
+
+              {/* Social Share */}
+              <div className="mt-12 pt-8 border-t border-gray-200">
+                <SocialShare url={`/${post.slug}`} title={post.title} />
+              </div>
+            </article>
+
+            {/* Sticky Sidebar */}
+            <aside className="lg:w-1/3 mt-12 lg:mt-0">
+              <div className="lg:sticky lg:top-8 space-y-8">
+                {/* Call to Action */}
+                <div className="bg-gradient-to-r from-[#8B5C9E] to-[#7a4f8a] text-white p-6 rounded-xl">
+                  <h3 className="text-lg font-bold mb-3 text-white">Need Expert Care?</h3>
+                  <p className="text-sm mb-4 text-white/90">
+                    Get personalized treatment from our orthopedic specialists.
+                  </p>
+                  <Link href="/book-appointment" passHref>
+                    <Button className="w-full bg-white text-[#8B5C9E] hover:bg-gray-100">
+                      Book an Appointment
+                    </Button>
+                  </Link>
+                </div>
+
+                {/* Related Posts */}
+                {relatedPosts && relatedPosts.length > 0 && (
+                  <div className="bg-gray-50 p-6 rounded-xl">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Related Articles</h3>
+                    <div className="space-y-1">
+                      {relatedPosts.map(relatedPost => (
+                        <RelatedPostCard key={relatedPost.id} post={relatedPost} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
