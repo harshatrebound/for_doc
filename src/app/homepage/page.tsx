@@ -247,7 +247,7 @@ export default function HomePage() {
             className="border-white text-white hover:bg-white hover:text-[#8B5C9E] px-8 py-4 text-lg backdrop-blur-sm"
             asChild
           >
-            <Link href="#services">Our Services</Link>
+            <Link href="#specialties">Our Services</Link>
           </Button>
         </div>
       </HeroSection>
