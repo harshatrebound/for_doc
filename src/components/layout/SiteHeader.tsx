@@ -7,7 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Calendar, Menu, X, ChevronDown, ChevronRight, Activity, Users, Bookmark, BookOpen } from 'lucide-react';
 import BookingButton from '@/components/BookingButton';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getBoneJointCategories, getBoneJointTopics, getBoneJointContent, getImageUrl } from '@/lib/directus';
+import { getBoneJointCategories, getBoneJointTopics, getBoneJointContent, getImageUrl, getProcedureCategories, getProcedureSurgeries } from '@/lib/directus';
 import { getBoneJointTopics as getTopicsData } from '@/app/bone-joint-school/actions';
 
 interface SiteHeaderProps {
@@ -29,6 +29,15 @@ interface BoneJointTopic {
   category?: string;
 }
 
+// Interface for procedure items
+interface ProcedureItem {
+  id: string;
+  slug: string;
+  title: string;
+  category?: string;
+  content_text?: string;
+}
+
 export default function SiteHeader({ theme = 'default', className = '' }: SiteHeaderProps) {
   const [scrollY, setScrollY] = useState(0);
   const [scrolled, setScrolled] = useState(false);
@@ -43,6 +52,12 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
   const [boneJointTopics, setBoneJointTopics] = useState<BoneJointTopic[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [leaveTimeout, setLeaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  
+  // Procedures state
+  const [procedureCategories, setProcedureCategories] = useState<string[]>([]);
+  const [proceduresLoading, setProceduresLoading] = useState(true);
+  const [procedures, setProcedures] = useState<ProcedureItem[]>([]);
+  const [activeProcedureCategory, setActiveProcedureCategory] = useState<string | null>(null);
 
   // Lock scroll when mobile menu is open
   useEffect(() => {
@@ -152,15 +167,38 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
     loadCategories();
   }, []);
 
+  // Fetch procedures data on mount
+  useEffect(() => {
+    async function loadProcedures() {
+      try {
+        setProceduresLoading(true);
+        // Fetch procedure categories and all procedures
+        const [categories, proceduresResponse] = await Promise.all([
+          getProcedureCategories(),
+          getProcedureSurgeries(100) // Get more procedures to have a good selection per category
+        ]);
+        
+        setProcedureCategories(categories);
+        setProcedures(proceduresResponse.data);
+      } catch (error) {
+        console.error("Failed to fetch procedures:", error);
+        setProcedureCategories(['All']);
+        setProcedures([]);
+      } finally {
+        setProceduresLoading(false);
+      }
+    }
+    loadProcedures();
+  }, []);
+
   const isTransparent = theme === 'transparent';
   const isLight = theme === 'light' || (theme === 'transparent' && scrolled);
   const isFixed = theme === 'fixed';
 
-  // Main navigation links
+  // Main navigation links (Procedures removed from here as it's now a dropdown)
   const mainNavLinks = [
     { name: 'Home', href: '/' },
     { name: 'Surgeons & Staff', href: '/surgeons-staff' },
-    { name: 'Procedures', href: '/procedure-surgery' },
   ];
 
   // Education dropdown items
@@ -182,11 +220,17 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
     { name: 'Contact', href: '/contact' },
   ];
 
-  // All mobile navigation links flattened with sections
+  // All mobile navigation links flattened with sections (Procedures removed as it's now a section)
   const allMobileLinks = [
     { name: 'Home', href: '/' },
     { name: 'Surgeons & Staff', href: '/surgeons-staff' },
-    { name: 'Procedures', href: '/procedure-surgery' },
+    // Procedures section for mobile
+    { section: 'Procedures' },
+    { name: 'All Procedures', href: '/procedure-surgery' },
+    ...(procedureCategories.filter(cat => cat !== 'All').map((category: string) => ({
+      name: `  ${category}`, // Indent to show hierarchy  
+      href: `/procedure-surgery?category=${encodeURIComponent(category)}`
+    }))),
     // Add Bone Joint School section for mobile
     { section: 'Bone Joint School' },
     { name: 'Bone & Joint School', href: '/bone-joint-school' },
@@ -214,6 +258,9 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
       if (dropdown !== 'education') {
         setActiveCategory(null);
       }
+      if (dropdown !== 'procedures') {
+        setActiveProcedureCategory(null);
+      }
     }
   };
 
@@ -224,6 +271,7 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
       const timeout = setTimeout(() => {
         setActiveDropdown(null);
         setActiveCategory(null);
+        setActiveProcedureCategory(null);
       }, 500); // Increased to 500ms for better UX
       
       setLeaveTimeout(timeout);
@@ -281,6 +329,25 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
       return boneJointTopics;
     }
     return boneJointTopics.filter(topic => topic.category === category);
+  };
+
+  // Get procedures for a specific category
+  const getProceduresForCategory = (category: string) => {
+    if (!category || category === 'All') {
+      return procedures;
+    }
+    return procedures.filter(proc => proc.category === category);
+  };
+
+  // Handle procedure category hover
+  const handleProcedureCategoryMouseEnter = (category: string) => {
+    if (!isMobile.current) {
+      if (leaveTimeout) {
+        clearTimeout(leaveTimeout);
+        setLeaveTimeout(null);
+      }
+      setActiveProcedureCategory(category);
+    }
   };
 
   // Update your Link components to use the router for smoother transitions
@@ -385,6 +452,143 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                       </button>
                     </li>
                   ))}
+                  
+                  {/* Procedures Dropdown */}
+                  <li 
+                    className="relative mr-8"
+                    onMouseEnter={() => handleMouseEnter('procedures')}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    <button
+                      className={`font-medium transition-colors duration-300 flex items-center group ${
+                        isTransparent && !scrolled 
+                          ? 'text-white hover:text-white/80' 
+                          : 'text-gray-800 hover:text-[#8B5C9E]'
+                      } py-2`}
+                      aria-expanded={activeDropdown === 'procedures'}
+                      aria-haspopup="true"
+                    >
+                      Procedures
+                      <span className={`flex items-center justify-center ml-2 w-5 h-5 ${
+                        isTransparent && !scrolled 
+                          ? 'bg-white/20 group-hover:bg-white/30' 
+                          : 'bg-gray-100 group-hover:bg-[#8B5C9E]/10'
+                      } rounded-full transition-all duration-150 ${activeDropdown === 'procedures' ? 'rotate-180' : ''}`}>
+                        <ChevronDown className={`w-3.5 h-3.5 ${
+                          isTransparent && !scrolled ? 'text-white' : 'text-[#8B5C9E]'
+                        }`} />
+                      </span>
+                      <span className={`absolute bottom-0 left-0 w-0 h-0.5 ${
+                        isTransparent && !scrolled ? 'bg-white' : 'bg-[#8B5C9E]'
+                      } group-hover:w-full transition-all duration-300`}></span>
+                    </button>
+                    
+                    {/* Procedures Dropdown Menu */}
+                    {activeDropdown === 'procedures' && (
+                      <div className="absolute top-full left-0 pt-2 z-[60]">
+                        <div 
+                          className="bg-white rounded-xl shadow-2xl border border-gray-100/80 w-80 overflow-visible"
+                          onMouseEnter={handleMenuContainerMouseEnter}
+                        >
+                          <div className="p-4 pr-8">
+                            {/* View All Procedures Link */}
+                            <Link
+                              href="/procedure-surgery"
+                              className="flex items-center px-3 py-2 mb-3 rounded-lg bg-[#8B5C9E]/5 hover:bg-[#8B5C9E]/10 transition-colors"
+                              onClick={() => setActiveDropdown(null)}
+                            >
+                              <BookOpen className="h-4 w-4 mr-2 text-[#8B5C9E]" />
+                              <span className="font-semibold text-[#8B5C9E]">View All Procedures</span>
+                            </Link>
+                            
+                            <h4 className="font-bold text-gray-900 mb-3 px-2">Procedures by Category</h4>
+                            
+                            {proceduresLoading ? (
+                              <div className="text-center py-4 text-gray-500">
+                                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-[#8B5C9E]"></div>
+                                <p className="mt-2 text-sm">Loading procedures...</p>
+                              </div>
+                            ) : procedureCategories.length === 0 ? (
+                              <div className="text-center py-4 text-gray-500">No procedures found</div>
+                            ) : (
+                              <div className="space-y-1">
+                                {procedureCategories
+                                  .filter(category => category !== 'All')
+                                  .map(category => {
+                                    const categoryProcedures = getProceduresForCategory(category);
+                                    
+                                    return (
+                                      <div 
+                                        key={category}
+                                        className="relative group"
+                                      >
+                                        <div
+                                          className="flex items-center justify-between w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                                          onMouseEnter={() => handleProcedureCategoryMouseEnter(category)}
+                                        >
+                                          <Link
+                                            href={`/procedure-surgery?category=${encodeURIComponent(category)}`}
+                                            className="flex items-center flex-1"
+                                            onClick={() => setActiveDropdown(null)}
+                                          >
+                                            <Activity className="h-4 w-4 mr-2 text-[#8B5C9E] opacity-70" />
+                                            <span className="font-medium text-gray-900">{category}</span>
+                                            <span className="ml-2 text-xs text-gray-500">({categoryProcedures.length})</span>
+                                          </Link>
+                                          {categoryProcedures.length > 0 && (
+                                            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[#8B5C9E] transition-colors" />
+                                          )}
+                                        </div>
+
+                                        {/* Procedures submenu */}
+                                        {categoryProcedures.length > 0 && activeProcedureCategory === category && (
+                                          <div 
+                                            className="absolute left-full top-0 ml-2 z-[80] transition-all duration-200"
+                                          >
+                                            <div
+                                              className="bg-white rounded-xl shadow-2xl border border-gray-100/80 w-80 max-h-[400px] overflow-y-auto"
+                                              onMouseEnter={handleMenuContainerMouseEnter}
+                                            >
+                                              <div className="p-4">
+                                                <h5 className="font-bold text-gray-900 mb-3 px-2">{category} Procedures</h5>
+                                                <ul className="space-y-1">
+                                                  {categoryProcedures.slice(0, 10).map((procedure: ProcedureItem) => (
+                                                    <li key={procedure.slug}>
+                                                      <Link
+                                                        href={`/procedure-surgery/${procedure.slug}`}
+                                                        className="block px-3 py-2 text-sm text-gray-700 hover:bg-[#8B5C9E]/10 hover:text-[#8B5C9E] rounded-lg transition-colors"
+                                                        onClick={() => setActiveDropdown(null)}
+                                                      >
+                                                        {procedure.title}
+                                                      </Link>
+                                                    </li>
+                                                  ))}
+                                                  {categoryProcedures.length > 10 && (
+                                                    <li>
+                                                      <Link
+                                                        href={`/procedure-surgery?category=${encodeURIComponent(category)}`}
+                                                        className="block px-3 py-2 text-sm font-medium text-[#8B5C9E] hover:bg-[#8B5C9E]/10 rounded-lg transition-colors"
+                                                        onClick={() => setActiveDropdown(null)}
+                                                      >
+                                                        View all {categoryProcedures.length} {category} procedures →
+                                                      </Link>
+                                                    </li>
+                                                  )}
+                                                </ul>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </li>
                   
                   {/* Bone Joint School Dropdown */}
                   <div 
@@ -701,6 +905,85 @@ export default function SiteHeader({ theme = 'default', className = '' }: SiteHe
                       {item.name}
                     </button>
                   ))}
+
+                  {/* Procedures Section */}
+                  {!proceduresLoading && procedureCategories.length > 0 && (
+                    <div className="mt-4">
+                      <div className="px-4 pt-2 pb-2 text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Procedures
+                      </div>
+
+                      {/* "All Procedures" link */}
+                      <button
+                        key="procedures-all"
+                        onClick={() => handleNavigation('/procedure-surgery')}
+                        className={`flex w-full text-left px-4 py-3 text-gray-800 hover:bg-gray-50 transition-colors ${
+                          pathname === '/procedure-surgery' && !pathname.includes('?category=') 
+                            ? 'bg-gray-50 text-[#8B5C9E] font-medium' 
+                            : ''
+                        }`}
+                      >
+                        <BookOpen className="h-4 w-4 mr-2 text-[#8B5C9E] opacity-70" />
+                        All Procedures
+                      </button>
+
+                      {/* Categories as expandable sections */}
+                      {procedureCategories.filter(cat => cat !== 'All').map((category) => (
+                        <div key={`mobile-procedure-category-${category}`} className="relative">
+                          <button
+                            onClick={() => {
+                              if (activeProcedureCategory === category) {
+                                setActiveProcedureCategory(null);
+                              } else {
+                                setActiveProcedureCategory(category);
+                              }
+                            }}
+                            className={`flex w-full text-left px-4 py-3 text-gray-800 hover:bg-gray-50 transition-colors justify-between items-center ${
+                              pathname.includes(`/procedure-surgery?category=${encodeURIComponent(category)}`) 
+                                ? 'bg-gray-50 text-[#8B5C9E] font-medium' 
+                                : ''
+                            }`}
+                          >
+                            <div className="flex items-center">
+                              <Activity className="h-4 w-4 mr-2 text-[#8B5C9E] opacity-70" />
+                              <span>{category}</span>
+                              <span className="ml-2 text-xs text-gray-500">({getProceduresForCategory(category).length})</span>
+                            </div>
+                            <ChevronDown 
+                              className={`h-4 w-4 transition-transform ${activeProcedureCategory === category ? 'rotate-180' : ''}`} 
+                            />
+                          </button>
+
+                          {/* Expanded procedures for this category */}
+                          {activeProcedureCategory === category && (
+                            <div className="bg-gray-50">
+                              {getProceduresForCategory(category).slice(0, 8).map(procedure => (
+                                <button
+                                  key={`mobile-procedure-${procedure.slug}`}
+                                  onClick={() => handleNavigation(`/procedure-surgery/${procedure.slug}`)}
+                                  className={`flex w-full text-left pl-8 pr-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors ${
+                                    pathname.includes(procedure.slug) 
+                                      ? 'bg-gray-100 text-[#8B5C9E] font-medium' 
+                                      : ''
+                                  }`}
+                                >
+                                  {procedure.title}
+                                </button>
+                              ))}
+                              {getProceduresForCategory(category).length > 8 && (
+                                <button
+                                  onClick={() => handleNavigation(`/procedure-surgery?category=${encodeURIComponent(category)}`)}
+                                  className="flex w-full text-left pl-8 pr-4 py-2 text-[#8B5C9E] hover:bg-gray-100 transition-colors font-medium"
+                                >
+                                  View all {getProceduresForCategory(category).length} procedures →
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Education Section */}
                   {!categoriesLoading && boneJointCategories.length > 0 && (
