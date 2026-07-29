@@ -27,6 +27,7 @@ import {
   fetchAvailableSlots,
   updateAppointment,
   deleteAppointmentAction,
+  fetchDoctors,
 } from '@/app/actions/admin';
 
 interface Props {
@@ -85,6 +86,8 @@ export function AppointmentDetailDrawer({ appointmentId, open, onClose, onChange
   const [pdfGeneratedAt, setPdfGeneratedAt] = useState<string | null>(null);
 
   // Reschedule + delete
+  const [doctors, setDoctors] = useState<Array<{ id: string; name: string; speciality: string | null }>>([]);
+  const [rescheduleDoctorId, setRescheduleDoctorId] = useState('');
   const [rescheduleDate, setRescheduleDate] = useState(''); // 'yyyy-MM-dd'
   const [rescheduleTime, setRescheduleTime] = useState('');
   const [slots, setSlots] = useState<string[]>([]);
@@ -112,6 +115,7 @@ export function AppointmentDetailDrawer({ appointmentId, open, onClose, onChange
         setAppointment(apt);
         setVisitNotes(apt.visitNotes ?? '');
         setDiagnosis(apt.diagnosis ?? '');
+        setRescheduleDoctorId(apt.doctorId ?? '');
         setRescheduleDate(format(new Date(apt.date), 'yyyy-MM-dd'));
         setRescheduleTime(apt.time ?? '');
         setConfirmDelete(false);
@@ -142,31 +146,46 @@ export function AppointmentDetailDrawer({ appointmentId, open, onClose, onChange
     };
   }, [open, appointmentId]);
 
-  // Load the doctor's vacant slots for the chosen reschedule date.
-  // fetchAvailableSlots already excludes booked slots, breaks and time-blocks,
-  // and returns [] for closed / unavailable days — so we offer exactly those
-  // options and never re-add the appointment's own (booked) time.
+  // Load the list of doctors once the drawer opens (for the reschedule picker).
   useEffect(() => {
-    if (!open || !appointment?.doctorId || !rescheduleDate) {
+    if (!open) return;
+    let cancelled = false;
+    (async () => {
+      const res = await fetchDoctors();
+      if (!cancelled && res.success && Array.isArray(res.data)) {
+        setDoctors(res.data as any);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
+
+  // Load the (possibly changed) doctor's vacant slots for the chosen reschedule
+  // date. fetchAvailableSlots already excludes booked slots, breaks and
+  // time-blocks, and returns [] for closed / unavailable days — so we offer
+  // exactly those options and never re-add the appointment's own (booked) time.
+  useEffect(() => {
+    if (!open || !rescheduleDoctorId || !rescheduleDate) {
       setSlots([]);
       return;
     }
     let cancelled = false;
     (async () => {
       setLoadingSlots(true);
-      const res = await fetchAvailableSlots(appointment.doctorId, new Date(rescheduleDate));
+      const res = await fetchAvailableSlots(rescheduleDoctorId, new Date(rescheduleDate));
       if (cancelled) return;
       const list = res.success && Array.isArray(res.data) ? res.data : [];
       setSlots(list);
-      // Keep the chosen time only if it is genuinely a vacant slot on this date;
-      // otherwise clear it so a booked/closed-day time can't be submitted.
+      // Keep the chosen time only if it is genuinely a vacant slot for this
+      // doctor+date; otherwise clear it so a booked/closed-day time can't be submitted.
       setRescheduleTime((prev) => (prev && list.includes(prev) ? prev : ''));
       setLoadingSlots(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, [open, appointment?.doctorId, rescheduleDate]);
+  }, [open, rescheduleDoctorId, rescheduleDate]);
 
   const refresh = async () => {
     if (!appointmentId) return;
@@ -370,13 +389,14 @@ export function AppointmentDetailDrawer({ appointmentId, open, onClose, onChange
 
   const handleReschedule = async () => {
     if (!appointment) return;
-    if (!rescheduleDate || !rescheduleTime) {
-      toast.error('Pick a new date and time.');
+    if (!rescheduleDoctorId || !rescheduleDate || !rescheduleTime) {
+      toast.error('Pick a doctor, date and time.');
       return;
     }
     setRescheduling(true);
-    // Keep everything the same except date/time. Re-activate a cancelled/no-show
-    // appointment on reschedule (otherwise updateAppointment would clear the time).
+    // Keep everything the same except doctor/date/time. Re-activate a
+    // cancelled/no-show appointment on reschedule (otherwise updateAppointment
+    // would clear the time).
     const status =
       appointment.status === 'CANCELLED' || appointment.status === 'NO_SHOW'
         ? 'CONFIRMED'
@@ -389,7 +409,7 @@ export function AppointmentDetailDrawer({ appointmentId, open, onClose, onChange
       date: new Date(rescheduleDate),
       time: rescheduleTime,
       status,
-      doctorId: appointment.doctorId,
+      doctorId: rescheduleDoctorId,
       customerId: appointment.customerId,
     });
     setRescheduling(false);
@@ -570,8 +590,26 @@ export function AppointmentDetailDrawer({ appointmentId, open, onClose, onChange
                 Reschedule
               </h3>
               <p className="text-xs text-gray-500">
-                Currently: {format(new Date(appointment.date), 'MMM d, yyyy')} at {appointment.time || '—'}
+                Currently: Dr. {appointment.doctor?.name || '—'} · {format(new Date(appointment.date), 'MMM d, yyyy')} at {appointment.time || '—'}
               </p>
+              <div>
+                <label className="text-xs font-medium text-gray-600">Doctor</label>
+                <select
+                  value={rescheduleDoctorId}
+                  onChange={(e) => setRescheduleDoctorId(e.target.value)}
+                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#8B5C9E] focus:outline-none focus:ring-[#8B5C9E]"
+                >
+                  {doctors.length === 0 && appointment.doctor?.name && (
+                    <option value={rescheduleDoctorId}>Dr. {appointment.doctor.name}</option>
+                  )}
+                  {doctors.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      Dr. {d.name}
+                      {d.speciality ? ` · ${d.speciality}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-medium text-gray-600">New date</label>
@@ -603,7 +641,7 @@ export function AppointmentDetailDrawer({ appointmentId, open, onClose, onChange
                   No vacant slots on this date — the doctor isn&apos;t available or the clinic is closed. Please pick another day.
                 </p>
               )}
-              <Button size="sm" onClick={handleReschedule} disabled={rescheduling || !rescheduleTime}>
+              <Button size="sm" onClick={handleReschedule} disabled={rescheduling || !rescheduleDoctorId || !rescheduleTime}>
                 {rescheduling ? (
                   <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
                 ) : (
