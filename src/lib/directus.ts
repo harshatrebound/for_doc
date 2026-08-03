@@ -95,6 +95,7 @@ export interface BlogPost {
   category: string;
   reading_time: number;
   status: string;
+  publish_at?: string | null;
   meta_title?: string;
   meta_description?: string;
   source_url?: string;
@@ -385,6 +386,55 @@ export async function getAlumni(): Promise<AlumniMember[]> {
   }
 }
 
+// A blog post is live when it is published AND its scheduled go-live time has
+// passed. Posts with no publish_at are treated as live immediately, so every
+// existing post keeps behaving exactly as it did before scheduling existed.
+// `$NOW` is resolved by Directus, so go-live does not depend on this server's
+// clock agreeing with the CMS.
+function liveBlogPostFilter(extraFilters: Record<string, any> = {}) {
+  return {
+    ...extraFilters,
+    status: { _eq: 'published' },
+    _or: [
+      { publish_at: { _null: true } },
+      { publish_at: { _lte: '$NOW' } }
+    ]
+  };
+}
+
+// Directus rejects the whole query with a 403 when publish_at does not exist on
+// blog_content yet. Fall back to the plain published filter in that case rather
+// than serving an empty blog.
+function isMissingPublishAtField(error: any): boolean {
+  try {
+    return JSON.stringify(error?.errors ?? error?.message ?? error ?? '').includes('publish_at');
+  } catch {
+    return false;
+  }
+}
+
+async function readLiveBlogPosts(
+  activeClient: any,
+  query: Record<string, any>,
+  extraFilters: Record<string, any> = {}
+) {
+  try {
+    return await activeClient.request(
+      readItems('blog_content', { ...query, filter: liveBlogPostFilter(extraFilters) })
+    );
+  } catch (error) {
+    if (!isMissingPublishAtField(error)) throw error;
+
+    console.warn('blog_content.publish_at not found in Directus - scheduled publishing is inactive');
+    return activeClient.request(
+      readItems('blog_content', {
+        ...query,
+        filter: { ...extraFilters, status: { _eq: 'published' } }
+      })
+    );
+  }
+}
+
 // Function to get all blog posts
 export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
@@ -394,27 +444,25 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
       return [];
     }
     
-    const response = await activeClient.request(
-      readItems('blog_content', {
-        fields: [
-          'id',
-          'title',
-          'slug',
-          'featured_image_url',
-          'excerpt',
-          'date_created',
-          'content_html',
-          'content_text',
-          'category',
-          'reading_time',
-          'status',
-          'meta_title',
-          'meta_description',
-          'source_url',
-          'is_featured'
-        ]
-      })
-    );
+    const response = await readLiveBlogPosts(activeClient, {
+      fields: [
+        'id',
+        'title',
+        'slug',
+        'featured_image_url',
+        'excerpt',
+        'date_created',
+        'content_html',
+        'content_text',
+        'category',
+        'reading_time',
+        'status',
+        'meta_title',
+        'meta_description',
+        'source_url',
+        'is_featured'
+      ]
+    });
 
     const data = handleDirectusResponse<BlogPost>(response);
     
@@ -433,8 +481,9 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 // Function to get a single post by slug
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   try {
-    const response = await client.request(
-      readItems('blog_content', {
+    const response = await readLiveBlogPosts(
+      client,
+      {
         fields: [
           'id',
           'title',
@@ -452,12 +501,9 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
           'source_url',
           'is_featured'
         ],
-        filter: {
-          slug: { _eq: slug },
-          status: { _eq: 'published' }
-        },
         limit: 1
-      })
+      },
+      { slug: { _eq: slug } }
     );
 
     const post = (response as BlogPost[])?.[0] || null;
@@ -478,16 +524,16 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
 export async function getRelatedPosts(currentSlug: string, category?: string): Promise<BlogPost[]> {
   try {
     const filters: any = {
-      slug: { _neq: currentSlug },
-      status: { _eq: 'published' }
+      slug: { _neq: currentSlug }
     };
 
     if (category) {
       filters.category = { _eq: category };
     }
 
-    const response = await client.request(
-      readItems('blog_content', {
+    const response = await readLiveBlogPosts(
+      client,
+      {
         fields: [
           'id',
           'title',
@@ -498,10 +544,10 @@ export async function getRelatedPosts(currentSlug: string, category?: string): P
           'category',
           'reading_time'
         ],
-        filter: filters,
         limit: 3,
         sort: ['-date_created']
-      })
+      },
+      filters
     );
 
     const posts = (response as BlogPost[]) || [];
