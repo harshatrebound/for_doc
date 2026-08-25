@@ -46,17 +46,36 @@ export interface MailAttachment {
 }
 
 export interface MailMessage {
+  /** Recipient(s). Nodemailer accepts a comma-separated list. */
   to: string;
   subject: string;
   html: string;
   text?: string;
+  /** Address a human reply should go to, e.g. the person who filled the form. */
+  replyTo?: string;
   attachments?: MailAttachment[];
 }
 
+/**
+ * Escapes text before it is interpolated into an HTML email body.
+ *
+ * Form submissions are arbitrary public input; without this, a `<` in a
+ * message breaks the layout and markup in the input renders inside the
+ * recipient's mail client.
+ */
+export function escapeHtml(value: string): string {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 /** Sends an email. Throws if SMTP is not configured or the send fails. */
-export async function sendMail({ to, subject, html, text, attachments }: MailMessage): Promise<void> {
+export async function sendMail({ to, subject, html, text, replyTo, attachments }: MailMessage): Promise<void> {
   const tx = getTransporter();
   if (!tx) throw new Error('SMTP is not configured.');
   const from = process.env.SMTP_FROM || process.env.SMTP_USER!;
-  await tx.sendMail({ from, to, subject, html, text, attachments });
+  await tx.sendMail({ from, to, subject, html, text, replyTo, attachments });
 }
